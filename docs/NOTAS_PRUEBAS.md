@@ -75,7 +75,29 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   generadores, autos de red del otro jugador) en poco tiempo. Sospecha: el bug aparece con
   mucho movimiento de creacion/borrado de vehiculos (alejarse/moverse rapido).
 
+### 7. NPC y policia que "se teletransportan" cuando un jugador se aleja
+- Peds (incl. policia) aparecen/desaparecen de golpe cerca del otro jugador, sin estar tan lejos.
+- El trafico que se limpia al no mirar puede reaparecer delante de un jugador.
+- Relacionado con como se reparte el streaming de peds/vehiculos entre host y clientes.
+
+### Diagnostico crashes 4/5/6/7 (con mapa de simbolos del build 097adce)
+- +0xE031C de CoopAndreasSA.dll = CVehicle::CVehicle(plugin::dummy) +0x2C (constructor del SDK),
+  `this` invalido. #6 = mismo pero en el ctor del juego. #4 = CVehicle::operator delete con indice negativo.
+- Mecanismo: CPool::Delete(ptr) con un ptr que NO pertenece al pool escribe byteMap[idx] fuera de rango
+  y deja m_nFirstFree negativo; el siguiente New() devuelve &objects[negativo] -> AV en el ctor.
+  Por eso los crashes parecen aleatorios (alt-tab, lejos, jetpack): disparan la siguiente creacion.
+- Causa probable: `delete m_pVehicle` sobre un puntero obsoleto (IsVTableValid no detecta slots
+  reutilizados) o lectura de un CNetworkVehicle ya liberado.
+- Fix: guardas en operator delete de vehiculos/peds (ignorar punteros fuera del pool y loguear el
+  llamador) + validar con el pool antes de borrar en CNetworkVehicle.
+
 ## Pedidos de funciones
+- Trucos de mundo sincronizados: policia/nivel de busqueda, cazarecompensas, autos vuelan, tiempo lento,
+  etc. se aplican a todos (los personales como armas/vida/jetpack siguen siendo locales).
+- Aviso "X activo un truco" visible para todos.
+- Menu Tab (lista de jugadores): boton Expulsar (host).
+- Submenu de teletransporte: ir a un jugador / traer a un jugador.
+- Jugadores a cualquier distancia sin crashes.
 - Contraseña del servidor (el túnel es público).
 - Panel de admin (TP, matar, expulsar, banear) — banear por ID de jugador, no por IP
   (por el túnel todos llegan con 127.x.x.x de playit).
