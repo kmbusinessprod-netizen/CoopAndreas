@@ -91,6 +91,17 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Fix: guardas en operator delete de vehiculos/peds (ignorar punteros fuera del pool y loguear el
   llamador) + validar con el pool antes de borrar en CNetworkVehicle.
 
+## Hecho (2026-11-04, segunda sesion)
+- Guardas de pool (CPoolGuard): operator delete de vehiculos/peds valida el puntero; avisos `[guard]`
+  en chat/consola con el llamador. Cubre #4/#5/#6/#7.
+- #2 bici: GetActiveTask() nulo en 0x523E66 parcheado.
+- Trucos sincronizados (CCheatSync) + aviso "X activo un truco".
+- Menu Tab: seleccion con flechas, T ir al jugador; host: Y traer, K expulsar, B banear (bans.txt).
+- Propiedad por cercania (server CProximityOwnership): peds/trafico aleatorios pasan al jugador mas
+  cercano; el cliente restaura IA al recibirlos. `proximity_ownership = 0` lo desactiva. Spawns
+  nunca a <60 m de otro jugador. (= intento de arreglar #7; a probar)
+- CI: mapas de simbolos en build/symbols, publicacion con reintentos.
+
 ## Pedidos de funciones
 - Trucos de mundo sincronizados: policia/nivel de busqueda, cazarecompensas, autos vuelan, tiempo lento,
   etc. se aplican a todos (los personales como armas/vida/jetpack siguen siendo locales).
