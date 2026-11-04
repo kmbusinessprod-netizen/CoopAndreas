@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CUPnP.h"
+#include "CTunnel.h"
 
 #if defined(_WIN32)
 #pragma comment(lib, "ws2_32.lib")
@@ -63,8 +64,9 @@ int main(int argc, char* argv[])
     CConfigManager::Init();
     CServerTime::Init();
 
-    // [private build] open the port on the router automatically
-    CUPnP::StartAsync(CConfigManager::GetConfigPort());
+    // [private build] use the playit.gg tunnel if configured, otherwise try to open the port via UPnP
+    if (!CTunnel::Start())
+        CUPnP::StartAsync(CConfigManager::GetConfigPort());
 
     CNetwork::Init(CConfigManager::GetConfigPort());
     return 0;

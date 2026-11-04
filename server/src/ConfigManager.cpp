@@ -41,3 +41,8 @@ uint16_t CConfigManager::GetConfigMaxPlayers()
 {
 	return (uint16_t)ms_pReader->GetUnsigned("", "maxplayers", ms_umDefaultConfig.at("maxplayers"));
 }
+
+std::string CConfigManager::GetConfigString(const std::string& key, const std::string& def)
+{
+	return ms_pReader->Get("", key, def);
+}

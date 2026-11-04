@@ -31,7 +31,25 @@ public:
     static bool IsValidIP(const char* ip)
     {
         ENetAddress temp;
-        return enet_address_set_host_ip(&temp, ip) >= 0;
+        if (enet_address_set_host_ip(&temp, ip) >= 0)
+            return true;
+
+        // [private build] also accept host names (e.g. tunnel addresses like name.gl.at.ply.gg)
+        size_t len = strlen(ip);
+        if (len < 3 || ip[0] == '.' || ip[0] == '-' || ip[len - 1] == '.' || ip[len - 1] == '-')
+            return false;
+        bool hasDot = false, hasLetter = false;
+        for (size_t i = 0; i < len; i++)
+        {
+            char c = ip[i];
+            if (c == '.')
+                hasDot = true;
+            else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+                hasLetter = true;
+            else if (!((c >= '0' && c <= '9') || c == '-'))
+                return false;
+        }
+        return hasDot && hasLetter;
     }
 
     static uint32_t GetSentCount() { return m_nSentPackets; }

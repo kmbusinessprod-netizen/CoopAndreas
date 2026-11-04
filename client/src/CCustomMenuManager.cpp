@@ -17,7 +17,7 @@ static char* aRows[MAX_ROWS] = { "Nickname:", "IP:", "Port:", "Back", "Connect" 
 static const int MAX_INPUT_ROWS = 3;
 static int iLastHovered = ROW_NICKNAME;
 static int iActiveInputRow = ROW_UNSELECTED;
-static char aRowContent[MAX_INPUT_ROWS][32+1] = { };
+static char aRowContent[MAX_INPUT_ROWS][64+1] = { };
 
 static inline void SetFontColor(bool bActive)
 {
@@ -409,7 +409,7 @@ void __fastcall CMenuManager__UserInput_Hook(CMenuManager* This)
 void CCustomMenuManager::UpdateFromConfig()
 {
 	strncpy_s(aRowContent[ROW_NICKNAME], CLocalPlayer::m_Name, Config::MAX_NICKNAME_LENGTH);
-	strncpy_s(aRowContent[ROW_IP], CNetwork::m_IpAddress, 15);
+	strncpy_s(aRowContent[ROW_IP], CNetwork::m_IpAddress, 63);
 	_itoa_s(static_cast<int>(CNetwork::m_nPort), aRowContent[ROW_PORT], 10);
 }
 
@@ -450,11 +450,11 @@ void CCustomMenuManager::Init()
 	patch::SetUChar(0x58014E, 0x74);
 }
 
-static const int MAX_LENGTH_PER_ROW[MAX_INPUT_ROWS] = { Config::MAX_NICKNAME_LENGTH, 15, 5 }; // nickname, ip, port
+static const int MAX_LENGTH_PER_ROW[MAX_INPUT_ROWS] = { Config::MAX_NICKNAME_LENGTH, 63, 5 }; // nickname, ip/host name, port
 
 void InsertCharToRow(char c)
 {
-	int length = strnlen_s(aRowContent[iActiveInputRow], 32 + 1);
+	int length = strnlen_s(aRowContent[iActiveInputRow], 64 + 1);
 	if (length >= MAX_LENGTH_PER_ROW[iActiveInputRow])
 	{
 		return;
@@ -478,6 +478,28 @@ void InsertCharToRow(char c)
 		if (length == 0 && c == '.')
 		{
 			return;
+		}
+
+		// [private build] host names (tunnel addresses): letters, digits, '-' and '.'
+		{
+			bool isHostName = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-';
+			for (int i = 0; i < length && !isHostName; i++)
+			{
+				char e = aRowContent[iActiveInputRow][i];
+				isHostName = (e >= 'a' && e <= 'z') || (e >= 'A' && e <= 'Z') || e == '-';
+			}
+			if (isHostName)
+			{
+				if (c >= 'A' && c <= 'Z')
+					c = c - 'A' + 'a';
+				bool allowed = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '.';
+				if (!allowed || (c == '.' && length > 0 && aRowContent[iActiveInputRow][length - 1] == '.'))
+					return;
+				aRowContent[iActiveInputRow][length] = c;
+				aRowContent[iActiveInputRow][length + 1] = '\0';
+				strncpy_s(CNetwork::m_IpAddress, aRowContent[iActiveInputRow], MAX_LENGTH_PER_ROW[iActiveInputRow]);
+				break;
+			}
 		}
 
 		if ((c >= '0' && c <= '9') || c == '.')
@@ -539,6 +561,7 @@ void InsertCharToRow(char c)
 		if (c >= '0' && c <= '9')
 		{
 			aRowContent[iActiveInputRow][length] = c;
+			aRowContent[iActiveInputRow][length + 1] = '\0';
 			CNetwork::m_nPort = std::stoi(aRowContent[iActiveInputRow]);
 		}
 		break;
@@ -567,7 +590,7 @@ void CCustomMenuManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			return;
 		}
 
-		int length = strnlen_s(aRowContent[iActiveInputRow], 32);
+		int length = strnlen_s(aRowContent[iActiveInputRow], 64);
 		char c = (char)wParam;
 		if (c == VK_BACK)
 		{
@@ -584,7 +607,7 @@ void CCustomMenuManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 					strncpy_s(CNetwork::m_IpAddress, aRowContent[iActiveInputRow], MAX_LENGTH_PER_ROW[iActiveInputRow]);
 					break;
 				case ROW_PORT:
-					CNetwork::m_nPort = std::stoi(aRowContent[iActiveInputRow]);
+					CNetwork::m_nPort = aRowContent[iActiveInputRow][0] ? std::stoi(aRowContent[iActiveInputRow]) : 0;
 					break;
 				}
 			}
@@ -605,27 +628,51 @@ void CCustomMenuManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 		if (isControlV || isShiftInsert)
 		{
+			if (iActiveInputRow == ROW_UNSELECTED)
+				return;
+
 			if (!OpenClipboard(nullptr))
 				return;
 
+			char text[128]{};
 			HANDLE hData = GetClipboardData(CF_TEXT);
-
+			if (hData)
+			{
+				const char* clipboardText = (const char*)GlobalLock(hData);
+				if (clipboardText)
+					strncpy_s(text, clipboardText, _TRUNCATE);
+				GlobalUnlock(hData);
+			}
 			CloseClipboard();
 
-			if (!hData)
+			if (!text[0])
 				return;
 
-			char* clipboardText = (char*)GlobalLock(hData);
+			// [private build] pasting "address:port" (e.g. a playit.gg tunnel) into the IP row fills both rows
+			char* colon = iActiveInputRow == ROW_IP ? strrchr(text, ':') : nullptr;
+			if (colon)
+			{
+				*colon = '\0';
+				const char* portText = colon + 1;
 
-			GlobalUnlock(hData);
+				aRowContent[ROW_PORT][0] = '\0';
+				CNetwork::m_nPort = 0;
+				int savedRow = iActiveInputRow;
+				iActiveInputRow = ROW_PORT;
+				for (int i = 0; portText[i] && i < MAX_LENGTH_PER_ROW[ROW_PORT]; i++)
+					InsertCharToRow(portText[i]);
+				iActiveInputRow = savedRow;
 
-			if (!clipboardText)
-				return;
+				aRowContent[ROW_IP][0] = '\0';
+				CNetwork::m_IpAddress[0] = '\0';
+			}
 
-			int length = strnlen_s(clipboardText, MAX_LENGTH_PER_ROW[iActiveInputRow]);
+			int length = strnlen_s(text, MAX_LENGTH_PER_ROW[iActiveInputRow]);
 			for (int i = 0; i < length; i++)
 			{
-				InsertCharToRow(clipboardText[i]);
+				if (text[i] == ' ' || text[i] == '\r' || text[i] == '\n' || text[i] == '\t')
+					continue;
+				InsertCharToRow(text[i]);
 			}
 		}
 	}

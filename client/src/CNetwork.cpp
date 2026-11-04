@@ -35,7 +35,15 @@ DWORD WINAPI CNetwork::InitAsync(LPVOID)
 
     ENetAddress address;
 
-    enet_address_set_host(&address, m_IpAddress);
+    if (enet_address_set_host(&address, m_IpAddress) < 0)
+    {
+        // [private build] host names (tunnels) need a DNS lookup that can fail
+        CChat::AddMessage("{63c7e8}[Network] {f07878}No se pudo encontrar la direccion '%s'. Revisa que este bien escrita.", m_IpAddress);
+        enet_host_destroy(m_pENetHost);
+        m_pENetHost = nullptr;
+        enet_deinitialize();
+        return 0;
+    }
     address.port = m_nPort;
 
     uint32_t packedVersion = semver_parse(COOPANDREAS_VERSION, nullptr);  // v0.1.0-alpha compat

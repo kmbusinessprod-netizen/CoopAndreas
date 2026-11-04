@@ -63,7 +63,7 @@ void CConfigLoader::Load()
 
     GetPrivateProfileString(CONFIG_SECTION.c_str(), "nickname", "", CLocalPlayer::m_Name, sizeof(CLocalPlayer::m_Name),
         ms_sDataPath.c_str());
-    GetPrivateProfileString(CONFIG_SECTION.c_str(), "ip", "", CNetwork::m_IpAddress, 16, ms_sDataPath.c_str());
+    GetPrivateProfileString(CONFIG_SECTION.c_str(), "ip", "", CNetwork::m_IpAddress, 64, ms_sDataPath.c_str());
     CNetwork::m_nPort =
         GetPrivateProfileInt(CONFIG_SECTION.c_str(), "port", Config::DEFAULT_PORT, ms_sDataPath.c_str());
 

@@ -19,4 +19,5 @@ public:
     static void CreateConfig();
     static uint16_t GetConfigPort();
     static uint16_t GetConfigMaxPlayers();
+    static std::string GetConfigString(const std::string& key, const std::string& def = "");
 };
