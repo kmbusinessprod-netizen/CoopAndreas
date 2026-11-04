@@ -1,6 +1,6 @@
  CoopAndreasSA
 
- Timestamp is 6aebabfd (Wed Nov  4 22:04:45 2026)
+ Timestamp is 6aebace4 (Wed Nov  4 22:08:36 2026)
 
  Preferred load address is 10000000
 
@@ -6731,7 +6731,7 @@
  0002:000032bc       ??_C@_0BE@CKABOKGD@CoopAndreas_crashes@ 1012f2bc     CCrashLog.cpp.obj
  0002:000032d0       ??_C@_0DG@BOGFNADJ@CoopAndreas_crashes?2?$CF04d?9?$CF02d?9?$CF0@ 1012f2d0     CCrashLog.cpp.obj
  0002:00003308       ??_C@_0BG@CGDJIDPA@Memory?5dump?5saved?5to?5@ 1012f308     CCrashLog.cpp.obj
- 0002:00003320       ??_C@_08JKBPOBCG@22?304?315@ 1012f320     CCrashLog.cpp.obj
+ 0002:00003320       ??_C@_08NKLGDDCK@22?307?355@ 1012f320     CCrashLog.cpp.obj
  0002:0000332c       ??_C@_0M@MADNBNBB@Nov?5?54?52026@ 1012f32c     CCrashLog.cpp.obj
  0002:00003338       ??_C@_0BI@GLFIECHI@?0?5CoopAndreas?5v?$CFs?5?$CFs?5?$CFs@ 1012f338     CCrashLog.cpp.obj
  0002:00003350       ??_C@_0CE@GFMCACCH@?$AN?6Unhandled?5exception?5at?50x?$CFp?5in@ 1012f350     CCrashLog.cpp.obj
