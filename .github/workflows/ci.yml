@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - '**'
+      - '!build'
   pull_request:
     branches:
       - '**'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -56,3 +60,18 @@ jobs:
           name: CoopAndreas-build
           path: package/
           if-no-files-found: error
+
+      - name: Publish build to 'build' branch
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          $sha = "${{ github.sha }}"
+          Set-Content -Path package/BUILD_INFO.txt -Value "commit $sha"
+          cd package
+          git init -q
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout -q -b build
+          git add -A
+          git commit -q -m "Build of $sha"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" build
