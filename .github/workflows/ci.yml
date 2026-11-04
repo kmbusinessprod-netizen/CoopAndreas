@@ -14,21 +14,45 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: latest
 
+      - name: Configure (release, x86)
+        run: xmake f -m release -a x86 -y
+
       - name: Build client
         run: xmake build client
 
       - name: Build server
         run: xmake build server
-        
+
       - name: Build proxy
         run: xmake build proxy
-        
+
       - name: Build launcher
         run: xmake build launcher
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $out = "package"
+          New-Item -ItemType Directory -Force -Path "$out/CoopAndreas" | Out-Null
+          $find = { param($name) Get-ChildItem -Path build -Recurse -File -Filter $name | Select-Object -First 1 }
+          Copy-Item (& $find "CoopAndreasSA.dll").FullName "$out/CoopAndreasSA.dll"
+          Copy-Item (& $find "proxy.dll").FullName "$out/eax.dll"
+          Copy-Item (& $find "LaunchCoopAndreas.exe").FullName "$out/LaunchCoopAndreas.exe"
+          Copy-Item (& $find "server.exe").FullName "$out/server.exe"
+          Copy-Item "scm/main.scm" "$out/CoopAndreas/main.scm"
+          Copy-Item "scm/script.img" "$out/CoopAndreas/script.img"
+          Get-ChildItem -Recurse $out | Select-Object FullName, Length
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoopAndreas-build
+          path: package/
+          if-no-files-found: error

@@ -96,23 +96,7 @@ INT_PTR CALLBACK DialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
-    wchar_t path[MAX_PATH];
-    GetModuleFileNameW(NULL, path, MAX_PATH);
-    wcscat_s(path, MAX_PATH, L".manifest");
-
-    if (GetFileAttributesW(path) == INVALID_FILE_ATTRIBUTES)
-    {
-        wchar_t buffer[128 + MAX_PATH];
-        wsprintfW(buffer,
-            L"Could not find %s.\n\nCoopAndreas Launcher won't run.\n\nReinstall the mod to play CoopAndreas.", path);
-        MessageBoxW(NULL, buffer, L"CoopAndreas Launcher Error", MB_ICONERROR | MB_OK);
-        return 1;
-    }
-
-    ComputerID serialPC{};
-    sSerial = serialPC.GetUniqueSystemId();
-    sSerialCommand = "/gen " + sSerial;
-
-    DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), nullptr, DialogProc, 0);
+    // [private build] no serial key: launch the game directly
+    Launcher::LaunchProcess("\"gta_sa.exe\" --coop");
     return 0;
 }

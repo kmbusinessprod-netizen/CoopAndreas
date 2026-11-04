@@ -66,7 +66,8 @@ void CCore::Init()
     CCore::AllocateConsole();
 #endif
     CImGui::Init();
-    CLaunchManager::CollectCommandLineArgs();
+    // [private build] beta serial check disabled
+    // CLaunchManager::CollectCommandLineArgs();
     WinMain_AfterWindowInit_ptr = injector::GetBranchDestination(0x748995).as_int();
     patch::RedirectCall(0x748995, WinMain_AfterWindowInit);
     CCustomMenuManager::Init();
