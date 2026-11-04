@@ -51,6 +51,37 @@ void CPatch::RevertTemporaryPatchesForHost()
     CPopulation::PedDensityMultiplier = 1.0f;
 }
 
+// [private build] the 14 ms frame delay is removed below, so the frame limiter must stay on,
+// otherwise the game runs at thousands of FPS and the game clock stops advancing
+void CPatch::EnforceFrameLimiter()
+{
+    if (!FrontEndMenuManager.m_bPrefsVsync)  // 0xBA6794, actually the "Frame Limiter" option
+        FrontEndMenuManager.m_bPrefsVsync = true;
+}
+
+// [private build] CLEO 4 replaces the call at 0x53E981 (CGame::Process) with its own stub that
+// calls CGame::Process directly, discarding plugin-sdk's gameProcessEvent hook (no handshake, no sync).
+// CLEO's stub does nothing else, so we capture our hook at init and put it back if it gets overwritten.
+static uintptr_t s_gameProcessHook = 0;
+
+void CPatch::CaptureGameProcessHook()
+{
+    s_gameProcessHook = injector::GetBranchDestination(0x53E981).as_int();
+}
+
+void CPatch::RestoreGameProcessHook()
+{
+    if (s_gameProcessHook == 0 || s_gameProcessHook == 0x53BEE0)
+        return;
+
+    uintptr_t current = injector::GetBranchDestination(0x53E981).as_int();
+    if (current != s_gameProcessHook)
+    {
+        patch::RedirectCall(0x53E981, (void*)s_gameProcessHook);
+        printf("[compat] restored gameProcess hook (was overwritten, 0x%08X)\n", (unsigned)current);
+    }
+}
+
 void CPatch::PatchFramerate()
 {
     unsigned int fps = 60;
@@ -78,6 +109,15 @@ void CPatch::PatchFramerate()
             }
         }
     }
+
+    // [private build] keep the limit in a sane range: values are stored as unsigned char,
+    // and an uncapped/huge framerate makes CTimer's integer ms step round to 0 (frozen game, black screen)
+    if (fps < 30)
+        fps = 30;
+    if (fps > 240)
+        fps = 240;
+
+    EnforceFrameLimiter();
 
     patch::SetUChar(0x53E94C, 0);           // remove 14 ms frame delay
     patch::SetUChar(0x619626, fps);         // init value

@@ -1,4 +1,5 @@
 #include "CCompatibilityChecker.h"
+#include "CPatch.h"
 
 void CCompatibilityChecker::Process()
 {
@@ -9,6 +10,10 @@ void CCompatibilityChecker::Process()
         return;
     }
     lastChecked = GetTickCount();
+
+    // [private build] keep CLEO 4 from breaking the game loop hook and keep the frame limiter on
+    CPatch::RestoreGameProcessHook();
+    CPatch::EnforceFrameLimiter();
 
     /*
     CLEO+ overrides CWeapon::DoBulletImpact and makes player weapon shots desynced

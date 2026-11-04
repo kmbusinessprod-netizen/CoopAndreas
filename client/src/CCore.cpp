@@ -6,7 +6,6 @@
 #include <CCustomMenuManager.h>
 #include <winuser.h>
 #include <CLaunchManager.h>
-#include "CDiag.h"
 #include <Debug/CImGui.h>
 
 semver_t CCore::Version;
@@ -78,14 +77,18 @@ void CCore::Init()
     CDXFont::Init();
     CDiscordRPC::Init();
     COpCodeSync::Init();
-    CDiag::Init();  // [private build] diagnostics
+    CPatch::CaptureGameProcessHook();  // [private build] CLEO 4 compat, see CPatch.cpp
     Events::initGameEvent.after += []
     {
         CPatch::TemporaryPatches();
         // init CNetworking async
         CNetwork::Start();
     };
-    Events::initRwEvent += [] { CPatch::PatchFramerate(); };
+    Events::initRwEvent += []
+    {
+        CPatch::PatchFramerate();
+        CPatch::RestoreGameProcessHook();
+    };
 
     /*Events::initScriptsEvent.after += []
     {
