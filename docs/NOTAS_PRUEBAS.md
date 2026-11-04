@@ -70,6 +70,10 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - MISMO PATRON que #4 (borrar un vehiculo que no esta en el pool) y #5 (constructor del mod
   sobre memoria invalida): apunta a un bug de manejo de memoria/pool de VEHICULOS de red
   (crear/borrar vehiculos sincronizados). Prioridad alta: probablemente un unico bug de fondo.
+- Contexto: ocurrio poco despues de que el amigo activara el truco del JETPACK. El jetpack no es
+  un vehiculo, pero volar rapido carga zonas nuevas -> se crean/borran muchos autos (trafico,
+  generadores, autos de red del otro jugador) en poco tiempo. Sospecha: el bug aparece con
+  mucho movimiento de creacion/borrado de vehiculos (alejarse/moverse rapido).
 
 ## Pedidos de funciones
 - Contraseña del servidor (el túnel es público).
