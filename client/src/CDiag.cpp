@@ -14,7 +14,14 @@ static DWORD gStart = 0;
 
 void CDiag::Init()
 {
-    gDiagFile = fopen("CoopAndreas\\diag.log", "w");
+    char path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, MAX_PATH);
+    char* slash = strrchr(path, '\\');
+    if (slash)
+        *slash = '\0';
+    strcat_s(path, MAX_PATH, "\\coop_diag.log");
+    gDiagFile = fopen(path, "w");
+    printf("[diag] log file: %s (%s)\n", path, gDiagFile ? "ok" : "FAILED");
     gStart = GetTickCount();
     if (gDiagFile)
     {
