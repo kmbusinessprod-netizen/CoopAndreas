@@ -34,6 +34,10 @@ public:
     } m_ucSyncFlags;
     std::vector<CNetworkPed*> m_vPedClaims;
 
+    // [private build] last known position (on foot or inside a vehicle), for proximity ownership
+    CVector m_vecPos{};
+    bool m_bHasPos = false;
+
     void RemoveFromVehicle();
 
     ~CNetworkPlayer();

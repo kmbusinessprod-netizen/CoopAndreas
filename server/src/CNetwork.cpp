@@ -7,6 +7,7 @@
 #include "serialize.h"
 #include "stdafx.h"
 #include "CBanList.h"
+#include "CProximityOwnership.h"
 #include <network/packets/vehicles.h>
 #include <network/packets/peds.h>
 #include <network/packets/scripts.h>
@@ -41,6 +42,7 @@ bool CNetwork::Init(unsigned short port)
     {
         CServerTime::Update();
         CRTTBroadcastManager::Update();
+        CProximityOwnership::Update();  // [private build]
 
         while (enet_host_service(pENetHost, &eNetEvent, 1) > 0)
         {

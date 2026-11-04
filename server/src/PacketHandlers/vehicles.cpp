@@ -93,6 +93,8 @@ PACKET_HANDLER(ePacketType::VEHICLE_DRIVER_UPDATE, Packets::Vehicles::VehicleDri
     {
         pNetworkVehicle->SetOccupant(0, pNetworkPlayer);
         pNetworkVehicle->m_vecPosition = pVehicleDriverUpdate->pos;
+        pNetworkPlayer->m_vecPos = pVehicleDriverUpdate->pos;
+        pNetworkPlayer->m_bHasPos = true;
         pNetworkVehicle->m_vecRotation = pVehicleDriverUpdate->rot;
         pNetworkVehicle->m_trailerId = pVehicleDriverUpdate->trailerid;
         pNetworkVehicle->m_bUsedByPed = false;
@@ -226,6 +228,8 @@ PACKET_HANDLER(ePacketType::VEHICLE_PASSENGER_UPDATE,
         GetPacketFactory().SendToAll(*pVehiclePassengerUpdate, pNetworkPlayer);
 
         pNetworkVehicle->SetOccupant(pVehiclePassengerUpdate->seatid + 1, pNetworkPlayer);
+        pNetworkPlayer->m_vecPos = pNetworkVehicle->m_vecPosition;
+        pNetworkPlayer->m_bHasPos = true;
 
         if (pNetworkVehicle->m_nCreatedBy == MISSION_VEHICLE)
         {

@@ -50,6 +50,8 @@ PACKET_HANDLER(ePacketType::ASSIGN_PED, Packets::Peds::AssignPedSyncer* pAssignP
         if (auto pPed = pNetworkPed->m_pPed)
         {
             pPed->SetCharCreatedBy(MISSION_CHAR);
+            // [private build] stop taking local AI decisions, the new syncer drives this ped now
+            pPed->m_pIntelligence->SetPedDecisionMakerType(-1);
         }
     }
     else
@@ -63,6 +65,27 @@ PACKET_HANDLER(ePacketType::ASSIGN_PED, Packets::Peds::AssignPedSyncer* pAssignP
         if (auto pPed = pNetworkPed->m_pPed)
         {
             pPed->SetCharCreatedBy(pNetworkPed->m_nCreatedBy);
+
+            // [private build] proximity handover of a random ped: give it back a brain and something to do
+            if (pNetworkPed->m_nCreatedBy == RANDOM_CHAR && pPed->m_nPedType != PED_TYPE_PLAYER1)
+            {
+                pPed->SetPedDefaultDecisionMaker();
+                pPed->m_pIntelligence->SetSeeingRange(30.0f);
+                pPed->m_pIntelligence->SetHearingRange(30.0f);
+
+                CTaskManager& taskMgr = pPed->m_pIntelligence->m_TaskMgr;
+                if (pPed->m_nPedFlags.bInVehicle && pPed->m_pVehicle)
+                {
+                    if (pPed->m_pVehicle->m_pDriver == pPed && !taskMgr.FindActiveTaskByType(TASK_COMPLEX_CAR_DRIVE_WANDER))
+                        taskMgr.SetTask(new CTaskComplexCarDriveWander(pPed->m_pVehicle), TASK_PRIMARY_PRIMARY, false);
+                }
+                else if (taskMgr.m_aPrimaryTasks[TASK_PRIMARY_DEFAULT] == nullptr)
+                {
+                    CTaskComplexWander* wander = plugin::CallAndReturn<CTaskComplexWander*, 0x673D00>(pPed);  // GetWanderTaskByPedType
+                    if (wander)
+                        taskMgr.SetTask(wander, TASK_PRIMARY_DEFAULT, false);
+                }
+            }
         }
     }
 }

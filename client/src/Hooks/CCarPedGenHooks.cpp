@@ -47,8 +47,25 @@ bool CCarPedGenHooks::IsSphereVisibleForNetworkPlayer(CVector* pOrigin, float fR
     return TheCamera.IsSphereVisible(*pOrigin, fRadius, (RwMatrixTag*)&invMat);
 }
 
+// [private build] a spot right next to another player counts as "visible": nothing should pop in there
+// and nothing should be removed from there (he is standing next to it)
+bool CCarPedGenHooks::IsNearAnyNetworkPlayer(const CVector& pos, float fDistance)
+{
+    for (CNetworkPlayer* pNetworkPlayer : CNetworkPlayerManager::m_pPlayers)
+    {
+        if (pNetworkPlayer->m_pPed == nullptr)
+            continue;
+        if ((pNetworkPlayer->m_pPed->GetPosition() - pos).Magnitude2D() < fDistance)
+            return true;
+    }
+    return false;
+}
+
 bool CCarPedGenHooks::IsSphereVisibleForAnyNetworkPlayer(CVector* pOrigin, float fRadius)
 {
+    if (IsNearAnyNetworkPlayer(*pOrigin, NEAR_PLAYER_DISTANCE))
+        return true;
+
     for (CNetworkPlayer* pNetworkPlayer : CNetworkPlayerManager::m_pPlayers)
     {
         if (CCarPedGenHooks::IsSphereVisibleForNetworkPlayer(pOrigin, fRadius, pNetworkPlayer))
@@ -57,6 +74,14 @@ bool CCarPedGenHooks::IsSphereVisibleForAnyNetworkPlayer(CVector* pOrigin, float
         }
     }
     return false;
+}
+
+// 0x42484E: "create this car far away, on screen" - must be visible to ME and not next to someone else
+static bool __fastcall CCamera__IsSphereVisible_MustBeVisible_Hook(CCamera* This, SKIP_EDX, CVector* pOrigin, float fRadius)
+{
+    if (!This->IsSphereVisible(*pOrigin, fRadius))
+        return false;
+    return !CCarPedGenHooks::IsNearAnyNetworkPlayer(*pOrigin, CCarPedGenHooks::NEAR_PLAYER_DISTANCE);
 }
 
 bool CCarPedGenHooks::IsSphereVisibleForAnyPlayer(CVector* pOrigin, float fRadius)
@@ -105,7 +130,7 @@ void CCarPedGenHooks::InjectHooks()
     // TODO add CGangWars checks once syncing
 
     // CCarCtrl::GenerateCarCreationCoors2
-    patch::RedirectCall(0x42484E, CCamera__IsSphereVisible_Hook);
+    patch::RedirectCall(0x42484E, CCamera__IsSphereVisible_MustBeVisible_Hook);  // [private build]
     patch::RedirectCall(0x42498E, CCamera__IsSphereVisible_Hook);
 
     // CCarCtrl::PossiblyRemoveVehicle

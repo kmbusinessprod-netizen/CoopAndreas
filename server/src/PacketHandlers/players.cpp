@@ -10,6 +10,8 @@ PACKET_HANDLER(
     pNetworkPlayer->RemoveFromVehicle();
 
     pOnFootUpdate->senderPlayerid = pNetworkPlayer->m_playerId;
+    pNetworkPlayer->m_vecPos = pOnFootUpdate->vecPos;
+    pNetworkPlayer->m_bHasPos = true;
     GetPacketFactory().SendToAll(*pOnFootUpdate, pNetworkPlayer);
 }
 

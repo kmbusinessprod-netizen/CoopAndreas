@@ -31,6 +31,7 @@ public:
     vehicleid_t m_trailerId{};
     bool m_bIsTrain = false;
     Packets::Vehicles::STrainSnapshot m_train{};
+    uint32_t m_nLastHandover = 0;  // [private build] proximity ownership
 
     void ReassignSyncer(CNetworkPlayer* newSyncer);
     void SetOccupant(int8_t seatid, CNetworkPlayer* player);

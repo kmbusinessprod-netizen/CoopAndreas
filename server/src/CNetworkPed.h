@@ -21,4 +21,9 @@ public:
     CVector m_vecPos;
     eCharCreatedBy m_nCreatedBy;
     char m_szSpecialModelName[8];
+
+    // [private build] proximity ownership
+    bool m_bOnFoot = true;
+    vehicleid_t m_vehicleId{};  // vehicle the ped drives / rides, if any
+    uint32_t m_nLastHandover = 0;
 };

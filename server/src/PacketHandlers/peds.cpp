@@ -130,6 +130,8 @@ PACKET_HANDLER(ePacketType::PED_ONFOOT, Packets::Peds::PedOnFoot* pPedOnFoot, CN
         }
 
         pPed->m_vecPos = pPedOnFoot->pos;
+        pPed->m_bOnFoot = true;
+        pPed->m_vehicleId = vehicleid_t{};
         GetPacketFactory().SendToAll(*pPedOnFoot, pNetworkPlayer);
     }
 }
@@ -157,6 +159,9 @@ PACKET_HANDLER(
 
     pNetworkVehicle->m_bUsedByPed = true;
     pNetworkVehicle->m_vecPosition = pPedDriverUpdate->pos;
+    pNetworkPed->m_vecPos = pPedDriverUpdate->pos;
+    pNetworkPed->m_bOnFoot = false;
+    pNetworkPed->m_vehicleId = pPedDriverUpdate->vehicleid;
     pNetworkVehicle->m_vecRotation = pPedDriverUpdate->rot;
     pNetworkVehicle->m_trailerId = pPedDriverUpdate->trailerid;
 
@@ -177,6 +182,11 @@ PACKET_HANDLER(ePacketType::PED_PASSENGER_UPDATE, Packets::Peds::PedPassengerSyn
         logger::warn("%s tries to update (passenger) someone else's ped", pNetworkPlayer->GetName().c_str());
         return;
     }
+
+    pNetworkPed->m_bOnFoot = false;
+    pNetworkPed->m_vehicleId = pPedPassengerSync->vehicleid;
+    if (auto pNetworkVehicle = CNetworkVehicleManager::GetVehicle(pPedPassengerSync->vehicleid))
+        pNetworkPed->m_vecPos = pNetworkVehicle->m_vecPosition;
 
     GetPacketFactory().SendToAll(*pPedPassengerSync, pNetworkPlayer);
 }
