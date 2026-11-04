@@ -104,6 +104,7 @@ using namespace plugin;
 #include <network/packets/scripts.h>
 #include <network/packets/blips.h>
 #include <network/packets/objects.h>
+#include <network/packets/cheats.h>
 #include "network/packet_types.h"
 #include "CCore.h"
 #include "CUnicode.h"
@@ -120,6 +121,7 @@ using namespace plugin;
 #include "CUtil.h"
 #include "CPatch.h"
 #include "CPoolGuard.h"
+#include "CCheatSync.h"
 #include "Hooks/CHook.h"
 #include "Events.h"
 #include "CLocalPlayer.h"

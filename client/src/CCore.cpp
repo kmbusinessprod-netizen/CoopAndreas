@@ -79,6 +79,7 @@ void CCore::Init()
     COpCodeSync::Init();
     CPatch::CaptureGameProcessHook();  // [private build] CLEO 4 compat, see CPatch.cpp
     CPoolGuard::Install();             // [private build] see CPoolGuard.h
+    CCheatSync::Install();             // [private build] see CCheatSync.h
     Events::initGameEvent.after += []
     {
         CPatch::TemporaryPatches();

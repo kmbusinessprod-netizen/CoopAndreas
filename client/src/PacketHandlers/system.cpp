@@ -143,3 +143,10 @@ PACKET_HANDLER(ePacketType::PLAYER_CHAT_MESSAGE, Packets::System::ChatMessage* p
         CChat::AddPlayerChatMessage(player->GetName().c_str(), pChatMessage->message);
     }
 }
+
+// [private build] another player activated a cheat
+PACKET_HANDLER(ePacketType::CHEAT_ACTIVATED, Packets::Cheats::CheatActivated* pCheat)
+{
+    CNetworkPlayer* player = CNetworkPlayerManager::GetPlayer(pCheat->senderPlayerid);
+    CCheatSync::OnRemoteCheat(player ? player->GetName().c_str() : "?", pCheat->cheatIndex, pCheat->active);
+}
