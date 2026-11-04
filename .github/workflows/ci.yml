@@ -56,6 +56,12 @@ jobs:
           Get-ChildItem -Recurse -Filter CoopAndreasSA.map | Select-Object -First 1 | ForEach-Object { Copy-Item $_.FullName "$out/CoopAndreasSA.map" }
           Get-ChildItem -Recurse $out | Select-Object FullName, Length
 
+      - name: Print linker map
+        shell: pwsh
+        run: |
+          $m = Get-ChildItem -Recurse -Path build -Filter CoopAndreasSA.map | Select-Object -First 1
+          if ($m) { Get-Content $m.FullName | Select-String -Pattern "Preferred load address|^\s+0001:" } else { Write-Host "NO MAP FOUND"; Get-ChildItem -Recurse -Filter *.map | Select-Object FullName }
+
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
