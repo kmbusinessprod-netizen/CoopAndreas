@@ -5,6 +5,7 @@ on:
     branches:
       - '**'
       - '!build'
+      - '!build-symbols'
   pull_request:
     branches:
       - '**'
@@ -52,6 +53,7 @@ jobs:
           Copy-Item (& $find "server.exe").FullName "$out/server.exe"
           Copy-Item "scm/main.scm" "$out/CoopAndreas/main.scm"
           Copy-Item "scm/script.img" "$out/CoopAndreas/script.img"
+          Get-ChildItem -Recurse -Filter CoopAndreasSA.map | Select-Object -First 1 | ForEach-Object { Copy-Item $_.FullName "$out/CoopAndreasSA.map" }
           Get-ChildItem -Recurse $out | Select-Object FullName, Length
 
       - name: Upload build
@@ -62,7 +64,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish build to 'build' branch
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/symbols-097adce'
         shell: pwsh
         run: |
           $sha = "${{ github.sha }}"
@@ -74,4 +76,4 @@ jobs:
           git checkout -q -b build
           git add -A
           git commit -q -m "Build of $sha"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" build
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" build-symbols

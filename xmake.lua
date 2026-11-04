@@ -20,6 +20,7 @@ target("client", function()
     set_toolchains("msvc")
 
     set_basename("CoopAndreasSA")
+    add_ldflags("/MAP:CoopAndreasSA.map", {force = true})
     set_arch("x86")
     set_plat("windows")
 
