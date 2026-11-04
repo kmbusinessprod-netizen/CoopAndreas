@@ -67,4 +67,8 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Panel de admin (TP, matar, expulsar, banear) — banear por ID de jugador, no por IP
   (por el túnel todos llegan con 127.x.x.x de playit).
 - Guardado por jugador en la partida del host (posición, armas, vida, dinero).
+- Modo ventana / ventana sin bordes como opcion en Opciones -> Pantalla (estilo SA), guardada
+  en config, + que el juego siga procesando en segundo plano mientras hay conexion (arregla el
+  crash #5 de alt-tab y evita que el personaje se congele para los demas). Base: CPatch.cpp ya
+  tiene InitInstance_Hook que reposiciona la ventana (modo debug --coopd0/1).
 - Puente CLEO + adaptación de Misterix y Dragon Ball. Skins externas. Launcher.
