@@ -34,6 +34,14 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Revisar sincronización de car generators (CPatch desactiva CTheCarGenerators::Process para
   no-host; ver si el script MAIN/INITIAL crea esos autos en el cliente).
 
+### 4. Crash con el truco "quitar nivel de busqueda" (TURNDOWNTHEHEAT)
+- Lo uso el amigo (cliente) sin tener policias; quien tenia nivel de busqueda era el host.
+- Falta la direccion del crash (pedir el log de CoopAndreas_crashes de su PC).
+- Contexto: el nivel de busqueda NO se sincroniza (TODO de CoopAndreas: "wanted level sync"),
+  y los policias que persiguen al host existen en la PC del amigo como peds de red.
+  Hipotesis: el truco limpia/elimina policias o tareas de persecucion que en realidad
+  controla el host -> estado inconsistente en peds de red.
+
 ## Pedidos de funciones
 - Contraseña del servidor (el túnel es público).
 - Panel de admin (TP, matar, expulsar, banear) — banear por ID de jugador, no por IP
