@@ -36,7 +36,15 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 
 ### 4. Crash con el truco "quitar nivel de busqueda" (TURNDOWNTHEHEAT)
 - Lo uso el amigo (cliente) sin tener policias; quien tenia nivel de busqueda era el host.
-- Falta la direccion del crash (pedir el log de CoopAndreas_crashes de su PC).
+- Crash en 0x006E2DB4 (write), log 2026-11-04_05-07-55 (PC del amigo).
+- 0x6E2D90 = CVehicle::operator delete (devuelve el objeto al pool de vehiculos 0xB74494),
+  llamado desde un destructor de vehiculo (0x6B8960). El indice calculado sale negativo
+  (EDX=0xFFFDB78D) -> el puntero NO pertenece al pool: vehiculo ya borrado (doble borrado)
+  o puntero invalido.
+- Hipotesis: el truco borra los autos de policia/bloqueos de carretera; esos autos son
+  vehiculos de red controlados por el host y el mod tambien los borra (o ya los borro)
+  -> doble eliminacion. Fix probable: en clientes no-host, no dejar que el truco elimine
+  vehiculos de red (o hacer que el truco solo actue en el host / sincronizarlo).
 - Contexto: el nivel de busqueda NO se sincroniza (TODO de CoopAndreas: "wanted level sync"),
   y los policias que persiguen al host existen en la PC del amigo como peds de red.
   Hipotesis: el truco limpia/elimina policias o tareas de persecucion que en realidad
