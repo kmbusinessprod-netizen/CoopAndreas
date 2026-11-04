@@ -64,7 +64,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish build to 'build' branch
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/symbols-097adce'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/claude/symbols-097adce'
         shell: pwsh
         run: |
           $sha = "${{ github.sha }}"
