@@ -6,6 +6,7 @@
 #include <CCustomMenuManager.h>
 #include <winuser.h>
 #include <CLaunchManager.h>
+#include "CDiag.h"
 #include <Debug/CImGui.h>
 
 semver_t CCore::Version;
@@ -77,6 +78,7 @@ void CCore::Init()
     CDXFont::Init();
     CDiscordRPC::Init();
     COpCodeSync::Init();
+    CDiag::Init();  // [private build] diagnostics
     Events::initGameEvent.after += []
     {
         CPatch::TemporaryPatches();
