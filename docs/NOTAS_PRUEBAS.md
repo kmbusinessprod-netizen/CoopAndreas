@@ -50,6 +50,18 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   Hipotesis: el truco limpia/elimina policias o tareas de persecucion que en realidad
   controla el host -> estado inconsistente en peds de red.
 
+### 5. Crash al volver al juego tras tenerlo en segundo plano (alt-tab)
+- Crash DENTRO de CoopAndreasSA.dll +0xE031C (write), build 097adce (Nov 4 09:31:04),
+  log 2026-11-04_07-17-26 (PC del host).
+- Es el inicio de un constructor (pone a 0 campos +4,+8,+0xC,+0x48,+0x4C de `this`) y `this`
+  (ECX=0x027CD100) apunta a memoria no escribible -> objeto creado sobre memoria invalida.
+- Contexto: SA deja de procesar el juego cuando la ventana pierde el foco, pero el hilo de
+  red de CoopAndreas sigue recibiendo paquetes; al volver se procesa todo el atraso de golpe
+  (crear/borrar peds y autos de red). Hipotesis: algun create/delete en ese atraso usa un
+  slot/puntero ya invalido.
+- Para identificar la funcion: hacer que el CI guarde un .map/.pdb de cada build (hoy no hay
+  simbolos). Fix posible: que el juego siga procesando en segundo plano mientras hay red.
+
 ## Pedidos de funciones
 - Contraseña del servidor (el túnel es público).
 - Panel de admin (TP, matar, expulsar, banear) — banear por ID de jugador, no por IP
