@@ -2,6 +2,8 @@
 #include "CProximityOwnership.h"
 #include "CNetworkPedManager.h"
 #include "CNetworkVehicleManager.h"
+#include "network/packets/peds.h"
+#include "network/packets/vehicles.h"
 #include <chrono>
 
 static const float HANDOVER_MIN_SYNCER_DIST = 45.0f;  // syncer must be at least this far
