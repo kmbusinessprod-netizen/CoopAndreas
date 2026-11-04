@@ -97,7 +97,11 @@ public:
     {
         DISCONNECTION_REASON_NOTHING = 0,           // >=v0.3.0-alpha
         DISCONNECTION_REASON_VERSION_MISMATCH = 1,  // MUST be 1 (thx EOS)
-        DISCONNECTION_REASON_NAME_TAKEN
+        DISCONNECTION_REASON_NAME_TAKEN,
+        // [private build]
+        DISCONNECTION_REASON_KICKED = 3,
+        DISCONNECTION_REASON_BANNED = 4,
+        DISCONNECTION_REASON_WRONG_PASSWORD = 5,
     };
 
     struct Payload
@@ -126,8 +130,7 @@ private:
         }
         if (payload.playerid == -1)
         {
-            if (payload.reason != DISCONNECTION_REASON_VERSION_MISMATCH &&
-                payload.reason != DISCONNECTION_REASON_NAME_TAKEN && payload.reason != DISCONNECTION_REASON_NOTHING)
+            if (payload.reason > DISCONNECTION_REASON_WRONG_PASSWORD)
             {
                 payload.reason = DISCONNECTION_REASON_NOTHING;
             }

@@ -40,7 +40,17 @@ public:
 	static constexpr float MAX_NAME_SCALE_X = 0.4f;
 	static constexpr float MAX_NAME_SCALE_Y = 0.8f;
 
+	static constexpr float HINT_BOX_HEIGHT = 44.0f;
+
+	// [private build] row selected with the arrow keys while Tab is held
+	static int ms_nSelected;
+
 	static void Draw();
+	static void ProcessInput(const std::vector<playerid_t>& vPlayerId);
+	static void DrawSelection(float fX, float fY);
+	static void DrawHints(float fX, float fY, bool bLocalSelected);
+	static void TeleportToPlayer(CNetworkPlayer* pTarget);
+	static void SendAdminAction(CNetworkPlayer* pTarget, uint8_t action);
 	static void DrawBox(float fX, float fY);
 	static void DrawPing(CNetworkPlayer* pNetworkPlayer, float fX, float fY);
 	static void DrawName(CNetworkPlayer* pNetworkPlayer, float fX, float fY);

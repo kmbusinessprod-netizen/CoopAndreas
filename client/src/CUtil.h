@@ -22,6 +22,8 @@ public:
 	static void SetPlayerJetpack(CNetworkPlayer* ped, bool set);
 	static std::string GetWeaponName(eWeaponType type);
 	static void WarpNetworkPlayersOutOfVehicle(CVehicle* vehicle);
+	// [private build] moves the local player (with the vehicle he drives) to `pos`, streaming the area first
+	static void TeleportLocalPlayer(CVector pos, unsigned char areaCode);
 	static float HUD_X(float a) { return a * RsGlobal.maximumWidth / SCREEN_BASE_WIDTH; }
 	static float HUD_Y(float a) { return a * RsGlobal.maximumHeight / SCREEN_BASE_HEIGHT; }
 	static float SCREEN_SCALE_AR(float a) { return a * DEFAULT_ASPECT_RATIO / CDraw::ms_fAspectRatio; };

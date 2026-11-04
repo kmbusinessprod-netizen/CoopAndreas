@@ -105,6 +105,7 @@ using namespace plugin;
 #include <network/packets/blips.h>
 #include <network/packets/objects.h>
 #include <network/packets/cheats.h>
+#include <network/packets/admin.h>
 #include "network/packet_types.h"
 #include "CCore.h"
 #include "CUnicode.h"

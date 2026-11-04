@@ -350,3 +350,33 @@ void CUtil::WarpNetworkPlayersOutOfVehicle(CVehicle* vehicle)
         WarpNetworkPlayerOutOfVehicle(vehicle, vehicle->m_apPassengers[i]);
     }
 }
+
+void CUtil::TeleportLocalPlayer(CVector pos, unsigned char areaCode)
+{
+    CPlayerPed* ped = FindPlayerPed(0);
+    if (ped == nullptr)
+        return;
+
+    CVehicle* vehicle = nullptr;
+    if (ped->m_nPedFlags.bInVehicle && ped->m_pVehicle && ped->m_pVehicle->m_pDriver == ped)
+        vehicle = ped->m_pVehicle;
+
+    CStreaming::LoadScene(&pos);
+    CStreaming::LoadSceneCollision(&pos);
+
+    CGame::currArea = areaCode;
+    ped->m_nAreaCode = areaCode;
+
+    if (vehicle)
+    {
+        vehicle->m_nAreaCode = areaCode;
+        vehicle->Teleport(pos, false);
+        vehicle->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
+        vehicle->m_vecTurnSpeed = CVector(0.0f, 0.0f, 0.0f);
+    }
+    else
+    {
+        ped->Teleport(pos, false);
+        ped->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
+    }
+}

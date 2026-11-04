@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CUPnP.h"
 #include "CTunnel.h"
+#include "CBanList.h"
 
 #if defined(_WIN32)
 #pragma comment(lib, "ws2_32.lib")
@@ -63,6 +64,8 @@ int main(int argc, char* argv[])
 
     CConfigManager::Init();
     CServerTime::Init();
+
+    CBanList::Load();
 
     // [private build] use the playit.gg tunnel if configured, otherwise try to open the port via UPnP
     if (!CTunnel::Start())

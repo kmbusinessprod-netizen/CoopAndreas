@@ -3,6 +3,7 @@
 #include "network/packet.h"
 #include "network/packets/system.h"
 #include "network/packets/cheats.h"
+#include "network/packets/admin.h"
 #include <unordered_map>
 class CNetworkPlayer;
 class CNetwork

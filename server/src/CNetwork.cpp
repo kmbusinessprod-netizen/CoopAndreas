@@ -6,6 +6,7 @@
 #include "network/packets/system.h"
 #include "serialize.h"
 #include "stdafx.h"
+#include "CBanList.h"
 #include <network/packets/vehicles.h>
 #include <network/packets/peds.h>
 #include <network/packets/scripts.h>
@@ -132,6 +133,18 @@ void CNetwork::HandlePlayerDisconnected(ENetEvent& event)
 
 void CNetwork::HandlePlayerConnected(ENetPeer* pENetPeer, Packets::System::PlayerConnected& playerConnected)
 {
+    // [private build] banned nickname?
+    if (CBanList::IsBanned(playerConnected.payload.name))
+    {
+        Packets::System::PlayerDisconnected playerDisconnected{};
+        playerDisconnected.payload.playerid = -1;
+        playerDisconnected.payload.reason = Packets::System::PlayerDisconnected::DISCONNECTION_REASON_BANNED;
+        GetPacketFactory().SendPacketNoAuth_ENet(playerDisconnected, pENetPeer);
+        enet_peer_disconnect_later(pENetPeer, 0);
+        printf("[Admin] : %s esta baneado, conexion rechazada\n", playerConnected.payload.name);
+        return;
+    }
+
 #ifndef _DEBUG
     for (auto* pNetworkPlayer : CNetworkPlayerManager::m_pPlayers)
     {

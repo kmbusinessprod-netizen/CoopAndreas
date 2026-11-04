@@ -53,6 +53,18 @@ PACKET_HANDLER(ePacketType::PLAYER_DISCONNECTED, Packets::System::PlayerDisconne
         {
             CChat::AddMessage("{63c7e8}[Network] {e8b86d}Nickname '%s' is already taken.", CLocalPlayer::m_Name);
         }
+        else if (pPlayerDisconnected->payload.reason == Packets::System::PlayerDisconnected::DISCONNECTION_REASON_KICKED)
+        {
+            CChat::AddMessage("{63c7e8}[Network] {f07878}El host te expulso de la partida.");
+        }
+        else if (pPlayerDisconnected->payload.reason == Packets::System::PlayerDisconnected::DISCONNECTION_REASON_BANNED)
+        {
+            CChat::AddMessage("{63c7e8}[Network] {f07878}Estas baneado de esta partida.");
+        }
+        else if (pPlayerDisconnected->payload.reason == Packets::System::PlayerDisconnected::DISCONNECTION_REASON_WRONG_PASSWORD)
+        {
+            CChat::AddMessage("{63c7e8}[Network] {f07878}Contrasena incorrecta.");
+        }
         CNetwork::Disconnect();
         return;
     }
@@ -149,4 +161,15 @@ PACKET_HANDLER(ePacketType::CHEAT_ACTIVATED, Packets::Cheats::CheatActivated* pC
 {
     CNetworkPlayer* player = CNetworkPlayerManager::GetPlayer(pCheat->senderPlayerid);
     CCheatSync::OnRemoteCheat(player ? player->GetName().c_str() : "?", pCheat->cheatIndex, pCheat->active);
+}
+
+// [private build] the host teleported us somewhere (ADMIN_BRING)
+PACKET_HANDLER(ePacketType::ADMIN_ACTION, Packets::Admin::AdminAction* pAction)
+{
+    if (pAction->action != Packets::Admin::ADMIN_BRING)
+        return;
+
+    CNetworkPlayer* host = CNetworkPlayerManager::GetPlayer(pAction->senderPlayerid);
+    CUtil::TeleportLocalPlayer(pAction->pos, pAction->areaCode);
+    CChat::AddMessage("{c7a6ff}[Player] {d6dce8}%s te trajo a su posicion", host ? host->GetName().c_str() : "El host");
 }

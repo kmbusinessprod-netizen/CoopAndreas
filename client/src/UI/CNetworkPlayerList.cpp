@@ -186,6 +186,126 @@ void CNetworkPlayerList::DrawSeparator(float fCenterBoxX, float fCenterBoxY, flo
         CRGBA(169, 169, 169, 130));
 }
 
+int CNetworkPlayerList::ms_nSelected = 0;
+
+static bool KeyJustPressed(short CKeyboardState::*key)
+{
+    return (CPad::NewKeyState.*key) != 0 && (CPad::OldKeyState.*key) == 0;
+}
+
+static bool CharJustPressed(char c)
+{
+    return (CPad::NewKeyState.standardKeys[(unsigned char)c] != 0 || CPad::NewKeyState.standardKeys[(unsigned char)tolower(c)] != 0) &&
+           CPad::OldKeyState.standardKeys[(unsigned char)c] == 0 && CPad::OldKeyState.standardKeys[(unsigned char)tolower(c)] == 0;
+}
+
+void CNetworkPlayerList::TeleportToPlayer(CNetworkPlayer* pTarget)
+{
+    if (pTarget == nullptr || pTarget->m_pPed == nullptr)
+        return;
+
+    CVector pos = pTarget->m_pPed->GetPosition();
+    pos.x += 1.5f;
+    pos.z += 0.5f;
+    CUtil::TeleportLocalPlayer(pos, pTarget->m_pPed->m_nAreaCode);
+    CChat::AddMessage("{c7a6ff}[Player] {d6dce8}Te teletransportaste hasta %s", pTarget->GetName().c_str());
+}
+
+void CNetworkPlayerList::SendAdminAction(CNetworkPlayer* pTarget, uint8_t action)
+{
+    if (pTarget == nullptr || !CLocalPlayer::m_bIsHost)
+        return;
+
+    Packets::Admin::AdminAction packet{};
+    packet.targetPlayerid = pTarget->m_playerId;
+    packet.action = action;
+
+    CPlayerPed* me = FindPlayerPed(0);
+    CVector pos = me->GetPosition();
+    pos.x -= 1.5f;
+    pos.z += 0.5f;
+    packet.pos = pos;
+    packet.areaCode = me->m_nAreaCode;
+    GetPacketFactory().Send(packet);
+
+    const char* what = action == Packets::Admin::ADMIN_KICK ? "Expulsaste a %s"
+                     : action == Packets::Admin::ADMIN_BAN  ? "Baneaste a %s"
+                                                           : "Trajiste a %s";
+    CChat::AddMessage((std::string("{c7a6ff}[Admin] {d6dce8}") + what).c_str(), pTarget->GetName().c_str());
+}
+
+void CNetworkPlayerList::ProcessInput(const std::vector<playerid_t>& vPlayerId)
+{
+    if (CChat::m_bInputActive || vPlayerId.empty())
+        return;
+
+    if (KeyJustPressed(&CKeyboardState::up))
+        ms_nSelected--;
+    if (KeyJustPressed(&CKeyboardState::down))
+        ms_nSelected++;
+    if (ms_nSelected < 0)
+        ms_nSelected = (int)vPlayerId.size() - 1;
+    if (ms_nSelected >= (int)vPlayerId.size())
+        ms_nSelected = 0;
+
+    playerid_t selectedId = vPlayerId[ms_nSelected];
+    if (selectedId == CNetworkPlayerManager::m_localPlayerId)
+        return;
+
+    CNetworkPlayer* pTarget = CNetworkPlayerManager::GetPlayer(selectedId);
+    if (pTarget == nullptr)
+        return;
+
+    if (CharJustPressed('T'))
+        TeleportToPlayer(pTarget);
+
+    if (CLocalPlayer::m_bIsHost)
+    {
+        if (CharJustPressed('Y'))
+            SendAdminAction(pTarget, Packets::Admin::ADMIN_BRING);
+        if (CharJustPressed('K'))
+            SendAdminAction(pTarget, Packets::Admin::ADMIN_KICK);
+        if (CharJustPressed('B'))
+            SendAdminAction(pTarget, Packets::Admin::ADMIN_BAN);
+    }
+}
+
+void CNetworkPlayerList::DrawSelection(float fX, float fY)
+{
+    CRect rect = CRect(CUtil::HUD_X(fX + 3.0f), CUtil::HUD_Y(fY + 2.0f), CUtil::HUD_X(fX + BOX_WIDTH - 3.0f),
+        CUtil::HUD_Y(fY + COLUMN_HEIGHT - 2.0f));
+    CSprite2d::DrawRect(rect, CRGBA(255, 255, 255, 28));
+    // left marker, like the SA menu cursor
+    CSprite2d::DrawRect(CRect(CUtil::HUD_X(fX), CUtil::HUD_Y(fY + 2.0f), CUtil::HUD_X(fX + 3.0f), CUtil::HUD_Y(fY + COLUMN_HEIGHT - 2.0f)),
+        CRGBA(225, 225, 225, 200));
+}
+
+void CNetworkPlayerList::DrawHints(float fX, float fY, bool bLocalSelected)
+{
+    float fTop = fY + BOX_HEIGHT + 4.0f;
+    CRect rect = CRect(CUtil::HUD_X(fX), CUtil::HUD_Y(fTop), CUtil::HUD_X(fX + BOX_WIDTH), CUtil::HUD_Y(fTop + HINT_BOX_HEIGHT));
+    CSprite2d::DrawRect(rect, CRGBA(0, 0, 0, 190));
+
+    CFont::SetOrientation(eFontAlignment::ALIGN_LEFT);
+    CFont::SetFontStyle(1);
+    CFont::SetEdge(0);
+    CFont::SetScale(CUtil::HUD_X(0.22f), CUtil::HUD_Y(0.55f));
+    CFont::SetColor(CRGBA(200, 200, 200, 255));
+
+    const char* line1 = bLocalSelected ? "~u~ / ~d~  elegir jugador" : "~u~ / ~d~  elegir jugador     ~y~T~s~  ir al jugador";
+    CFont::PrintString(CUtil::HUD_X(fX + 8.0f), CUtil::HUD_Y(fTop + 4.0f), line1);
+
+    if (CLocalPlayer::m_bIsHost && !bLocalSelected)
+    {
+        CFont::PrintString(CUtil::HUD_X(fX + 8.0f), CUtil::HUD_Y(fTop + 22.0f),
+            "~y~Y~s~  traer     ~y~K~s~  expulsar     ~y~B~s~  banear");
+    }
+    else if (CLocalPlayer::m_bIsHost)
+    {
+        CFont::PrintString(CUtil::HUD_X(fX + 8.0f), CUtil::HUD_Y(fTop + 22.0f), "sos el host");
+    }
+}
+
 void CNetworkPlayerList::Draw()
 {
     if (CPad::NewKeyState.tab == 0)
@@ -209,7 +329,10 @@ void CNetworkPlayerList::Draw()
     vPlayerId.push_back(CNetworkPlayerManager::m_localPlayerId);
     std::sort(vPlayerId.begin(), vPlayerId.end());
 
+    ProcessInput(vPlayerId);
+
     DrawBox(fBoxX, fBoxY);
+    DrawHints(fBoxX, fBoxY, ms_nSelected < (int)vPlayerId.size() && vPlayerId[ms_nSelected] == CNetworkPlayerManager::m_localPlayerId);
 
     for (uint8_t i = 0; i < vPlayerId.size() && i < Config::MAX_SERVER_PLAYERS; i++)
     {
@@ -234,6 +357,9 @@ void CNetworkPlayerList::Draw()
         }
 
         float fColumnY = fBoxY + i * COLUMN_HEIGHT;
+
+        if (i == ms_nSelected)
+            DrawSelection(fBoxX, fColumnY);
 
         DrawPing(pNetworkPlayer, fBoxX, fColumnY);
         DrawName(pNetworkPlayer, fBoxX, fColumnY);
