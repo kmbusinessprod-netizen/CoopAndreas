@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "CUPnP.h"
 
 #if defined(_WIN32)
 #pragma comment(lib, "ws2_32.lib")
@@ -61,6 +62,9 @@ int main(int argc, char* argv[])
 
     CConfigManager::Init();
     CServerTime::Init();
+
+    // [private build] open the port on the router automatically
+    CUPnP::StartAsync(CConfigManager::GetConfigPort());
 
     CNetwork::Init(CConfigManager::GetConfigPort());
     return 0;
