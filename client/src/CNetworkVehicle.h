@@ -6,6 +6,7 @@ private:
 public:
 	vehicleid_t m_vehicleId{};
 	CVehicle* m_pVehicle = nullptr;
+	int m_nVehicleRef = -1;  // pool handle of m_pVehicle when it was attached; detects a reused slot
 	int m_nModelId = 0;
 	char m_nPaintJob = -1;
 	bool m_bSyncing = false;
@@ -19,5 +20,8 @@ public:
 	bool HasDriver();
 	
 	static CNetworkVehicle* CreateHosted(CVehicle* vehicle);
+
+	// true if m_pVehicle still points to the same live game vehicle (not freed, not a reused slot)
+	bool IsGameVehicleAlive() const;
 };
 

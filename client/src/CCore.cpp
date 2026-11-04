@@ -78,6 +78,7 @@ void CCore::Init()
     CDiscordRPC::Init();
     COpCodeSync::Init();
     CPatch::CaptureGameProcessHook();  // [private build] CLEO 4 compat, see CPatch.cpp
+    CPoolGuard::Install();             // [private build] see CPoolGuard.h
     Events::initGameEvent.after += []
     {
         CPatch::TemporaryPatches();

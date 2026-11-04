@@ -119,6 +119,7 @@ using namespace plugin;
 #include "CNetworkPlayerManager.h"
 #include "CUtil.h"
 #include "CPatch.h"
+#include "CPoolGuard.h"
 #include "Hooks/CHook.h"
 #include "Events.h"
 #include "CLocalPlayer.h"

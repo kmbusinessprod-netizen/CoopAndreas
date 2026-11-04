@@ -5,12 +5,15 @@ CNetworkVehicle::CNetworkVehicle(vehicleid_t vehicleid, int modelid, CVector pos
 {
     if (auto vehicle = CNetworkVehicleManager::GetVehicle(vehicleid))
     {
-        if (vehicle->m_pVehicle && vehicle->m_pVehicle->IsVTableValid())
+        if (vehicle->IsGameVehicleAlive())
         {
             CWorld::Remove(vehicle->m_pVehicle);
             delete vehicle->m_pVehicle;
         }
+        vehicle->m_pVehicle = nullptr;
+        vehicle->m_bSyncing = false;  // do not tell the server, the id is being reused
         CNetworkVehicleManager::Remove(vehicle);
+        delete vehicle;
     }
 
     m_vehicleId = vehicleid;
@@ -75,6 +78,7 @@ bool CNetworkVehicle::CreateVehicle(vehicleid_t vehicleid, int modelid, CVector 
         return false;
 
     m_pVehicle->RegisterReference((CEntity**)&m_pVehicle);
+    m_nVehicleRef = CPools::GetVehicleRef(m_pVehicle);
 
     m_pVehicle->SetPosn(pos);
     m_pVehicle->SetOrientation(0.0f, 0.0f, rotation);
@@ -87,8 +91,22 @@ bool CNetworkVehicle::CreateVehicle(vehicleid_t vehicleid, int modelid, CVector 
     return true;
 }
 
+bool CNetworkVehicle::IsGameVehicleAlive() const
+{
+    return m_pVehicle != nullptr && CPoolGuard::IsVehicleAlive(m_pVehicle) &&
+           CPools::GetVehicleRef(m_pVehicle) == m_nVehicleRef;
+}
+
 CNetworkVehicle::~CNetworkVehicle()
 {
+    if (m_pVehicle && !IsGameVehicleAlive())
+    {
+        // the game already destroyed it (or reused the slot): forget it instead of touching it
+        printf("[guard] network vehicle %s: game vehicle %p is gone, skipping delete\n",
+            to_string(m_vehicleId).c_str(), m_pVehicle);
+        m_pVehicle = nullptr;
+    }
+
     if (m_pVehicle)
     {
         m_pVehicle->CleanUpOldReference((CEntity**)&m_pVehicle);
@@ -102,7 +120,7 @@ CNetworkVehicle::~CNetworkVehicle()
     }
     else
     {
-        if (m_pVehicle && m_pVehicle->IsVTableValid())
+        if (m_pVehicle)
         {
             CUtil::WarpNetworkPlayersOutOfVehicle(m_pVehicle);
             CWorld::Remove(m_pVehicle);
@@ -129,6 +147,7 @@ CNetworkVehicle* CNetworkVehicle::CreateHosted(CVehicle* pVehicle)
 
     networkVehicle->m_pVehicle = pVehicle;
     pVehicle->RegisterReference((CEntity**)&networkVehicle->m_pVehicle);
+    networkVehicle->m_nVehicleRef = CPools::GetVehicleRef(pVehicle);
 
     networkVehicle->m_vehicleId = CNetworkVehicleManager::AllocateVehicleId();
     networkVehicle->m_bSyncing = true;
