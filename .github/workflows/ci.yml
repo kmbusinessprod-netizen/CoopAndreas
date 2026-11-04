@@ -45,6 +45,7 @@ jobs:
         run: |
           $out = "package"
           New-Item -ItemType Directory -Force -Path "$out/CoopAndreas" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$out/symbols" | Out-Null
           $find = { param($name) Get-ChildItem -Path build -Recurse -File -Filter $name | Select-Object -First 1 }
           Copy-Item (& $find "CoopAndreasSA.dll").FullName "$out/CoopAndreasSA.dll"
           Copy-Item (& $find "proxy.dll").FullName "$out/eax.dll"
@@ -52,6 +53,11 @@ jobs:
           Copy-Item (& $find "server.exe").FullName "$out/server.exe"
           Copy-Item "scm/main.scm" "$out/CoopAndreas/main.scm"
           Copy-Item "scm/script.img" "$out/CoopAndreas/script.img"
+          $m = Get-ChildItem -Recurse -File -Filter CoopAndreasSA.map | Select-Object -First 1
+          if ($m) { Copy-Item $m.FullName "$out/symbols/CoopAndreasSA.map" } else { Write-Host "::warning::client map not found" }
+          $m = Get-ChildItem -Recurse -File -Filter server.map | Select-Object -First 1
+          if ($m) { Copy-Item $m.FullName "$out/symbols/server.map" }
+          Set-Content -Path "$out/BUILD_INFO.txt" -Value "commit ${{ github.sha }}"
           Get-ChildItem -Recurse $out | Select-Object FullName, Length
 
       - name: Upload build
@@ -65,13 +71,24 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: pwsh
         run: |
-          $sha = "${{ github.sha }}"
-          Set-Content -Path package/BUILD_INFO.txt -Value "commit $sha"
+          $repo = "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           cd package
           git init -q
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git checkout -q -b build
+          # keep the branch history: new build = new commit on top (avoids rewriting the ref every time)
+          git fetch -q $repo build 2>$null
+          if ($LASTEXITCODE -eq 0) { git reset -q --soft FETCH_HEAD }
           git add -A
-          git commit -q -m "Build of $sha"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" build
+          git commit -q -m "Build of ${{ github.sha }}" --allow-empty
+          $ok = $false
+          foreach ($i in 1..5) {
+            git push $repo build
+            if ($LASTEXITCODE -eq 0) { $ok = $true; break }
+            Write-Host "push failed (attempt $i), retrying..."
+            Start-Sleep -Seconds (10 * $i)
+            git fetch -q $repo build 2>$null
+            if ($LASTEXITCODE -eq 0) { git reset -q --soft FETCH_HEAD; git add -A; git commit -q -m "Build of ${{ github.sha }}" --allow-empty }
+          }
+          if (-not $ok) { exit 1 }

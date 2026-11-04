@@ -22,6 +22,8 @@ target("client", function()
     set_basename("CoopAndreasSA")
     set_arch("x86")
     set_plat("windows")
+    -- [private build] linker map, used to symbolize crash logs
+    add_shflags("/MAP:$(buildir)/CoopAndreasSA.map", {force = true})
 
     local gta_sa_dir = os.getenv("GTA_SA_DIR")
     if gta_sa_dir then
@@ -106,6 +108,7 @@ target("server", function ()
     set_kind("binary")
 
     set_arch("x86")
+    add_ldflags("/MAP:$(buildir)/server.map", {force = true})
     set_languages("c++17")
 
     add_files("server/src/**.cpp")
