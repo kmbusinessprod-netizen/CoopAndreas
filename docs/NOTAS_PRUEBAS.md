@@ -62,6 +62,15 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Para identificar la funcion: hacer que el CI guarde un .map/.pdb de cada build (hoy no hay
   simbolos). Fix posible: que el juego siga procesando en segundo plano mientras hay red.
 
+### 6. Crash creando un vehiculo (modelo 422, Bobcat) sobre memoria invalida
+- Crash en 0x0054F1E4 (write), log 2026-11-04_05-38-33 (PC del amigo), justo tras reabrir el juego.
+- 0x54F1E0 = constructor base de entidad (pone vtable 0x863C40) llamado por la cadena
+  0x542281 -> 0x532A94 -> ... desde CAutomobile::CAutomobile (0x6B0AC1 en la pila), EDI=0x1A6 (422).
+- `this` (0x020C1AC0) no es escribible -> el vehiculo se construye sobre memoria invalida.
+- MISMO PATRON que #4 (borrar un vehiculo que no esta en el pool) y #5 (constructor del mod
+  sobre memoria invalida): apunta a un bug de manejo de memoria/pool de VEHICULOS de red
+  (crear/borrar vehiculos sincronizados). Prioridad alta: probablemente un unico bug de fondo.
+
 ## Pedidos de funciones
 - Contraseña del servidor (el túnel es público).
 - Panel de admin (TP, matar, expulsar, banear) — banear por ID de jugador, no por IP
