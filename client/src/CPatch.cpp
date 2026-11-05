@@ -323,8 +323,14 @@ void FixCrashes()
     // [private build] we load BEFORE SilentPatch, so GetModuleHandle("SilentPatchSA.asi") was always
     // false and we NOP'ed 0x74872D; SilentPatch then reads that call to hook it -> crash at 0x74872F.
     // Leave the call alone and just make IsAlreadyRunning() return 0: works with and without SilentPatch.
-    patch::SetUChar(0x406946, 0xDC);
-    patch::PutRetn0(0x7468E0);
+    // Do not touch IsAlreadyRunning (0x7468E0 / call at 0x74872D) nor the mutex name (0x406946) at all:
+    // SilentPatch hooks that call to apply its delayed patches and broke with either change.
+    // Only the "two instances on one PC" debug mode needs it.
+    if (CCore::ms_bDebug)
+    {
+        patch::SetUChar(0x406946, 0xDC);
+        patch::PutRetn0(0x7468E0);
+    }
 
     // allow vertical camera movement during a camera fade
     patch::SetUChar(0x524084, 0xFF);
