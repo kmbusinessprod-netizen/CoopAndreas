@@ -123,6 +123,7 @@ using namespace plugin;
 #include "CPatch.h"
 #include "CPoolGuard.h"
 #include "CCheatSync.h"
+#include "CWindowMode.h"
 #include "Hooks/CHook.h"
 #include "Events.h"
 #include "CLocalPlayer.h"
