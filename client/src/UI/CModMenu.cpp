@@ -871,8 +871,8 @@ void CModMenu::BuildTuning(CModMenu* m)
         SetStatus("subete a un vehiculo primero");
         return;
     }
-    bool car = v->m_nVehicleSubClass == VEHICLE_AUTOMOBILE || v->m_nVehicleSubClass == VEHICLE_MTRUCK ||
-               v->m_nVehicleSubClass == VEHICLE_QUAD;
+    bool car = v->m_nVehicleSubType == VEHICLE_AUTOMOBILE || v->m_nVehicleSubType == VEHICLE_MTRUCK ||
+               v->m_nVehicleSubType == VEHICLE_QUAD;
     std::vector<Item> items;
     items.push_back({"Reparar", nullptr,
         []
