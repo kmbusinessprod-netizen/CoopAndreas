@@ -23,7 +23,17 @@ public:
 	static std::string GetWeaponName(eWeaponType type);
 	static void WarpNetworkPlayersOutOfVehicle(CVehicle* vehicle);
 	// [private build] moves the local player (with the vehicle he drives) to `pos`, streaming the area first
-	static void TeleportLocalPlayer(CVector pos, unsigned char areaCode);
+	// [private build] the game's car-task constructors register a reference to the vehicle at the
+    // task's address. plugin-sdk has no destructors for them, so a task built on the stack left a
+    // dangling reference: when that vehicle was deleted later the game wrote NULL into whatever
+    // was on the stack there (crash 0x54F493 when stealing/deleting cars). Run the game's own
+    // destructor (vtable slot 0, flag 0 = do not free) before the task goes out of scope.
+    static void DestroyStackTask(void* task)
+    {
+        using Fn = void(__thiscall*)(void*, int);
+        (*(Fn**)task)[0](task, 0);
+    }
+    static void TeleportLocalPlayer(CVector pos, unsigned char areaCode);
 	static float HUD_X(float a) { return a * RsGlobal.maximumWidth / SCREEN_BASE_WIDTH; }
 	static float HUD_Y(float a) { return a * RsGlobal.maximumHeight / SCREEN_BASE_HEIGHT; }
 	static float SCREEN_SCALE_AR(float a) { return a * DEFAULT_ASPECT_RATIO / CDraw::ms_fAspectRatio; };

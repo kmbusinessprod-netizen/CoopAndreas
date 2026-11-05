@@ -151,3 +151,10 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   crash #5 de alt-tab y evita que el personaje se congele para los demas). Base: CPatch.cpp ya
   tiene InitInstance_Hook que reposiciona la ventana (modo debug --coopd0/1).
 - Puente CLEO + adaptación de Misterix y Dragon Ball. Skins externas. Launcher.
+
+## Crash #10 — 0x54F493 al robar un auto (y probablemente también #8)
+- Causa real: los constructores de `CTaskSimpleCarSetPedInAsDriver/AsPassenger/CarSetPedOut` registran
+  una referencia al vehículo en la dirección de la tarea. CoopAndreas las crea en la pila y plugin-sdk
+  no tiene destructor para ellas → referencia colgando en la pila. Al borrar ese vehículo,
+  `CEntity::ResolveReferences` escribía NULL en la pila (aquí, el ESI guardado = `this`) → crash.
+- Arreglo: `CUtil::DestroyStackTask(&task)` (destructor del juego, vtable[0] con flag 0) en los 8 sitios.

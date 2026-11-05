@@ -335,6 +335,7 @@ static void WarpNetworkPlayerOutOfVehicle(CVehicle* vehicle, CPed* ped)
         CTaskSimpleCarSetPedOut task(ped->m_pVehicle, 0, true);
         task.m_bWarpingOutOfCar = true;
         task.ProcessPed(ped);
+        CUtil::DestroyStackTask(&task);
     }
 
     ped->Teleport(vehicle->GetPosition(), false);

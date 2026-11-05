@@ -246,6 +246,7 @@ PACKET_HANDLER(ePacketType::VEHICLE_EXIT, Packets::Vehicles::VehicleExit* pVehic
         int door = CCarEnterExit::ComputeTargetDoorToExit(pVehicle, pPlayerPed);
         auto task = CTaskSimpleCarSetPedOut(pVehicle, door, false);
         task.ProcessPed(pPlayerPed);
+        CUtil::DestroyStackTask(&task);
     }
     else
     {

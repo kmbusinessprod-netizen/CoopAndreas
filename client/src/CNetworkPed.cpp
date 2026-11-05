@@ -171,6 +171,8 @@ void CNetworkPed::WarpIntoVehicleDriver(CVehicle* vehicle)
     auto task = CTaskSimpleCarSetPedInAsDriver(vehicle, nullptr);
     task.m_bWarpingInToCar = true;
     task.ProcessPed(m_pPed);
+
+    CUtil::DestroyStackTask(&task);
 }
 
 void CNetworkPed::WarpIntoVehiclePassenger(CVehicle* vehicle, int seatid)
@@ -198,6 +200,7 @@ void CNetworkPed::WarpIntoVehiclePassenger(CVehicle* vehicle, int seatid)
     auto task = CTaskSimpleCarSetPedInAsPassenger(vehicle, doorId, nullptr);
     task.m_bWarpingInToCar = true;
     task.ProcessPed(m_pPed);
+    CUtil::DestroyStackTask(&task);
 }
 
 void CNetworkPed::RemoveFromVehicle(CVehicle* vehicle)
@@ -219,6 +222,8 @@ void CNetworkPed::RemoveFromVehicle(CVehicle* vehicle)
     auto task = CTaskSimpleCarSetPedOut(vehicle, 1, false);
     task.m_bWarpingOutOfCar = true;
     task.ProcessPed(m_pPed);
+
+    CUtil::DestroyStackTask(&task);
 
     m_pPed->m_pIntelligence->FlushImmediately(true); // create a default primary task (fix bug)
 }

@@ -145,6 +145,8 @@ void CNetworkPlayer::WarpIntoVehicleDriver(CVehicle* vehicle)
     auto task = CTaskSimpleCarSetPedInAsDriver(vehicle, nullptr);
     task.m_bWarpingInToCar = true;
     task.ProcessPed(m_pPed);
+
+    CUtil::DestroyStackTask(&task);
 }
 
 void CNetworkPlayer::WarpIntoVehiclePassenger(CVehicle* vehicle, int seatid)
@@ -169,6 +171,7 @@ void CNetworkPlayer::WarpIntoVehiclePassenger(CVehicle* vehicle, int seatid)
     auto task = CTaskSimpleCarSetPedInAsPassenger(vehicle, doorId, nullptr);
     task.m_bWarpingInToCar = true;
     task.ProcessPed(m_pPed);
+    CUtil::DestroyStackTask(&task);
 }
 
 void CNetworkPlayer::EnterVehiclePassenger(CVehicle* vehicle, int seatid)
@@ -210,6 +213,8 @@ void CNetworkPlayer::RemoveFromVehicle(CVehicle* vehicle)
     auto task = CTaskSimpleCarSetPedOut(vehicle, 1, false);
     task.m_bWarpingOutOfCar = true;
     task.ProcessPed(m_pPed);
+
+    CUtil::DestroyStackTask(&task);
 }
 
 void CNetworkPlayer::HandleTask(Packets::Players::SetPlayerTask& packet)
