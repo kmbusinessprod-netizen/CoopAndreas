@@ -85,7 +85,7 @@ void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
     {
         CStreaming::RequestModel(modelId, GAME_REQUIRED);
         CStreaming::LoadAllRequestedModels(false);
-        if (!CStreaming::ms_aInfoForModel[modelId].IsLoaded())
+        if (CStreaming::ms_aInfoForModel[modelId].m_nLoadState != LOADSTATE_LOADED)
             return;
     }
 
