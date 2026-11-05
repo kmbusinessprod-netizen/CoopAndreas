@@ -188,3 +188,15 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   cliente, el host es llevado al marcador. Menú F2 > Misiones (solo host) lanza cualquier misión 11-112
   y permite cancelar la actual.
 - Menú: trucos por categoría, repetición de flechas 350 ms + 110 ms, teletransporte al marcador del mapa.
+
+## 2026-11-05 04:15
+- **CJ gordo al iniciar**: era mío. CUnlockAll ponía el stat 21 a 1000 creyendo que era "pulmón"; 21 es
+  FAT (pulmón = 225). Ahora usa las constantes eStats y, si encuentra FAT >= 999, lo baja a 0 y reconstruye.
+  Menú > Jugador > "Cuerpo normal" por si queda alguien gordo.
+- **Menú se movía solo**: `consume()` ponía OldKeyState a 0, así que cada frame parecía "recién pulsada".
+  Ahora el menú lleva su propia memoria de teclas. Flecha izquierda ya no vuelve atrás.
+- **Skin se colgaba**: probablemente LoadAllRequestedModels bloqueante. Ahora pide el modelo y lo aplica
+  cuando el streaming lo tiene (CSkin::Process, timeout 8 s con mensaje).
+- Cada jugador remoto tiene su propio CPedClothesDesc (todos los CPlayerPed comparten el puntero del
+  template 0xA430B0 → vestir a un remoto vestía al local).
+- OJO instalación: device_commit_files a veces dice "written" y el archivo no cambia; verificar tamaño.
