@@ -283,3 +283,14 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   más tolerancia para autos).
 - Emotes: eje vertical corregido; objetos: cigarrillo 1485 CJ_CIGGY + fx "cigarette_smoke", botella 1484
   CJ_BEAR_BOTTLE, mear fx "petrolcan" (nombres de fx sin confirmar).
+
+## 2026-11-05 19:10
+- Gravity gun como el original: coronas verdes en la boca (0.375) y en las 3 garras (0.075), (16,64,32) vacía /
+  (64,255,128) sosteniendo + luz; garras se abren al agarrar; al agarrar/lanzar: 4 trazas de bala, chispas x2,
+  sonidos 1058 (agarrar) / 1052 (lanzar) / 1053 (soltar). Los remotos dibujan el brillo (PLAYER_POWER power=2).
+  Alcance 60 m, cono 10°. Los peds agarrados ya no reciben la anim KO (parecían muertos) y son a prueba de
+  golpes/colisión mientras se sostienen; mueren al lanzarlos (original).
+- Kamehameha: cámara intermedia (3.2 m al costado, 3.6 m atrás, 0.8 m arriba) y rayo ~1.7x más grueso.
+- Emotes: el fx se crea con una matriz propia que sigue al ped (petrolcan emite por +Y = adelante del ped);
+  cigarette_smoke existe en effects.fxp (antes no se veía por la matriz/culling).
+- Sin tutorial de hospital/policía: $wasted_help (119) y $busted_help (126) = 1 y se quitan sus pickups (669-671).
