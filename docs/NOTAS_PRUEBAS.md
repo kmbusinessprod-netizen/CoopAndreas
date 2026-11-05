@@ -126,7 +126,11 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Copiloto trabado al salir: watchdog del cambio de arma en driveby; bInModControlledDriveby solo local.
 
 ## Pendiente / a investigar
-- "Copiloto como si apuntara a cada rato": revisar ApplyWeaponSnapshot y el flag driveby del passenger update.
+- Copiloto: el icono de arma es normal (SA lo muestra al ir de pasajero). Bug real: a veces al subir de
+  copiloto NO puede apuntar (driveby). Revisar CDriveBy::Process / StartDriveby (arma no instant-hit,
+  bInModControlledDriveby) y el watchdog nuevo.
+- SilentPatch: crash 0x74872F al arrancar (CPatch NOPeaba la llamada IsAlreadyRunning que SilentPatch
+  engancha). Fix: solo PutRetn0(0x7468E0). EnableScriptFixes=0 en SilentPatchSA.ini.
 - Avion deformado que aparece y desaparece: pedir captura/modelo; posible vehiculo de red creado antes de
   cargar el modelo o entidad con matriz corrupta.
 - SensFix (punteria): pendiente de que el usuario pase el archivo.
