@@ -24,6 +24,7 @@ public:
     };
 
     static bool IsOpen() { return ms_bOpen; }
+    static void Install();  // hooks
     static void Process();  // gameProcessEvent
     static void Draw();     // drawingEvent
 

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CFixes.h"
+#include "UI/CModMenu.h"
 #include "CCrashLog.h"
 #include "Commands/CCustomCommandRegistrar.h"
 #include "CDiscordRPC.h"
@@ -81,7 +82,8 @@ void CCore::Init()
     CPatch::CaptureGameProcessHook();  // [private build] CLEO 4 compat, see CPatch.cpp
     CPoolGuard::Install();             // [private build] see CPoolGuard.h
     CCheatSync::Install();
-    CFixes::Install();             // [private build] see CCheatSync.h
+    CFixes::Install();
+    CModMenu::Install();             // [private build] see CCheatSync.h
     // window mode: handled by ThirteenAG's III.VC.SA.WindowedMode.asi (scripts folder); CWindowMode kept but disabled
     Events::initGameEvent.after += []
     {

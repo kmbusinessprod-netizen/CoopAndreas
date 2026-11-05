@@ -353,6 +353,31 @@ void CModMenu::BuildTeleport(CModMenu* m)
 // ------------------------------------------------------------------------------------------------
 // input
 
+// the player stands still while the menu is open. CGame::Process turns keyboard keys into pad input
+// (walk, enter vehicle...) right at its start (0x53BEE6 call CPad::UpdatePads); we clear it there.
+static uintptr_t s_UpdatePads_orig = 0;
+static void __cdecl CPad__UpdatePads_Hook()
+{
+    plugin::CallDyn(s_UpdatePads_orig);
+    if (!CModMenu::IsOpen())
+        return;
+    if (CPad* pad = CPad::GetPad(0))
+    {
+        for (CControllerState* st : {&pad->NewState, &pad->OldState})
+        {
+            st->LeftStickX = st->LeftStickY = 0;
+            st->DPadUp = st->DPadDown = st->DPadLeft = st->DPadRight = 0;
+            st->ButtonTriangle = st->ButtonCross = st->ButtonSquare = st->ButtonCircle = 0;
+        }
+    }
+}
+
+void CModMenu::Install()
+{
+    s_UpdatePads_orig = injector::GetBranchDestination(0x53BEE6).as_int();
+    patch::RedirectCall(0x53BEE6, (void*)CPad__UpdatePads_Hook);
+}
+
 void CModMenu::Process()
 {
     if (CChat::m_bInputActive || FrontEndMenuManager.m_bMenuActive)
@@ -418,8 +443,7 @@ void CModMenu::Process()
             page.scroll = page.selected - ROWS + 1;
     }
 
-    bool select = KeyJustPressed(&CKeyboardState::enter) || KeyJustPressed(&CKeyboardState::extenter) ||
-                  KeyJustPressed(&CKeyboardState::right);
+    bool select = KeyJustPressed(&CKeyboardState::enter) || KeyJustPressed(&CKeyboardState::extenter);
     bool back = KeyJustPressed(&CKeyboardState::back) || KeyJustPressed(&CKeyboardState::left) ||
                 KeyJustPressed(&CKeyboardState::esc);
 
@@ -530,7 +554,7 @@ void CModMenu::Draw()
         foot = "~g~" + ms_status;
     else
     {
-        foot = "~y~Flechas~s~ mover  ~y~Enter~s~ elegir  ~y~Retroceso~s~ volver  ~y~F2~s~ cerrar";
+        foot = "~y~Flechas~s~ mover  ~y~Enter~s~ elegir  ~y~Izquierda/Retroceso~s~ volver  ~y~F2~s~ cerrar";
         if ((int)page.items.size() > ROWS)
             foot += "   " + std::to_string(page.selected + 1) + "/" + std::to_string(page.items.size());
     }
