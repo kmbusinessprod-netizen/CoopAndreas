@@ -88,21 +88,30 @@ static std::vector<PendingSkin> s_pending;
 
 static void ApplyNow(CPlayerPed* ped, uint16_t modelId)
 {
+    printf("[skin] apply %d to %p (local=%d)\n", modelId, ped, ped == FindPlayerPed(0));
     if (ped->m_nModelIndex != modelId)
     {
-        // exactly what the CHANGE_PLAYER_MODEL opcode (09C7) does: virtual DeleteRwObject, model index -1,
-        // virtual SetModelIndex, and keep the anim group so CJ keeps moving like CJ
-        using DeleteRwObject_t = void(__thiscall*)(CEntity*);
-        using SetModelIndex_t = void(__thiscall*)(CEntity*, unsigned int);
-        void** vtable = *(void***)ped;
-        int savedAnimGroup = *(int*)((uintptr_t)ped + 0x4D4);
-        ((DeleteRwObject_t)vtable[8])(ped);
-        ped->m_nModelIndex = 0xFFFF;
-        ((SetModelIndex_t)vtable[5])(ped, modelId);
-        *(int*)((uintptr_t)ped + 0x4D4) = savedAnimGroup;
+        if (ped == FindPlayerPed(0))
+        {
+            // the game's own CHANGE_PLAYER_MODEL (09C7), the same thing CLEO skin selectors use
+            Command<Commands::SET_PLAYER_MODEL>(0, (int)modelId);
+        }
+        else
+        {
+            // 09C7 only works on player 0: do the same by hand for the remote ped
+            using DeleteRwObject_t = void(__thiscall*)(CEntity*);
+            using SetModelIndex_t = void(__thiscall*)(CEntity*, unsigned int);
+            void** vtable = *(void***)ped;
+            int savedAnimGroup = *(int*)((uintptr_t)ped + 0x4D4);
+            ((DeleteRwObject_t)vtable[8])(ped);
+            ped->m_nModelIndex = 0xFFFF;
+            ((SetModelIndex_t)vtable[5])(ped, modelId);
+            *(int*)((uintptr_t)ped + 0x4D4) = savedAnimGroup;
+        }
     }
     if (modelId == 0)
         CClothes::RebuildPlayer(ped, ped != FindPlayerPed(0));
+    printf("[skin] done\n");
 }
 
 void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
@@ -144,6 +153,12 @@ void CSkin::Process()
 
 void CSkin::SetLocal(uint16_t modelId)
 {
+    CPlayerPed* me = FindPlayerPed(0);
+    if (me && (me->m_nPedFlags.bInVehicle || me->m_pVehicle))
+    {
+        CChat::AddMessage("{f07878}[skin] {d6dce8}bajate del vehiculo para cambiar la skin");
+        return;
+    }
     ms_nLocalSkin = modelId;
     ApplyToPed(FindPlayerPed(0), modelId);
     SendLocal();

@@ -95,6 +95,18 @@ PACKET_HANDLER(ePacketType::PLAYER_HANDSHAKE, Packets::System::PlayerHandshake* 
 
     CNetwork::m_bAuthenticated = true;
     CPropertySync::Reset();  // [private build]
+
+    // [private build] my clothes as they are now (loaded from the save): otherwise the others see a
+    // default CJ until I change clothes again
+    if (CPlayerPed* me = FindPlayerPed(0))
+    {
+        if (me->m_pPlayerData && me->m_pPlayerData->m_pPedClothesDesc)
+        {
+            Packets::Players::RebuildPlayer rebuildPacket{};
+            rebuildPacket.clothesDesc = *me->m_pPlayerData->m_pPedClothesDesc;
+            GetPacketFactory().Send(rebuildPacket);
+        }
+    }
     CPatch::RevertTemporaryPatches();
     logger::info("Authenticated, playerid %s", to_string(pPlayerHandshake->yourid).c_str());
 }
