@@ -1,6 +1,6 @@
  server
 
- Timestamp is 6aec0acf (Thu Nov  5 04:49:19 2026)
+ Timestamp is 6aec0f01 (Thu Nov  5 05:07:13 2026)
 
  Preferred load address is 00400000
 
@@ -2428,7 +2428,7 @@
  0002:00001d68       ??_C@_0CB@INCLIFAF@?9?5https?3?1?1discord?4gg?1TwQsR4qxVx?6@ 0045dd68     main.cpp.obj
  0002:00001d8c       ??_C@_0BN@BEMPBCCI@?9?5coopandreasmod?$EAgmail?4com?6?6@ 0045dd8c     main.cpp.obj
  0002:00001dac       ??_C@_0BL@JLKNCKIJ@?$FL?$CB?$FN?5?3?5CoopAndreas?5Server?5?6@ 0045ddac     main.cpp.obj
- 0002:00001dc8       ??_C@_08CDLBCEAC@04?349?317@ 0045ddc8     main.cpp.obj
+ 0002:00001dc8       ??_C@_08IEPLEOCM@05?307?310@ 0045ddc8     main.cpp.obj
  0002:00001dd4       ??_C@_0M@GGEKBGKF@Nov?5?55?52026@ 0045ddd4     main.cpp.obj
  0002:00001de0       ??_C@_03NDFEINMN@x86@      0045dde0     main.cpp.obj
  0002:00001de4       ??_C@_0CB@FOABLKLA@?$FL?$CB?$FN?5?3?5Version?5?3?5?$CFs?0?5?$CFs?5?$CFs?5?$CFs?5?$CFs?6@ 0045dde4     main.cpp.obj
