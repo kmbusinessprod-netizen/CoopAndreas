@@ -66,7 +66,9 @@ private:
     {
         serialize_object(stream, senderPlayerid);
         serialize_uint16(stream, modelId);
-        serialize_object(stream, offset);
+        serialize_float(stream, offset.x);
+        serialize_float(stream, offset.y);
+        serialize_float(stream, offset.z);
         serialize_uint8(stream, bone);
         serialize_uint8(stream, boneFlags);
         serialize_uint32(stream, animId);
