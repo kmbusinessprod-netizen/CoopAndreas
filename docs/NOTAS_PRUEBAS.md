@@ -245,3 +245,9 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   tomar la propiedad de sincronización del auto/ped agarrado. Pendiente.
 - Instalación: el primer archivo de un device_commit_files con varios archivos a veces queda viejo;
   verificar md5 y reintentar de a uno.
+
+## 2026-11-05 08:45 — skins faltantes
+- La carpeta tiene ~225 pares; el límite era 99 → ahora 999 (csk000..). El IMG se arma copiando archivo por
+  archivo (antes leía todo a memoria: cientos de MB en un proceso de 32 bits) y se reutiliza si la carpeta no
+  cambió (coop_skins.idx con firma nombre+tamaño+fecha). Directorio de objetos extra 550 → 4000 entradas.
+- Ignoradas por nombre: "HDTommySAb1.dff" + "HDTommySA1024V1.txd" (nombres distintos) y "SONIC1 (2).dff" (sin txd).
