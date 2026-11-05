@@ -9,7 +9,7 @@ CEntity* CGravityGun::ms_pHeld = nullptr;
 int CGravityGun::ms_nHeldType = 0;
 unsigned int CGravityGun::ms_nLastShot = 0;
 
-static constexpr float RANGE = 25.0f;
+static constexpr float RANGE = 40.0f;
 static constexpr float HOLD_DISTANCE = 4.0f;
 
 static bool EntityAlive(CEntity* e, int type)
@@ -117,36 +117,92 @@ void CGravityGun::Shutdown()
         Toggle();
 }
 
-CEntity* CGravityGun::FindTarget(const CVector& from, const CVector& dir, int& type)
+// what the crosshair is on: first a precise ray from the camera, then the closest thing to the aim line
+// (a cone of ~7 degrees) up to RANGE metres, so you don't have to stand next to a car or a person
+CEntity* CGravityGun::FindTarget(const CVector&, const CVector& dir, int& type)
 {
     CPlayerPed* me = FindPlayerPed(0);
+    CVector camPos = TheCamera.GetPosition();
+    CVector myPos = me->GetPosition();
+
+    auto accept = [&](CEntity* entity, int& outType) -> bool
+    {
+        if (entity == nullptr || entity == me)
+            return false;
+        if (entity->m_nType == ENTITY_TYPE_VEHICLE)
+        {
+            CVehicle* v = (CVehicle*)entity;
+            if (v->m_pDriver && v->m_pDriver->IsPlayer())  // nobody steals a player's car this way
+                return false;
+            outType = 1;
+            return true;
+        }
+        if (entity->m_nType == ENTITY_TYPE_PED)
+        {
+            if (((CPed*)entity)->IsPlayer() || ((CPed*)entity)->m_nPedFlags.bInVehicle)
+                return false;
+            outType = 2;
+            return true;
+        }
+        if (entity->m_nType == ENTITY_TYPE_OBJECT)
+        {
+            CObject* o = (CObject*)entity;
+            if (o == CPools::GetObject(ms_nGunObject) || o->m_pAttachedTo != nullptr)
+                return false;
+            outType = 3;
+            return true;
+        }
+        return false;
+    };
+
+    // 1) ray
     CColPoint colPoint{};
     CEntity* entity = nullptr;
-    CVector to = from + dir * RANGE;
     bool old = me->m_bUsesCollision;
     me->m_bUsesCollision = false;
-    bool found = CWorld::ProcessLineOfSight(from, to, colPoint, entity, false, true, true, true, false, false, false, false);
+    bool found = CWorld::ProcessLineOfSight(camPos, camPos + dir * (RANGE + 8.0f), colPoint, entity, false, true, true, true,
+        false, false, false, false);
     me->m_bUsesCollision = old;
-    if (!found || entity == nullptr)
-        return nullptr;
-    if (entity->m_nType == ENTITY_TYPE_VEHICLE)
-        type = 1;
-    else if (entity->m_nType == ENTITY_TYPE_PED)
+    if (found && accept(entity, type) && (entity->GetPosition() - myPos).Magnitude() < RANGE)
+        return entity;
+
+    // 2) cone
+    CEntity* best = nullptr;
+    float bestScore = 0.0f;
+    const float minCos = cosf(7.0f * 3.14159265f / 180.0f);
+    auto consider = [&](CEntity* e, float extraRadius)
     {
-        if (((CPed*)entity)->IsPlayer())  // other players are not toys
-            return nullptr;
-        type = 2;
-    }
-    else if (entity->m_nType == ENTITY_TYPE_OBJECT)
-    {
-        CObject* o = (CObject*)entity;
-        if (o == CPools::GetObject(ms_nGunObject) || o->m_pAttachedTo != nullptr)
-            return nullptr;
-        type = 3;
-    }
-    else
-        return nullptr;
-    return entity;
+        int t = 0;
+        if (!accept(e, t))
+            return;
+        CVector to = e->GetPosition() - camPos;
+        float dist = to.Magnitude();
+        if (dist < 1.0f || (e->GetPosition() - myPos).Magnitude() > RANGE)
+            return;
+        float cosA = (to.x * dir.x + to.y * dir.y + to.z * dir.z) / dist;
+        // bigger things are easier to hit
+        float tolerance = std::min(0.25f, extraRadius / dist);
+        if (cosA < minCos - tolerance)
+            return;
+        float score = cosA - dist * 0.0005f;
+        if (!best || score > bestScore)
+        {
+            best = e;
+            bestScore = score;
+            type = t;
+        }
+    };
+    for (int i = 0; i < CPools::ms_pVehiclePool->m_nSize; i++)
+        if (CVehicle* v = CPools::ms_pVehiclePool->GetAt(i))
+            consider(v, 2.0f);
+    for (int i = 0; i < CPools::ms_pPedPool->m_nSize; i++)
+        if (CPed* p = CPools::ms_pPedPool->GetAt(i))
+            consider(p, 0.6f);
+    for (int i = 0; i < CPools::ms_pObjectPool->m_nSize; i++)
+        if (CObject* o = CPools::ms_pObjectPool->GetAt(i))
+            if ((o->GetPosition() - myPos).Magnitude() < 20.0f)
+                consider(o, 0.5f);
+    return best;
 }
 
 void CGravityGun::Grab(CEntity* e, int type)

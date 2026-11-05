@@ -31,6 +31,7 @@ struct Caster
     bool soundStarted = false;
 };
 
+int s_soundState = 0;
 constexpr int SOUND_SLOT = 3;      // mission audio slot, like the original mod
 constexpr int SOUND_ID = 6402;
 
@@ -62,7 +63,7 @@ void Send(const Caster& c)
 // the original replays the sample every frame of its loop: keep it going while the power is on
 void PumpSound(Caster& c)
 {
-    static int state = 0;  // 0 idle, 1 loading, 2 playing
+    int& state = s_soundState;  // 0 idle, 1 loading, 2 playing
     if (c.phase == OFF)
         return;
     if (state == 0)
@@ -82,13 +83,14 @@ void PumpSound(Caster& c)
     }
     else if (state == 2 && Command<Commands::HAS_MISSION_AUDIO_FINISHED>(SOUND_SLOT))
     {
-        state = 0;  // load + play again next frame
+        Command<Commands::PLAY_MISSION_AUDIO>(SOUND_SLOT);  // straight again, no gap
     }
 }
 
 void StopSound()
 {
     Command<Commands::CLEAR_MISSION_AUDIO>(SOUND_SLOT);
+    s_soundState = 0;
 }
 
 void ApplyPose(Caster& c)
@@ -163,8 +165,8 @@ void Draw(Caster& c)
         // growing ball of light in the hands
         float k = std::min(1.0f, t / (CHARGE_MS / 1000.0f));
         float pulse = 0.85f + 0.15f * sinf(t * 25.0f);
-        Corona(c, 0, hands, (0.25f + 1.6f * k) * pulse, CRGBA(255, 255, 255, 255));
-        Corona(c, 1, hands, (0.6f + 2.4f * k) * pulse, CRGBA(90, 170, 255, 200));
+        Corona(c, 0, hands, (0.15f + 0.6f * k) * pulse, CRGBA(255, 255, 255, 230));
+        Corona(c, 1, hands, (0.3f + 1.1f * k) * pulse, CRGBA(90, 170, 255, 150));
         Command<Commands::DRAW_LIGHT_WITH_RANGE>(hands.x, hands.y, hands.z, 120, 190, 255, 6.0f + 10.0f * k);
         return;
     }
@@ -176,19 +178,27 @@ void Draw(Caster& c)
     CVector hit;
     float length = BeamHit(c, hands, dir, hit);
 
-    // core and glow along the beam
+    // a cone: thin at the hands and wider further away, white core, blue glow and a rainbow edge
+    static const CRGBA rainbow[] = {CRGBA(255, 80, 200, 90), CRGBA(255, 230, 60, 90), CRGBA(80, 255, 120, 90),
+        CRGBA(80, 200, 255, 90)};
     int i = 2;
-    for (float d = 0.5f; d < length && i < 60; d += 2.0f)
+    float grow = std::min(1.0f, t / 0.35f);  // the beam shoots out instead of appearing at full length
+    float shown = length * grow;
+    for (float d = 0.6f; d < shown && i < 62; d += 1.6f)
     {
         CVector p = hands + dir * d;
-        float wobble = 0.9f + 0.1f * sinf(t * 30.0f + d);
-        Corona(c, i++, p, 1.1f * wobble, CRGBA(255, 255, 255, 255));
-        Corona(c, i++, p, 2.6f * wobble, CRGBA(70, 150, 255, 170));
+        float k = d / BEAM_LENGTH;
+        float wobble = 0.92f + 0.08f * sinf(t * 28.0f + d * 0.7f);
+        Corona(c, i++, p, (0.25f + 1.4f * k) * wobble, CRGBA(255, 255, 255, 220));
+        Corona(c, i++, p, (0.5f + 2.6f * k) * wobble, CRGBA(110, 180, 255, 110));
+        if (((int)(d / 1.6f)) % 2 == 0)
+            Corona(c, i++, p, (0.7f + 3.4f * k) * wobble, rainbow[((int)(d / 3.2f) + (int)(t * 8.0f)) % 4]);
     }
-    Corona(c, i++, hands, 3.0f, CRGBA(180, 220, 255, 255));
-    Corona(c, i++, hit, 5.0f, CRGBA(200, 230, 255, 255));
-    Command<Commands::DRAW_LIGHT_WITH_RANGE>(hands.x, hands.y, hands.z, 120, 190, 255, 20.0f);
-    Command<Commands::DRAW_LIGHT_WITH_RANGE>(hit.x, hit.y, hit.z, 150, 200, 255, 25.0f);
+    Corona(c, i++, hands, 0.9f, CRGBA(200, 230, 255, 200));
+    if (grow >= 1.0f)
+        Corona(c, i++, hit, 3.5f, CRGBA(220, 235, 255, 200));
+    Command<Commands::DRAW_LIGHT_WITH_RANGE>(hands.x, hands.y, hands.z, 120, 190, 255, 12.0f);
+    Command<Commands::DRAW_LIGHT_WITH_RANGE>(hit.x, hit.y, hit.z, 150, 200, 255, 20.0f);
 
     // blasts at the impact point
     if (now - c.lastBlast > 280)
@@ -197,7 +207,7 @@ void Draw(Caster& c)
         if (c.local)
         {
             // damage: only the caster's game, never closer than 6 m (the caster is explosion-proof meanwhile)
-            if (length > 6.0f)
+            if (length > 3.5f)
                 Command<Commands::ADD_EXPLOSION_NO_SOUND>(hit.x, hit.y, hit.z, 8);
         }
         else
@@ -248,9 +258,10 @@ void LocalCamera(Caster& c)
         return;
     CVector dir = Direction(c);
     CVector flat(-sinf(c.heading), cosf(c.heading), 0.0f);
-    CVector side(flat.y, -flat.x, 0.0f);  // a bit to the right, over the shoulder
-    CVector pos = c.ped->GetPosition() - flat * 3.2f + side * 0.6f + CVector(0.0f, 0.0f, 0.55f);
-    CVector look = c.ped->GetPosition() + dir * 15.0f + CVector(0.0f, 0.0f, 0.3f);
+    // from the side and a bit behind, low, so the whole beam is seen growing out of the hands (like the reference)
+    CVector side(-flat.y, flat.x, 0.0f);  // left of the caster
+    CVector pos = c.ped->GetPosition() + side * 7.0f - flat * 3.0f + CVector(0.0f, 0.0f, 0.4f);
+    CVector look = c.ped->GetPosition() + dir * 9.0f + CVector(0.0f, 0.0f, 0.2f);
     Command<Commands::SET_FIXED_CAMERA_POSITION>(pos.x, pos.y, pos.z, 0.0f, 0.0f, 0.0f);
     Command<Commands::POINT_CAMERA_AT_POINT>(look.x, look.y, look.z, 2 /*JUMP_CUT*/);
     if (c.phase == FIRE)
@@ -288,7 +299,7 @@ void CKamehameha::Process()
         if (s_local.phase != OFF)
         {
             heading = s_local.heading - ms_fMouseX * 0.004f;
-            pitch = std::max(-0.26f, std::min(0.78f, s_local.pitch - ms_fMouseY * 0.003f));
+            pitch = std::max(-0.26f, std::min(0.78f, s_local.pitch + ms_fMouseY * 0.003f));
         }
         ms_fMouseX = ms_fMouseY = 0.0f;
 

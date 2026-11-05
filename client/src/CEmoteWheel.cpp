@@ -2,6 +2,7 @@
 #include "CEmoteWheel.h"
 #include "UI/CModMenu.h"
 #include "CKamehameha.h"
+#include "FxManager_c.h"
 
 bool CEmoteWheel::ms_bOpen = false;
 int CEmoteWheel::ms_nSelected = -1;
@@ -10,20 +11,28 @@ unsigned int CEmoteWheel::ms_nStartedAt = 0;
 float CEmoteWheel::ms_fMouseX = 0.0f;
 float CEmoteWheel::ms_fMouseY = 0.0f;
 
+enum Prop
+{
+    NONE,
+    CIGGY,   // 1485 CJ_CIGGY + smoke
+    BOTTLE,  // 1484 CJ_BEAR_BOTTLE
+    PISS     // stream effect
+};
 struct Emote
 {
     const char* label;
     const char* block;  // IFP
     const char* anim;
     bool loop;
+    Prop prop = NONE;
 };
 static const Emote s_emotes[] = {
     {"Bailar", "DANCING", "dance_loop", true},
     {"Bailar 2", "DANCING", "DAN_Up_A", true},
     {"Bailar 3", "DANCING", "dnce_M_b", true},
-    {"Fumar", "SMOKING", "M_smkstnd_loop", true},
-    {"Beber", "BAR", "dnk_stndM_loop", true},
-    {"Mear", "PAULNMAC", "Piss_loop", true},
+    {"Fumar", "SMOKING", "M_smkstnd_loop", true, CIGGY},
+    {"Beber", "BAR", "dnk_stndM_loop", true, BOTTLE},
+    {"Mear", "PAULNMAC", "Piss_loop", true, PISS},
     {"Saludar", "ON_LOOKERS", "wave_loop", true},
     {"Reir", "RAPPING", "Laugh_01", true},
     {"Brazos cruzados", "COP_AMBIENT", "Coplook_loop", true},
@@ -43,16 +52,116 @@ static bool LoadBlock(const char* block)
     return false;
 }
 
+// props of the emote currently played by each ped
+struct PropState
+{
+    CPed* ped;
+    int object;
+    FxSystem_c* fx;
+    Prop prop;
+};
+static std::vector<PropState> s_props;
+
+static void RemoveProp(CPed* ped)
+{
+    for (auto it = s_props.begin(); it != s_props.end(); ++it)
+    {
+        if (it->ped != ped)
+            continue;
+        if (it->fx)
+            it->fx->Kill();
+        if (it->object >= 0 && CPools::GetObject(it->object))
+        {
+            if (CPoolGuard::IsPedAlive(ped) && ped->GetHoldingTask())
+                ped->DropEntityThatThisPedIsHolding(1);
+            Command<Commands::DELETE_OBJECT>(it->object);
+        }
+        s_props.erase(it);
+        return;
+    }
+}
+
+static void AddProp(CPed* ped, Prop prop)
+{
+    RemoveProp(ped);
+    if (prop == NONE)
+        return;
+    PropState st{ped, -1, nullptr, prop};
+    int model = prop == CIGGY ? 1485 : prop == BOTTLE ? 1484 : 0;
+    if (model)
+    {
+        if (CStreaming::ms_aInfoForModel[model].m_nLoadState != LOADSTATE_LOADED)
+        {
+            CStreaming::RequestModel(model, GAME_REQUIRED);
+            CStreaming::LoadAllRequestedModels(false);
+        }
+        CVector p = ped->GetPosition();
+        Command<Commands::CREATE_OBJECT>(model, p.x, p.y, p.z + 1.0f, &st.object);
+        if (st.object >= 0)
+        {
+            Command<Commands::SET_OBJECT_COLLISION>(st.object, false);
+            // in the right hand, no animation of its own (the emote animation moves the hand)
+            Command<Commands::TASK_PICK_UP_OBJECT>(CPools::GetPedRef(ped), st.object, 0.0f, 0.0f, 0.0f, 6, 16, "NULL", "NULL", -1);
+        }
+    }
+    s_props.push_back(st);
+}
+
+// particles follow the ped every frame
+static void UpdateProps()
+{
+    for (auto it = s_props.begin(); it != s_props.end();)
+    {
+        if (!CPoolGuard::IsPedAlive(it->ped))
+        {
+            if (it->fx)
+                it->fx->Kill();
+            it = s_props.erase(it);
+            continue;
+        }
+        CVector fwd = it->ped->GetForward();
+        RwV3d pos{};
+        const char* fxName = nullptr;
+        if (it->prop == CIGGY)
+        {
+            CObject* o = CPools::GetObject(it->object);
+            CVector p = o ? o->GetPosition() : it->ped->GetPosition() + CVector(0.0f, 0.0f, 0.6f);
+            pos = {p.x, p.y, p.z + 0.05f};
+            fxName = "cigarette_smoke";
+        }
+        else if (it->prop == PISS)
+        {
+            CVector p = it->ped->GetPosition() + fwd * 0.25f + CVector(0.0f, 0.0f, -0.05f);
+            pos = {p.x, p.y, p.z};
+            fxName = "petrolcan";
+        }
+        if (fxName)
+        {
+            if (!it->fx)
+            {
+                it->fx = g_fxMan.CreateFxSystem((char*)fxName, &pos, nullptr, false);
+                if (it->fx)
+                    it->fx->Play();
+            }
+            else
+                it->fx->SetOffsetPos(&pos);
+        }
+        ++it;
+    }
+}
+
 static void PlayOn(CPed* ped, int index)
 {
     if (!ped || index < 0 || index >= COUNT)
         return;
     const Emote& e = s_emotes[index];
+    AddProp(ped, e.prop);
     Command<Commands::TASK_PLAY_ANIM>(CPools::GetPedRef(ped), e.anim, e.block, 4.0f, e.loop, 0, 0, !e.loop, -1);
 }
 
 static void StopOn(CPed* ped)
 {
+    RemoveProp(ped);
     if (ped && CPoolGuard::IsPedAlive(ped))
         Command<Commands::CLEAR_CHAR_TASKS>(CPools::GetPedRef(ped));
 }
@@ -108,7 +217,7 @@ void CEmoteWheel::Process()
         float len = sqrtf(ms_fMouseX * ms_fMouseX + ms_fMouseY * ms_fMouseY);
         if (len > 25.0f)
         {
-            float angle = atan2f(ms_fMouseX, -ms_fMouseY);  // 0 = up, clockwise
+            float angle = atan2f(ms_fMouseX, ms_fMouseY);  // 0 = up (mouse y grows upwards), clockwise
             if (angle < 0)
                 angle += 6.2831853f;
             ms_nSelected = (int)((angle + 3.14159265f / COUNT) / (6.2831853f / COUNT)) % COUNT;
@@ -149,6 +258,8 @@ void CEmoteWheel::Process()
             Send(0);
         }
     }
+
+    UpdateProps();
 
     for (auto it = s_pendingRemote.begin(); it != s_pendingRemote.end();)
     {
@@ -234,7 +345,7 @@ void CEmoteWheel::Draw()
     CFont::SetScale(CUtil::HUD_X(0.32f), CUtil::HUD_Y(0.75f));
     CFont::SetColor(CRGBA(255, 255, 255, 255));
     CFont::PrintString(cx, cy - CUtil::HUD_Y(9.0f), ms_nSelected >= 0 ? s_emotes[ms_nSelected].label : "EMOTES");
-    float px = cx + ms_fMouseX / 120.0f * rIn * 0.8f, py = cy + ms_fMouseY / 120.0f * rIn * 0.8f;
+    float px = cx + ms_fMouseX / 120.0f * rIn * 0.8f, py = cy - ms_fMouseY / 120.0f * rIn * 0.8f;
     float d = CUtil::HUD_Y(3.0f);
     CSprite2d::DrawRect(CRect(px - d, py - d, px + d, py + d), CRGBA(255, 220, 90, 255));
 }
