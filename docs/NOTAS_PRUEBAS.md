@@ -273,3 +273,13 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   agarra, clic izq lanza, E suelta.
 - Rueda de emotes (CEmoteWheel): mantener B, mover el mouse, soltar. 12 emotes (DANCING, SMOKING, BAR, PAULNMAC,
   ON_LOOKERS, RAPPING, COP_AMBIENT, BEACH, PED). Se cancela al moverse. Sync con PLAYER_POWER power=1.
+
+## 2026-11-05 19:00
+- Kamehameha: cámara lateral baja (7 m a la izquierda, 3 m atrás) como la referencia; rayo en cono (fino en las
+  manos, más ancho lejos, núcleo blanco + brillo azul + borde arcoíris, sale disparado en 0.35 s); bola de carga
+  más chica; sonido repetido sin recargar (como el play_wav por frame del original); pitch del mouse corregido;
+  explosiones desde 3.5 m.
+- Gravity gun: alcance 40 m; rayo desde la cámara y, si no acierta, el más cercano a la línea de mira (cono 7°,
+  más tolerancia para autos).
+- Emotes: eje vertical corregido; objetos: cigarrillo 1485 CJ_CIGGY + fx "cigarette_smoke", botella 1484
+  CJ_BEAR_BOTTLE, mear fx "petrolcan" (nombres de fx sin confirmar).
