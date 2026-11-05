@@ -3,6 +3,7 @@
 #include "CCheatSync.h"
 #include "CSkin.h"
 #include "CSkinImport.h"
+#include "CKamehameha.h"
 #include "CUnlockAll.h"
 #include "CPrompt.h"
 #include <unordered_map>
@@ -371,7 +372,7 @@ static uintptr_t s_UpdatePads_orig = 0;
 static void __cdecl CPad__UpdatePads_Hook()
 {
     plugin::CallDyn(s_UpdatePads_orig);
-    if (!CModMenu::IsOpen())
+    if (!CModMenu::IsOpen() && !CKamehameha::IsLocalActive())
         return;
     if (CPad* pad = CPad::GetPad(0))
     {

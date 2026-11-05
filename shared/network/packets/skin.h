@@ -76,4 +76,28 @@ private:
         return true;
     }
 };
+// special powers (Kamehameha...): phase + aim, the others draw the same effect on that player
+class PlayerPower : public Packet
+{
+    DEFINE_PACKET_TYPE(PlayerPower, ePacketType::PLAYER_POWER, ePacketChannel::EVENT);
+
+public:
+    SenderPlayerId senderPlayerid{};
+    uint8_t power = 0;  // 0 = kamehameha
+    uint8_t phase = 0;  // 0 off, 1 charging, 2 firing
+    float heading = 0.0f;
+    float pitch = 0.0f;
+
+private:
+    template <typename Stream>
+    bool Serialize(Stream& stream)
+    {
+        serialize_object(stream, senderPlayerid);
+        serialize_uint8(stream, power);
+        serialize_uint8(stream, phase);
+        serialize_float(stream, heading);
+        serialize_float(stream, pitch);
+        return true;
+    }
+};
 }  // namespace Packets::Skin

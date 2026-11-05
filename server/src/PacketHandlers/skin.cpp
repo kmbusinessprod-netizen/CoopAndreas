@@ -73,3 +73,9 @@ PACKET_HANDLER(ePacketType::PLAYER_HOLD, Packets::Skin::PlayerHold* pHold, CNetw
 	pHold->senderPlayerid = pNetworkPlayer->m_playerId;
 	GetPacketFactory().SendToAll(*pHold, pNetworkPlayer);
 }
+
+PACKET_HANDLER(ePacketType::PLAYER_POWER, Packets::Skin::PlayerPower* pPower, CNetworkPlayer* pNetworkPlayer)
+{
+	pPower->senderPlayerid = pNetworkPlayer->m_playerId;
+	GetPacketFactory().SendToAll(*pPower, pNetworkPlayer);
+}

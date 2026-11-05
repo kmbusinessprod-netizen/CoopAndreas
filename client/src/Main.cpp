@@ -34,6 +34,7 @@
 #include <CPropertySync.h>
 #include <CFixes.h>
 #include <CHoldSync.h>
+#include <CKamehameha.h>
 #include <CTrace.h>
 #include <network/packets/scripts.h>
 
@@ -92,6 +93,7 @@ public:
             CSkin::Process();
             CTrace::Mark("gp: skin ok");
             CHoldSync::Process();
+            CKamehameha::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();
