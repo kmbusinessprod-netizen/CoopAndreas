@@ -326,3 +326,13 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   arriba/abajo) y el cuerpo se inclina en esa dirección (matriz del ped rotada sobre su eje derecho después del
   procesado); hacia atrás más lento (0.55) con FALL_skyDive; laterales FALL_SkyDive_L/R; flotar (salto/C) = mitad de
   la velocidad de la barra. Los demás ven la inclinación (pitch en PLAYER_POWER).
+
+## 2026-11-05 20:15
+- Niveles separados: Alt+rueda cambia el de vuelo volando y el de carrera en el suelo.
+- Flotar quieto = losa invisible (objeto 3095, SET_OBJECT_VISIBLE false, congelada) bajo los pies: el juego cree
+  que CJ está parado → armas, apuntar y kamehameha funcionan. Salto/agacharse se leen en el hook de pad y no
+  llegan al juego mientras se vuela (no salta ni se agacha sobre la losa). Doble toque de agacharse = caer.
+  Kamehameha solo flotando (no volando). Remotos: tipo 5 = parado en el aire con sus anims normales.
+- Menú > Vehículos > Tunear: reparar, indestructible, nitro x2/x5/x10, hidráulica, escapes/ruedas, colores,
+  pinturas especiales (se sincronizan por los paquetes de componentes/colores existentes).
+- Gravity gun: distancia de sostén = radio del modelo + 3.5 m (mín. 4) para que lo grande no te golpee.
