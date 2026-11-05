@@ -725,7 +725,7 @@ void CModMenu::BuildMissions(CModMenu* m)
                     for (auto player : CNetworkPlayerManager::m_pPlayers)
                     {
                         Packets::Admin::AdminAction bring{};
-                        bring.targetPlayerid = player->m_iPlayerId;
+                        bring.targetPlayerid = player->m_playerId;
                         bring.action = Packets::Admin::ADMIN_BRING;
                         float angle = (float)(n++) * 1.2566f;  // around the host, 2 m away
                         bring.pos = me->GetPosition() + CVector(2.0f * cosf(angle), 2.0f * sinf(angle), 0.0f);
