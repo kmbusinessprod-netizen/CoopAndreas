@@ -294,3 +294,18 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Emotes: el fx se crea con una matriz propia que sigue al ped (petrolcan emite por +Y = adelante del ped);
   cigarette_smoke existe en effects.fxp (antes no se veía por la matriz/culling).
 - Sin tutorial de hospital/policía: $wasted_help (119) y $busted_help (126) = 1 y se quitan sus pickups (669-671).
+
+## 2026-11-05 19:35
+- Kamehameha nuevo: carga hasta 8 s (nivel 0..1; tamaño = 0.3+1.4·nivel, largo = 20+60·m; 4 s = como antes), disparo
+  8 s, cancelable. Teclado: Alt+H carga, H lanza, H/clic corta. Arma: manopla (arma 1) con F2 > Armas >
+  Kamehameha: clic der. carga (soltar cancela), clic izq. lanza/corta; fuego de la manopla bloqueado.
+  Sonidos propios CoopAndreas\sounds\kame_cargar.wav / kame_lanzar.wav por bass.dll (CSoundFile; volumen SFX
+  del juego, distancia y paneo para los remotos). PLAYER_POWER lleva "level" (server recompilado).
+  El mouse solo se come durante el disparo (al cargar mueve la cámara normal).
+- Skins: si un slot del ped ya tiene ese personaje se reutiliza; si no, UNLOAD + LOAD en el otro slot (cargar el
+  mismo personaje en dos slots compartía el TXD y quedaba blanca). La skin guardada se aplica 3 s después de que el
+  juego es jugable (sin cutscene/pantalla ancha/controles bloqueados); cada 1 s se valida y se re-aplica si una
+  cutscene u otra cosa cambió el modelo (eso era el "CJ deformado" al empezar partida nueva).
+- Menú: izquierda/derecha saltan una página; títulos sin textos explicativos.
+- Emotes: bailes de la discoteca (GFUNK/RUNNINGMAN/WOP dance_loop), DANCING dnce_M_d, STRIP STR_Loop_A, RAPPING;
+  fumar = SMOKING M_smk_drag (M_smkstnd_loop era el de "dolor de cabeza"). Nombres verificados en anim.img.
