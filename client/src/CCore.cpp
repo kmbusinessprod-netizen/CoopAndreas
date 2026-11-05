@@ -80,7 +80,7 @@ void CCore::Init()
     CPatch::CaptureGameProcessHook();  // [private build] CLEO 4 compat, see CPatch.cpp
     CPoolGuard::Install();             // [private build] see CPoolGuard.h
     CCheatSync::Install();             // [private build] see CCheatSync.h
-    CWindowMode::Init();               // [private build] see CWindowMode.h
+    // window mode: handled by ThirteenAG's III.VC.SA.WindowedMode.asi (scripts folder); CWindowMode kept but disabled
     Events::initGameEvent.after += []
     {
         CPatch::TemporaryPatches();
