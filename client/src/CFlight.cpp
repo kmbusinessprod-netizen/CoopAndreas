@@ -233,9 +233,9 @@ void CFlight::Process()
 
             // jump / crouch: float up and down without turning the body
             if (pad->NewState.ButtonSquare)
-                v.z += speed * 0.6f;
+                v.z += speed * 0.5f;  // half the speed of the bar
             if (pad->NewState.ShockButtonL)
-                v.z -= speed * 0.6f;
+                v.z -= speed * 0.5f;
 
             me->m_vecMoveSpeed = v;
             me->m_nPhysicalFlags.bApplyGravity = false;
