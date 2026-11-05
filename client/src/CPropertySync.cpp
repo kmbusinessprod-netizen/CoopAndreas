@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CPropertySync.h"
+#include "CPickups.h"
 
 // script globals (see sdk/Sanny Builder 4/.../CustomVariables.ini), index = property 0..31
 static constexpr int GV_ALREADY_BOUGHT = 728;   // $already_bought_house[32]
