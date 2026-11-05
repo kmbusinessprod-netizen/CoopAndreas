@@ -234,3 +234,14 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Si un remoto usa una importada que no tengo: aviso en el chat y se lo ve como CJ.
 - Pendiente probar con un dff real. Bug visual conocido: brazos estirados en el ragdoll tras matar/morir
   con skin especial (se arregla re-eligiendo la skin).
+
+## 2026-11-05 08:00 — Kamehameha nativo
+- El .cs de Alan Cortes es todo visual (coronas, checkpoints de carrera recoloreados por memoria, humo,
+  luces, cámara en un heli invisible) + explosiones tipo 8 sin sonido. Correrlo en cada PC no sirve para
+  que los demás lo vean, así que se reimplementó en C++ (CKamehameha) con paquete PLAYER_POWER (fase +
+  heading/pitch a 10 Hz). Explosiones solo en el PC del que lo lanza; los demás ven FX "explosion_medium".
+  NO instalar el Kamehameha.cs de CLEO (se duplicaría).
+- Gravity gun (ggun.cs, Mr. Seemann): agarra autos/peds/objetos y los mueve con velocidad → en coop hace falta
+  tomar la propiedad de sincronización del auto/ped agarrado. Pendiente.
+- Instalación: el primer archivo de un device_commit_files con varios archivos a veces queda viejo;
+  verificar md5 y reintentar de a uno.
