@@ -11,6 +11,8 @@ public:
 	char m_nPaintJob = -1;
 	bool m_bSyncing = false;
 	unsigned char m_nCreatedBy;
+	unsigned char m_nColor1 = 0, m_nColor2 = 0;  // [private build]
+	unsigned int m_nLastRecreate = 0;
 	Packets::Vehicles::VehicleDriverUpdate m_playerDriverSnapshot{};
 	CDamageManager m_oldDamageState{};
 
@@ -23,5 +25,9 @@ public:
 
 	// true if m_pVehicle still points to the same live game vehicle (not freed, not a reused slot)
 	bool IsGameVehicleAlive() const;
+
+	// [private build] a remote vehicle whose local copy the game deleted is created again (the owner
+	// still has it, so does everybody who joins later). Returns true if a live game vehicle exists.
+	bool EnsureGameVehicle(const CVector& pos);
 };
 

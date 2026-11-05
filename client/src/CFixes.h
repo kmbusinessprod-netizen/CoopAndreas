@@ -3,5 +3,6 @@
 class CFixes
 {
 public:
+    static void Install();  // hooks
     static void Process();
 };

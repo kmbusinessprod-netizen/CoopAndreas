@@ -20,6 +20,8 @@ CNetworkVehicle::CNetworkVehicle(vehicleid_t vehicleid, int modelid, CVector pos
     m_bSyncing = false;
     m_nModelId = modelid;
     m_nCreatedBy = createdBy;
+    m_nColor1 = color1;
+    m_nColor2 = color2;
 
     if (!CreateVehicle(vehicleid, modelid, pos, rotation, color1, color2))
         return;
@@ -95,6 +97,29 @@ bool CNetworkVehicle::CreateVehicle(vehicleid_t vehicleid, int modelid, CVector 
     return true;
 }
 
+bool CNetworkVehicle::EnsureGameVehicle(const CVector& pos)
+{
+    if (IsGameVehicleAlive())
+        return true;
+    if (m_bSyncing || m_nModelId < 400 || m_nModelId > 611)
+        return false;
+    auto* info = (CVehicleModelInfo*)CModelInfo::ms_modelInfoPtrs[m_nModelId];
+    if (info == nullptr || info->m_nVehicleType == VEHICLE_TRAIN)
+        return false;
+    if (GetTickCount() - m_nLastRecreate < 3000)
+        return false;
+    m_nLastRecreate = GetTickCount();
+
+    m_pVehicle = nullptr;
+    if (!CreateVehicle(m_vehicleId, m_nModelId, pos, 0.0f, m_nColor1, m_nColor2))
+    {
+        m_pVehicle = nullptr;
+        return false;
+    }
+    printf("[sync] remote vehicle %s was missing here, created again\n", to_string(m_vehicleId).c_str());
+    return true;
+}
+
 bool CNetworkVehicle::IsGameVehicleAlive() const
 {
     return m_pVehicle != nullptr && CPoolGuard::IsVehicleAlive(m_pVehicle) &&
@@ -158,6 +183,8 @@ CNetworkVehicle* CNetworkVehicle::CreateHosted(CVehicle* pVehicle)
     networkVehicle->m_nModelId = pVehicle->m_nModelIndex;
     networkVehicle->m_nPaintJob = (char)pVehicle->GetRemapIndex();
     networkVehicle->m_nCreatedBy = pVehicle->m_nCreatedBy;
+    networkVehicle->m_nColor1 = pVehicle->m_nPrimaryColor;
+    networkVehicle->m_nColor2 = pVehicle->m_nSecondaryColor;
 
     CNetworkVehicleManager::Add(networkVehicle);
 

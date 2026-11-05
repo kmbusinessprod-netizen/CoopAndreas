@@ -44,7 +44,7 @@ PACKET_HANDLER(ePacketType::VEHICLE_IDLE_UPDATE, Packets::Vehicles::VehicleIdleU
     if (pNetworkVehicle == nullptr)
         return;
 
-    if (!pNetworkVehicle->m_pVehicle)
+    if (!pNetworkVehicle->EnsureGameVehicle(pVehicleIdleUpdate->pos))  // [private build]
         return;
 
     if (pNetworkVehicle->m_pVehicle->m_matrix == nullptr)
@@ -95,6 +95,9 @@ PACKET_HANDLER(ePacketType::VEHICLE_DRIVER_UPDATE, Packets::Vehicles::VehicleDri
     CNetworkPlayer* pNetworkPlayer = CNetworkPlayerManager::GetPlayer(pVehicleDriverUpdate->senderPlayerid);
 
     if (pNetworkVehicle == nullptr || pNetworkPlayer == nullptr)
+        return;
+
+    if (!pNetworkVehicle->EnsureGameVehicle(pVehicleDriverUpdate->pos))  // [private build]
         return;
 
     CVehicle* pVehicle = pNetworkVehicle->m_pVehicle;

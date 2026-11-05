@@ -64,6 +64,7 @@ void CModMenu::BuildRoot(CModMenu* m)
             {"Skin", [] { return std::string(CSkin::ModelName(CSkin::ms_nLocalSkin)); }, nullptr, BuildSkins},
             {"Jugador", nullptr, nullptr, BuildPlayer},
             {"Teletransporte", nullptr, nullptr, BuildTeleport},
+            {"Misiones (pruebas)", nullptr, nullptr, BuildMissions},
             {"Guardar partida", nullptr,
                 []
                 {
@@ -74,22 +75,38 @@ void CModMenu::BuildRoot(CModMenu* m)
         });
 }
 
-static bool IsVehicleCheat(int i)
+struct CheatCategory
 {
-    static const int vehicleCheats[] = {17, 18, 19, 20, 21, 22, 23, 24, 25, 50, 51, 84, 85, 86, 87, 88, 89};
-    for (int v : vehicleCheats)
-        if (v == i)
-            return true;
-    return false;
+    const char* name;
+    std::vector<int> cheats;
+};
+static const std::vector<CheatCategory>& CheatCategories()
+{
+    static const std::vector<CheatCategory> list = {
+        {"Armas y salud", {0, 1, 2, 3, 61, 62, 72, 67, 63, 64, 29}},
+        {"Cuerpo y habilidades", {36, 37, 38, 60, 49, 68, 71, 73, 79, 80, 81, 82, 83, 90}},
+        {"Policia y busqueda", {4, 5, 15, 65, 66}},
+        {"Clima y hora", {6, 7, 8, 9, 10, 57, 58, 55, 56, 11, 12, 13}},
+        {"Trafico y autos", {26, 27, 28, 30, 31, 32, 33, 34, 35, 46, 47, 48, 52, 53, 54, 74, 75, 91}},
+        {"Peatones y pandillas", {14, 16, 39, 40, 41, 42, 43, 44, 45, 69, 70, 76, 77, 78}},
+    };
+    return list;
 }
 
 void CModMenu::BuildCheats(CModMenu* m)
 {
     std::vector<Item> items;
-    for (int i = 0; i < CheatInfo::COUNT; i++)
+    for (size_t c = 0; c < CheatCategories().size(); c++)
+        items.push_back({CheatCategories()[c].name, nullptr, nullptr, [c](CModMenu* mm) { BuildCheatCategory(mm, (int)c); }});
+    m->Open("TRUCOS", std::move(items));
+}
+
+void CModMenu::BuildCheatCategory(CModMenu* m, int category)
+{
+    const CheatCategory& cat = CheatCategories()[category];
+    std::vector<Item> items;
+    for (int i : cat.cheats)
     {
-        if (IsVehicleCheat(i) || i == 59)
-            continue;
         bool toggle = CCheat::m_aCheatFunctions[i] == nullptr;
         bool world = CheatInfo::IsWorld(i);
         std::string label = std::string(world ? "~y~[todos]~s~ " : "") + CheatInfo::Name(i);
@@ -102,7 +119,7 @@ void CModMenu::BuildCheats(CModMenu* m)
             },
             [i] { CCheatSync::ActivateFromMenu(i); }, nullptr});
     }
-    m->Open("TRUCOS  (amarillo = necesita que todos acepten)", std::move(items));
+    m->Open(std::string("TRUCOS - ") + cat.name + "  (amarillo: todos aceptan)", std::move(items));
 }
 
 // vehicle categories
@@ -301,6 +318,24 @@ void CModMenu::BuildTeleport(CModMenu* m)
         {"Aerodromo abandonado", 410.0f, 2500.0f, 16.5f},
     };
     std::vector<Item> items;
+    items.push_back({"~y~Al marcador del mapa", nullptr,
+        []
+        {
+            int handle = FrontEndMenuManager.m_nTargetBlipIndex;
+            int index = handle & 0xFFFF;
+            if (handle == 0 || index < 0 || index >= 175 || CRadar::ms_RadarTrace[index].m_nCounter != (handle >> 16) ||
+                CRadar::ms_RadarTrace[index].m_nBlipDisplay == 0)
+            {
+                SetStatus("pone un marcador en el mapa primero (menu de pausa > mapa > clic derecho)");
+                return;
+            }
+            CVector pos = CRadar::ms_RadarTrace[index].m_vecPos;
+            CStreaming::LoadScene(CVector(pos.x, pos.y, 20.0f));
+            float z = CWorld::FindGroundZForCoord(pos.x, pos.y);
+            CUtil::TeleportLocalPlayer(CVector(pos.x, pos.y, z + 1.5f), 0);
+            SetStatus("teletransportado al marcador");
+        },
+        nullptr});
     for (auto& p : places)
     {
         items.push_back({p.name, nullptr,
@@ -340,21 +375,36 @@ void CModMenu::Process()
         CPad::OldKeyState.*key = 0;
     };
 
+    // a tap moves one row; holding the key waits 350 ms and then repeats every 110 ms
     unsigned int now = GetTickCount();
-    bool repeat = now - ms_nLastInput > 120;
+    static unsigned int holdStart = 0;
+    auto step = [&](short CKeyboardState::*key) -> bool
+    {
+        if (KeyJustPressed(key))
+        {
+            holdStart = now;
+            ms_nLastInput = now;
+            return true;
+        }
+        if (KeyDown(key) && now - holdStart > 350 && now - ms_nLastInput > 110)
+        {
+            ms_nLastInput = now;
+            return true;
+        }
+        return false;
+    };
     int move = 0;
-    if ((KeyJustPressed(&CKeyboardState::up) || (KeyDown(&CKeyboardState::up) && repeat)))
+    if (step(&CKeyboardState::up))
         move = -1;
-    else if ((KeyJustPressed(&CKeyboardState::down) || (KeyDown(&CKeyboardState::down) && repeat)))
+    else if (step(&CKeyboardState::down))
         move = 1;
-    else if (KeyJustPressed(&CKeyboardState::pgup) || (KeyDown(&CKeyboardState::pgup) && repeat))
+    else if (step(&CKeyboardState::pgup))
         move = -ROWS;
-    else if (KeyJustPressed(&CKeyboardState::pgdn) || (KeyDown(&CKeyboardState::pgdn) && repeat))
+    else if (step(&CKeyboardState::pgdn))
         move = ROWS;
 
     if (move != 0 && count > 0)
     {
-        ms_nLastInput = now;
         page.selected += move;
         if (move == -1 && page.selected < 0)
             page.selected = count - 1;
@@ -484,4 +534,165 @@ void CModMenu::Draw()
             foot += "   " + std::to_string(page.selected + 1) + "/" + std::to_string(page.items.size());
     }
     CFont::PrintString(CUtil::HUD_X(x + 8.0f), CUtil::HUD_Y(y + boxH - footH + 1.0f), foot.c_str());
+}
+
+// ------------------------------------------------------------------------------------------------
+// missions (for testing): the host launches any story mission directly, without its marker
+
+void CModMenu::BuildMissions(CModMenu* m)
+{
+    struct Mission
+    {
+        int id;
+        const char* name;
+    };
+    static const Mission missions[] = {
+        {11, "Big Smoke"},
+        {12, "Ryder"},
+        {13, "Tagging Up Turf"},
+        {14, "Cleaning The Hood"},
+        {15, "Drive-Thru"},
+        {16, "Nines And AK's"},
+        {17, "Drive-By"},
+        {18, "Sweet's Girl"},
+        {19, "Cesar Vialpando"},
+        {20, "Los Sepulcros"},
+        {21, "Doberman"},
+        {22, "Burning Desire"},
+        {23, "Gray Imports"},
+        {24, "Home Invasion"},
+        {25, "Catalyst"},
+        {26, "Robbing Uncle Sam"},
+        {27, "OG Loc"},
+        {28, "Running Dog"},
+        {29, "Wrong Side of the Tracks"},
+        {30, "Just Business"},
+        {31, "Life's a Beach"},
+        {32, "Madd Dogg's Rhymes"},
+        {33, "Management Issues"},
+        {34, "House Party"},
+        {35, "Race Tournament / 8-track / Dirt Track"},
+        {36, "Lowrider (High Stakes)"},
+        {37, "Reuniting The Families"},
+        {38, "The Green Sabre"},
+        {39, "Badlands"},
+        {40, "First Date"},
+        {41, "Local Liquor Store"},
+        {42, "Small Town Bank"},
+        {43, "Tanker Commander"},
+        {44, "Against All Odds"},
+        {45, "King in Exile"},
+        {46, "Body Harvest"},
+        {47, "Are you going to San Fierro?"},
+        {48, "Wu Zi Mu / Farewell, My Love..."},
+        {49, "Wear Flowers In Your Hair"},
+        {50, "Deconstruction"},
+        {51, "555 WE TIP"},
+        {52, "Snail Trail"},
+        {53, "Mountain Cloud Boys"},
+        {54, "Ran Fa Li"},
+        {55, "Lure"},
+        {56, "Amphibious Assault"},
+        {57, "The Da Nang Thang"},
+        {58, "Photo Opportunity"},
+        {59, "Jizzy"},
+        {60, "Outrider"},
+        {61, "Ice Cold Killa"},
+        {62, "Toreno's Last Flight"},
+        {63, "Yay Ka-Boom-Boom"},
+        {64, "Pier 69"},
+        {65, "T-Bone Mendez"},
+        {66, "Mike Toreno"},
+        {67, "Zeroing In"},
+        {68, "Test Drive"},
+        {69, "Customs Fast Track"},
+        {70, "Puncture Wounds"},
+        {71, "Back to School"},
+        {72, "Air Raid"},
+        {73, "Supply Lines..."},
+        {74, "New Model Army"},
+        {75, "Monster"},
+        {76, "Highjack"},
+        {77, "Interdiction"},
+        {78, "Verdant Meadows"},
+        {79, "N.O.E."},
+        {80, "Stowaway"},
+        {81, "Black Project"},
+        {82, "Green Goo"},
+        {83, "Learning to Fly"},
+        {84, "Fender Ketchup"},
+        {85, "Explosive Situation"},
+        {86, "You've Had Your Chips"},
+        {87, "Fish in a Barrel"},
+        {88, "Don Peyote"},
+        {89, "Intensive Care"},
+        {90, "The Meat Business"},
+        {91, "Freefall"},
+        {92, "Saint Mark's Bistro"},
+        {93, "Misappropriation"},
+        {94, "High Noon"},
+        {95, "Madd Dogg"},
+        {96, "Architectural Espionage"},
+        {97, "Key To Her Heart"},
+        {98, "Dam And Blast"},
+        {99, "Cop Wheels"},
+        {100, "Up, Up and Away!"},
+        {101, "Breaking the Bank at Caligula's"},
+        {102, "A Home In The Hills"},
+        {103, "Vertical Bird"},
+        {104, "Home Coming"},
+        {105, "Cut Throat Business"},
+        {106, "Beat Down on B Dup"},
+        {107, "Grove 4 Life"},
+        {108, "Riot"},
+        {109, "Los Desperados"},
+        {110, "End Of The Line (1)"},
+        {111, "End Of The Line (2)"},
+        {112, "End Of The Line (3)"}
+    };
+
+    std::vector<Item> items;
+    items.push_back({"~r~Fallar / cancelar la mision actual", nullptr,
+        []
+        {
+            if (!CLocalPlayer::m_bIsHost && CNetwork::m_bAuthenticated)
+            {
+                SetStatus("solo el host puede hacerlo");
+                return;
+            }
+            if (!CTheScripts::IsPlayerOnAMission())
+            {
+                SetStatus("no hay ninguna mision en curso");
+                return;
+            }
+            Command<Commands::FAIL_CURRENT_MISSION>();
+            SetStatus("mision cancelada");
+        },
+        nullptr});
+    for (const Mission& mi : missions)
+    {
+        int id = mi.id;
+        std::string name = mi.name;
+        items.push_back({"#" + std::to_string(id) + "  " + name, nullptr,
+            [id, name]
+            {
+                if (!CLocalPlayer::m_bIsHost && CNetwork::m_bAuthenticated)
+                {
+                    SetStatus("solo el host puede iniciar misiones");
+                    return;
+                }
+                if (CTheScripts::IsPlayerOnAMission())
+                {
+                    SetStatus("ya hay una mision en curso (cancelala primero)");
+                    return;
+                }
+                *(int*)(CTheScripts::ScriptSpace + CTheScripts::OnAMissionFlag) = 1;
+                Command<Commands::LOAD_AND_LAUNCH_MISSION_INTERNAL>(id);
+                ms_bOpen = false;
+                ms_pages.clear();
+                CChat::AddMessage("{a0f0a0}[coop] {d6dce8}mision iniciada desde el menu: %s", name.c_str());
+            },
+            nullptr});
+    }
+    m->Open("MISIONES  (solo host, puede romper el orden de la historia)", std::move(items));
 }

@@ -91,8 +91,16 @@ void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
 
     if (ped->m_nModelIndex != modelId)
     {
-        ped->DeleteRwObject();
-        ped->SetModelIndex(modelId);
+        // exactly what the CHANGE_PLAYER_MODEL opcode (09C7) does: virtual DeleteRwObject, model index -1,
+        // virtual SetModelIndex, and keep the anim group so CJ keeps moving like CJ
+        using DeleteRwObject_t = void(__thiscall*)(CEntity*);
+        using SetModelIndex_t = void(__thiscall*)(CEntity*, unsigned int);
+        void** vtable = *(void***)ped;
+        int savedAnimGroup = *(int*)((uintptr_t)ped + 0x4D4);
+        ((DeleteRwObject_t)vtable[8])(ped);
+        ped->m_nModelIndex = 0xFFFF;
+        ((SetModelIndex_t)vtable[5])(ped, modelId);
+        *(int*)((uintptr_t)ped + 0x4D4) = savedAnimGroup;
     }
     if (modelId == 0)
         CClothes::RebuildPlayer(ped, ped != FindPlayerPed(0));
