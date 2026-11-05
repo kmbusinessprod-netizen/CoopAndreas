@@ -4,6 +4,7 @@
 #include "CSkin.h"
 #include "CUnlockAll.h"
 #include "CPrompt.h"
+#include <unordered_map>
 
 bool CModMenu::ms_bOpen = false;
 std::vector<CModMenu::Page> CModMenu::ms_pages;
@@ -13,13 +14,20 @@ unsigned int CModMenu::ms_nStatusUntil = 0;
 
 static const int ROWS = 12;
 
+// our own "was pressed last frame" memory: the game's OldKeyState is not reliable for us because
+// other code (and the pause menu) resets it, which made one tap count as many
+static std::unordered_map<size_t, bool> s_wasDown;
 static bool KeyDown(short CKeyboardState::*key)
 {
     return CPad::NewKeyState.*key != 0;
 }
 static bool KeyJustPressed(short CKeyboardState::*key)
 {
-    return CPad::NewKeyState.*key != 0 && CPad::OldKeyState.*key == 0;
+    size_t id = (size_t)&(CPad::NewKeyState.*key);
+    bool down = KeyDown(key);
+    bool was = s_wasDown[id];
+    s_wasDown[id] = down;
+    return down && !was;
 }
 
 void CModMenu::SetStatus(const std::string& text)
@@ -289,6 +297,16 @@ void CModMenu::BuildPlayer(CModMenu* m)
             {"Armas: juego 3", nullptr, [] { CCheatSync::ActivateFromMenu(2); }},
             {"Jetpack", nullptr, [] { CCheatSync::ActivateFromMenu(64); }},
             {"Paracaidas", nullptr, [] { CCheatSync::ActivateFromMenu(63); }},
+            {"Cuerpo normal (quitar gordo / musculo)", nullptr,
+                []
+                {
+                    Command<Commands::SET_FLOAT_STAT>(21, 0.0f);
+                    Command<Commands::SET_FLOAT_STAT>(23, 0.0f);
+                    if (CPlayerPed* ped = FindPlayerPed(0))
+                        if (ped->m_nModelIndex == 0)
+                            CClothes::RebuildPlayer(ped, false);
+                    SetStatus("cuerpo normal");
+                }},
             {"Volver a desbloquear todo", nullptr,
                 []
                 {
@@ -383,7 +401,11 @@ void CModMenu::Process()
     if (CChat::m_bInputActive || FrontEndMenuManager.m_bMenuActive)
         return;
 
-    if (CPad::NewKeyState.FKeys[1] != 0 && CPad::OldKeyState.FKeys[1] == 0)  // F2
+    static bool f2Was = false;
+    bool f2 = CPad::NewKeyState.FKeys[1] != 0;
+    bool f2Pressed = f2 && !f2Was;
+    f2Was = f2;
+    if (f2Pressed)  // F2
     {
         Toggle();
         return;
@@ -394,14 +416,6 @@ void CModMenu::Process()
     Page& page = ms_pages.back();
     int count = (int)page.items.size();
 
-    // keep the keys away from the game (Enter = enter vehicle, Esc = pause)
-    auto consume = [](short CKeyboardState::*key)
-    {
-        CPad::NewKeyState.*key = 0;
-        CPad::OldKeyState.*key = 0;
-    };
-
-    // a tap moves one row; holding the key waits 350 ms and then repeats every 110 ms
     unsigned int now = GetTickCount();
     static unsigned int holdStart = 0;
     auto step = [&](short CKeyboardState::*key) -> bool
@@ -444,8 +458,7 @@ void CModMenu::Process()
     }
 
     bool select = KeyJustPressed(&CKeyboardState::enter) || KeyJustPressed(&CKeyboardState::extenter);
-    bool back = KeyJustPressed(&CKeyboardState::back) || KeyJustPressed(&CKeyboardState::left) ||
-                KeyJustPressed(&CKeyboardState::esc);
+    bool back = KeyJustPressed(&CKeyboardState::back) || KeyJustPressed(&CKeyboardState::esc);
 
     if (select && count > 0)
     {
@@ -466,14 +479,8 @@ void CModMenu::Process()
             ms_bOpen = false;
     }
 
-    consume(&CKeyboardState::enter);
-    consume(&CKeyboardState::extenter);
-    consume(&CKeyboardState::esc);
-    consume(&CKeyboardState::back);
-    consume(&CKeyboardState::up);
-    consume(&CKeyboardState::down);
-    consume(&CKeyboardState::left);
-    consume(&CKeyboardState::right);
+    // keep Esc away from the pause menu while we are open
+    CPad::NewKeyState.esc = 0;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -554,7 +561,7 @@ void CModMenu::Draw()
         foot = "~g~" + ms_status;
     else
     {
-        foot = "~y~Flechas~s~ mover  ~y~Enter~s~ elegir  ~y~Izquierda/Retroceso~s~ volver  ~y~F2~s~ cerrar";
+        foot = "~y~Flechas~s~ mover  ~y~Enter~s~ elegir  ~y~Retroceso~s~ volver  ~y~F2~s~ cerrar";
         if ((int)page.items.size() > ROWS)
             foot += "   " + std::to_string(page.selected + 1) + "/" + std::to_string(page.items.size());
     }

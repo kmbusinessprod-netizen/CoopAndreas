@@ -28,6 +28,11 @@ public:
 
 	CNetworkPlayerStats m_stats{};
 	CPedClothesDesc m_pPedClothesDesc{};
+	// [private build] every CPlayerPed of the game points at the SAME clothes description (the players are
+	// copies of one template), so dressing a remote player also redressed the local one. Each remote
+	// player gets his own.
+	CPedClothesDesc m_privateClothesDesc{};
+	CPedClothesDesc* m_pOrigClothesDesc = nullptr;
 	bool m_bHasBeenConnectedBeforeMe = false;
 	uint16_t m_nSkin = 0;  // [private build] ped model, 0 = CJ
 

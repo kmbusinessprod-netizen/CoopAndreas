@@ -76,19 +76,18 @@ const char* CSkin::ModelName(int modelId)
     return s_pedNames[modelId];
 }
 
-void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
+// one pending change per ped: the model is requested and applied once the streaming has it,
+// never blocking the game (a blocking LoadAllRequestedModels froze the game for some models)
+struct PendingSkin
 {
-    if (ped == nullptr || !IsValidPedModel(modelId))
-        return;
+    CPlayerPed* ped;
+    uint16_t modelId;
+    unsigned int since;
+};
+static std::vector<PendingSkin> s_pending;
 
-    if (modelId != 0)
-    {
-        CStreaming::RequestModel(modelId, GAME_REQUIRED);
-        CStreaming::LoadAllRequestedModels(false);
-        if (CStreaming::ms_aInfoForModel[modelId].m_nLoadState != LOADSTATE_LOADED)
-            return;
-    }
-
+static void ApplyNow(CPlayerPed* ped, uint16_t modelId)
+{
     if (ped->m_nModelIndex != modelId)
     {
         // exactly what the CHANGE_PLAYER_MODEL opcode (09C7) does: virtual DeleteRwObject, model index -1,
@@ -104,6 +103,43 @@ void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
     }
     if (modelId == 0)
         CClothes::RebuildPlayer(ped, ped != FindPlayerPed(0));
+}
+
+void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
+{
+    if (ped == nullptr || !IsValidPedModel(modelId))
+        return;
+
+    for (auto it = s_pending.begin(); it != s_pending.end();)
+        it = (it->ped == ped) ? s_pending.erase(it) : it + 1;
+
+    if (modelId == 0 || CStreaming::ms_aInfoForModel[modelId].m_nLoadState == LOADSTATE_LOADED)
+    {
+        ApplyNow(ped, modelId);
+        return;
+    }
+    CStreaming::RequestModel(modelId, GAME_REQUIRED);
+    s_pending.push_back({ped, modelId, GetTickCount()});
+}
+
+void CSkin::Process()
+{
+    for (auto it = s_pending.begin(); it != s_pending.end();)
+    {
+        bool alive = CPoolGuard::IsPedAlive(it->ped);
+        bool loaded = alive && CStreaming::ms_aInfoForModel[it->modelId].m_nLoadState == LOADSTATE_LOADED;
+        if (loaded)
+            ApplyNow(it->ped, it->modelId);
+        else if (alive && GetTickCount() - it->since < 8000)
+        {
+            CStreaming::RequestModel(it->modelId, GAME_REQUIRED);
+            ++it;
+            continue;
+        }
+        else if (alive && it->ped == FindPlayerPed(0))
+            CChat::AddMessage("{f07878}[skin] {d6dce8}no se pudo cargar el modelo %d (%s)", it->modelId, ModelName(it->modelId));
+        it = s_pending.erase(it);
+    }
 }
 
 void CSkin::SetLocal(uint16_t modelId)

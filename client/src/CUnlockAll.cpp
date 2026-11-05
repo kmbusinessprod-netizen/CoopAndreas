@@ -51,8 +51,9 @@ static const float s_roads[][6] = {
     {618.7253, -1189.606, 18.0, 623.5441, -1161.981, 22.0},
 };
 
-static const int s_floatStats[] = {21 /*lung*/, 22 /*stamina*/, 24 /*max health*/, 69, 70, 71, 72, 73, 74, 75, 76, 77,
-    78, 79 /*weapon skills*/, 160 /*flying*/, 223 /*bike*/, 229 /*driving*/, 230 /*cycling*/};
+// (21 is FAT and 23 is MUSCLE: never touch those, they change CJ's body)
+static const int s_floatStats[] = {STAT_STAMINA, STAT_MAX_HEALTH, STAT_LUNG_CAPACITY, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+    78, 79 /*weapon skills*/, STAT_DRIVING_SKILL, STAT_FLYING_SKILL, STAT_BIKE_SKILL, STAT_CYCLING_SKILL};
 
 void CUnlockAll::ApplyNow()
 {
@@ -74,6 +75,14 @@ void CUnlockAll::ApplyNow()
     // body
     for (int stat : s_floatStats)
         Command<Commands::SET_FLOAT_STAT>(stat, 1000.0f);
+    // undo what the first build of this feature did (it set FAT to 1000 by mistake)
+    if (CStats::GetStatValue(STAT_FAT) >= 999.0f)
+    {
+        Command<Commands::SET_FLOAT_STAT>(STAT_FAT, 0.0f);
+        if (CPlayerPed* ped = FindPlayerPed(0))
+            if (ped->m_nModelIndex == 0)
+                CClothes::RebuildPlayer(ped, false);
+    }
     CWorld::Players[0].m_nMaxHealth = 176;
     CWorld::Players[0].m_nMaxArmour = 100;
 

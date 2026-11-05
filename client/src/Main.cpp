@@ -84,6 +84,7 @@ public:
         {
             CPrompt::Process();  // [private build]
             CModMenu::Process();
+            CSkin::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();

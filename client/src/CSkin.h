@@ -8,7 +8,8 @@ public:
 
     static bool IsValidPedModel(int modelId);
     static const char* ModelName(int modelId);
-    static void ApplyToPed(CPlayerPed* ped, uint16_t modelId);  // streaming + SetModelIndex (+ clothes for CJ)
+    static void ApplyToPed(CPlayerPed* ped, uint16_t modelId);  // requests the model, applies when loaded
+    static void Process();  // gameProcessEvent: applies pending skins
 
     static void SetLocal(uint16_t modelId);        // apply here and tell everybody
     static void SendLocal();                        // re-send (a player joined)

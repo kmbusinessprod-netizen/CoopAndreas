@@ -45,6 +45,11 @@ void CNetworkPlayer::CreatePed(CVector position)
     // set player immunies, he doesn't care about the pain now
     Command<Commands::SET_CHAR_PROOFS>(actorId, 0, 1, 1, 0, 0);
 
+    if (m_pPed->m_pPlayerData->m_pPedClothesDesc != &m_privateClothesDesc)
+    {
+        m_pOrigClothesDesc = m_pPed->m_pPlayerData->m_pPedClothesDesc;
+        m_pPed->m_pPlayerData->m_pPedClothesDesc = &m_privateClothesDesc;
+    }
     *m_pPed->m_pPlayerData->m_pPedClothesDesc = m_pPedClothesDesc;
 
     CClothes::RebuildPlayer(m_pPed, true);  // [private build] keep his fat/muscle, not ours
@@ -57,6 +62,11 @@ void CNetworkPlayer::CreatePed(CVector position)
 
 void CNetworkPlayer::DestroyPed()
 {
+    if (m_pOrigClothesDesc && m_pPed->m_pPlayerData)
+    {
+        m_pPed->m_pPlayerData->m_pPedClothesDesc = m_pOrigClothesDesc;
+        m_pOrigClothesDesc = nullptr;
+    }
     if (m_pPed->m_pVehicle)
     {
         plugin::Command<Commands::WARP_CHAR_FROM_CAR_TO_COORD>(CPools::GetPedRef(m_pPed), 0.f, 0.f, 0.f);
