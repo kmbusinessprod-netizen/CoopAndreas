@@ -17,5 +17,12 @@ public:
     // true if `ped` is a live object of the ped pool
     static bool IsPedAlive(CPed* ped);
 
+    // makes sure the vehicle / ped pool has a free slot, removing the farthest random
+    // vehicle / ped of our own if it is full. false = still full, do not create anything
+    // (the game's operator new returns NULL when the pool is full and C++ then runs the
+    // constructor on NULL: that was the "flying cars + jetpack" crash)
+    static bool EnsureFreeVehicleSlot();
+    static bool EnsureFreePedSlot();
+
     static int ms_nIgnoredDeletes;
 };

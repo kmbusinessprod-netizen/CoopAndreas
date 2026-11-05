@@ -90,6 +90,105 @@ bool CPoolGuard::IsPedAlive(CPed* ped)
     return slot >= 0 && !pool->m_byteMap[slot].bEmpty;
 }
 
+template <class P>
+static int CountFree(P* pool)
+{
+    int n = 0;
+    for (int i = 0; i < pool->m_nSize; i++)
+        n += pool->m_byteMap[i].bEmpty ? 1 : 0;
+    return n;
+}
+
+static bool IsLocalOrUnsynced(CEntity* entity, bool isVehicle)
+{
+    if (isVehicle)
+    {
+        CNetworkVehicle* nv = CNetworkVehicleManager::GetVehicle(entity);
+        return nv == nullptr || nv->m_bSyncing;
+    }
+    CNetworkPed* np = CNetworkPedManager::GetPed((CPed*)entity);
+    return np == nullptr || np->m_bSyncing;
+}
+
+bool CPoolGuard::EnsureFreeVehicleSlot()
+{
+    auto pool = CPools::ms_pVehiclePool;
+    if (pool == nullptr)
+        return false;
+    if (CountFree(pool) > 2)
+        return true;
+
+    CVector me = FindPlayerCoors(0);
+    CVehicle* best = nullptr;
+    float bestDist = 0.0f;
+    for (int i = 0; i < pool->m_nSize; i++)
+    {
+        if (pool->m_byteMap[i].bEmpty)
+            continue;
+        CVehicle* v = pool->GetAt(i);
+        if (v == nullptr || v->m_nCreatedBy == MISSION_VEHICLE || v->m_pDriver && v->m_pDriver->IsPlayer())
+            continue;
+        if (!IsLocalOrUnsynced(v, true))
+            continue;
+        float d = (v->GetPosition() - me).Magnitude();
+        if (d > bestDist)
+        {
+            bestDist = d;
+            best = v;
+        }
+    }
+
+    if (best)
+    {
+        printf("[guard] vehicle pool full: removing a random vehicle %.0f m away\n", bestDist);
+        CWorld::Remove(best);
+        delete best;
+    }
+    bool ok = CountFree(pool) > 0;
+    if (!ok)
+        printf("[guard] vehicle pool full: skipping creation\n");
+    return ok;
+}
+
+bool CPoolGuard::EnsureFreePedSlot()
+{
+    auto pool = CPools::ms_pPedPool;
+    if (pool == nullptr)
+        return false;
+    if (CountFree(pool) > 2)
+        return true;
+
+    CVector me = FindPlayerCoors(0);
+    CPed* best = nullptr;
+    float bestDist = 0.0f;
+    for (int i = 0; i < pool->m_nSize; i++)
+    {
+        if (pool->m_byteMap[i].bEmpty)
+            continue;
+        CPed* p = pool->GetAt(i);
+        if (p == nullptr || p->IsPlayer() || p->m_nCreatedBy != 1 /*RANDOM_CHAR*/ || p->m_nPedFlags.bInVehicle)
+            continue;
+        if (!IsLocalOrUnsynced(p, false))
+            continue;
+        float d = (p->GetPosition() - me).Magnitude();
+        if (d > bestDist)
+        {
+            bestDist = d;
+            best = p;
+        }
+    }
+
+    if (best)
+    {
+        printf("[guard] ped pool full: removing a random ped %.0f m away\n", bestDist);
+        CPopulation::RemovePed(best);
+    }
+    bool ok = CountFree(pool) > 0;
+    if (!ok)
+        printf("[guard] ped pool full: skipping creation\n");
+    return ok;
+}
+
 // --- crash #2: two players on one bike -----------------------------------------------------
 // 0x523E5D..0x523E72 does `ped->m_pIntelligence->m_TaskMgr.GetActiveTask()->GetTaskType()` without
 // a null check. A remote ped can have no active task for a frame. We hand the code a dummy task

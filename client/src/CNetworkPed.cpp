@@ -7,6 +7,16 @@
 
 CNetworkPed::CNetworkPed(pedid_t pedid, int modelId, ePedType pedType, CVector pos, unsigned char createdBy, char specialModelName[])
 {
+    // [private build] a full ped pool makes `new CPed` return NULL and the constructor crash on it
+    if (!CPoolGuard::EnsureFreePedSlot())
+    {
+        m_pedId = pedid;
+        m_nPedType = pedType;
+        m_bSyncing = false;
+        m_nCreatedBy = createdBy;
+        return;
+    }
+
     if (modelId >= 290 && modelId <= 299)
         CStreaming::RequestSpecialModel(modelId, specialModelName, 0);
     else
