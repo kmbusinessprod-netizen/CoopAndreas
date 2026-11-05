@@ -158,3 +158,20 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   no tiene destructor para ellas → referencia colgando en la pila. Al borrar ese vehículo,
   `CEntity::ResolveReferences` escribía NULL en la pila (aquí, el ESI guardado = `this`) → crash.
 - Arreglo: `CUtil::DestroyStackTask(&task)` (destructor del juego, vtable[0] con flag 0) en los 8 sitios.
+
+## Lote 2026-11-05 (madrugada) — menú F2, desbloqueo, skins, propiedades
+- **Menú F2** (`client/src/UI/CModMenu.cpp`): Trucos (pasa por CCheatSync: los de mundo piden votación),
+  Vehículos (todos los modelos 400-611 por categoría, `CCheat::VehicleCheat`), Skin (`CSkin`, modelo ped
+  con animaciones de CJ, sincronizada con `PLAYER_SKIN`; el server la reenvía a quien entra), Jugador
+  (curar, dinero, estrellas, armas, jetpack, paracaídas), Teletransporte (lugares fijos), Guardar partida
+  (`ACTIVATE_SAVE_MENU`). El guardado siempre escribe modelo 0 (CJ) para el jugador.
+- **Desbloqueo** (`CUnlockAll`): al conectar: stat 181=4 (ciudades, sin estrellas), quita IPL BARRIERS1/2,
+  enciende las carreteras que INTRO apaga, habilita los 50 enex que la historia va abriendo, stats
+  (vida máx, resistencia, pulmón, armas, conducción, vuelo, moto, bici) a 1000. Se reaplica cada 15 s.
+- **Propiedades** (`CPropertySync`): vigila `$already_bought_house[32]` (global 728). Al comprar uno,
+  todos la reciben: el host la "recoge" (AddToCollectedPickupsArray + quitar pickup → BUY_PRO lanza la
+  misión de compra normal y su estado se sincroniza como siempre); los clientes marcan la global,
+  quitan el pickup, habilitan el enex y activan el garaje. El server guarda la lista para los que entran.
+- **Radio tras morir** (`CFixes`): si no estoy en un vehículo y hay radio activa → StopRadio.
+- **Encerrado en interior** (`CFixes`): un cliente dentro de un interior nunca queda con enex deshabilitados.
+- Pendiente: misión de Ryder (falta saber qué falla), mira/SensFix, avión deformado, duplicado de autos.
