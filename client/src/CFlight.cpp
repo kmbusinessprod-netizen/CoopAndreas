@@ -143,7 +143,7 @@ void CFlight::Process()
         if (!s_flying)
         {
             // second jump while already in the air
-            bool airborne = !me->m_nPedFlags.bIsStanding && !me->m_nPedFlags.bInVehicle && !me->m_nPedFlags.bIsInTheWater;
+            bool airborne = !me->m_nPedFlags.bIsStanding && !me->m_nPedFlags.bInVehicle && !me->m_nPhysicalFlags.bTouchingWater;
             if (jumpPressed && airborne && now - s_lastJumpInAir < 2000)
             {
                 s_flying = true;
