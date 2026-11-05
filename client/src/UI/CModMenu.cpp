@@ -201,6 +201,7 @@ static std::string VehicleDisplayName(int modelId)
 void CModMenu::BuildVehicles(CModMenu* m)
 {
     std::vector<Item> items;
+    items.push_back({"~y~Tunear el vehiculo actual", nullptr, nullptr, BuildTuning});
     for (int c = 0; c < CAT_COUNT; c++)
         items.push_back({s_categoryNames[c], nullptr, nullptr, [c](CModMenu* mm) { BuildVehicleCategory(mm, c); }});
     m->Open("VEHICULOS", std::move(items));
@@ -831,4 +832,112 @@ void CModMenu::BuildWeapons(CModMenu* m)
             nullptr});
     }
     m->Open("ARMAS", std::move(items));
+}
+
+// ------------------------------------------------------------------------------------------------
+// tuning of the vehicle you are in. Upgrades go through the game's own ADD_VEHICLE_MOD, which the coop
+// already syncs to the other players.
+
+static CVehicle* MyVehicle()
+{
+    CPlayerPed* me = FindPlayerPed(0);
+    return me && me->m_nPedFlags.bInVehicle ? me->m_pVehicle : nullptr;
+}
+
+static bool AddMod(int mod)
+{
+    CVehicle* v = MyVehicle();
+    if (!v)
+        return false;
+    int ref = CPools::GetVehicleRef(v);
+    Command<Commands::REQUEST_VEHICLE_MOD>(mod);
+    CStreaming::LoadAllRequestedModels(false);
+    if (!Command<Commands::HAS_VEHICLE_MOD_LOADED>(mod))
+        return false;
+    int slot = -1;
+    Command<Commands::ADD_VEHICLE_MOD>(ref, mod, &slot);
+    return true;
+}
+
+void CModMenu::BuildTuning(CModMenu* m)
+{
+    CVehicle* v = MyVehicle();
+    if (!v)
+    {
+        SetStatus("subete a un vehiculo primero");
+        return;
+    }
+    bool car = v->m_nVehicleSubClass == VEHICLE_AUTOMOBILE || v->m_nVehicleSubClass == VEHICLE_MTRUCK ||
+               v->m_nVehicleSubClass == VEHICLE_QUAD;
+    std::vector<Item> items;
+    items.push_back({"Reparar", nullptr,
+        []
+        {
+            if (CVehicle* v = MyVehicle())
+            {
+                Command<Commands::FIX_CAR>(CPools::GetVehicleRef(v));
+                v->m_fHealth = 1000.0f;
+                SetStatus("reparado");
+            }
+        },
+        nullptr});
+    items.push_back({"Indestructible", []() -> std::string
+        {
+            CVehicle* v = MyVehicle();
+            return v && v->m_nPhysicalFlags.bBulletProof && v->m_nPhysicalFlags.bExplosionProof ? "~g~ON" : "~r~OFF";
+        },
+        []
+        {
+            if (CVehicle* v = MyVehicle())
+            {
+                bool on = !(v->m_nPhysicalFlags.bBulletProof && v->m_nPhysicalFlags.bExplosionProof);
+                Command<Commands::SET_CAR_PROOFS>(CPools::GetVehicleRef(v), on, on, on, on, on);
+                SetStatus(on ? "indestructible" : "normal");
+            }
+        },
+        nullptr});
+    if (car)
+    {
+        struct Mod
+        {
+            int id;
+            const char* name;
+        };
+        static const Mod mods[] = {
+            {1010, "Nitro x10"}, {1008, "Nitro x5"}, {1009, "Nitro x2"}, {1087, "Hidraulica"}, {1086, "Estereo (bajos)"},
+            {1025, "Ruedas Offroad"}, {1073, "Ruedas Shadow"}, {1074, "Ruedas Mega"}, {1075, "Ruedas Rimshine"},
+            {1076, "Ruedas Wires"}, {1077, "Ruedas Classic"}, {1078, "Ruedas Twist"}, {1079, "Ruedas Cutter"},
+            {1080, "Ruedas Switch"}, {1081, "Ruedas Grove"}, {1082, "Ruedas Import"}, {1083, "Ruedas Dollar"},
+            {1084, "Ruedas Trance"}, {1085, "Ruedas Atomic"}, {1096, "Ruedas Ahab"}, {1097, "Ruedas Virtual"},
+            {1098, "Ruedas Access"},
+        };
+        for (const Mod& md : mods)
+        {
+            int id = md.id;
+            std::string name = md.name;
+            items.push_back({name, nullptr,
+                [id, name]
+                {
+                    if (AddMod(id))
+                        SetStatus(name + " puesto");
+                    else
+                        SetStatus("este vehiculo no acepta " + name);
+                },
+                nullptr});
+        }
+        for (int pj = 0; pj < 3; pj++)
+        {
+            items.push_back({"Pintura especial " + std::to_string(pj + 1), nullptr,
+                [pj]
+                {
+                    if (CVehicle* v = MyVehicle())
+                    {
+                        Command<Commands::GIVE_VEHICLE_PAINTJOB>(CPools::GetVehicleRef(v), pj);
+                        SetStatus("si el modelo la tiene, ya esta puesta");
+                    }
+                },
+                nullptr});
+        }
+    }
+    m->Open("TUNING", std::move(items));
 }

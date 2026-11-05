@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CKamehameha.h"
 #include "CSoundFile.h"
+#include "CFlight.h"
 #include "FxManager_c.h"
 #include "CCoronas.h"
 
@@ -333,8 +334,10 @@ void CKamehameha::Process()
         hWas = h;
         lmbWas = ms_bLmb;
 
+        // on foot, or floating in the air (not while flying around)
         bool canUse = !me->m_nPedFlags.bInVehicle && me->m_fHealth > 0.0f && !CChat::m_bInputActive &&
-                      !FrontEndMenuManager.m_bMenuActive;
+                      !FrontEndMenuManager.m_bMenuActive && (!CFlight::IsFlying() || CFlight::IsHovering() ||
+                                                                s_local.phase != OFF);
         bool weapon = canUse && HoldingKameWeapon(me);
 
         // the knuckles must not punch while they are the kamehameha

@@ -13,6 +13,7 @@ unsigned int CGravityGun::ms_nLastShot = 0;
 
 static constexpr float RANGE = 60.0f;
 static constexpr float HOLD_DISTANCE = 4.0f;
+static float s_holdDistance = HOLD_DISTANCE;  // grows with the size of what you hold
 
 static bool EntityAlive(CEntity* e, int type)
 {
@@ -221,6 +222,13 @@ void CGravityGun::Grab(CEntity* e, int type)
 {
     ms_pHeld = e;
     ms_nHeldType = type;
+    // keep big things far enough not to hit you: their size + 3.5 m (a car ends up ~7 m away), like the
+    // original which used half the model size + 4
+    {
+        CBaseModelInfo* info = CModelInfo::ms_modelInfoPtrs[e->m_nModelIndex];
+        float radius = info && info->m_pColModel ? info->m_pColModel->m_boundSphere.m_fRadius : 1.0f;
+        s_holdDistance = std::max(HOLD_DISTANCE, radius + 3.5f);
+    }
     CPhysical* ph = (CPhysical*)e;
     if (type == 3)
     {
@@ -248,7 +256,7 @@ void CGravityGun::Hold(const CVector& from, const CVector& dir)
         return;
     }
     CPhysical* ph = (CPhysical*)ms_pHeld;
-    CVector target = from + dir * HOLD_DISTANCE;
+    CVector target = from + dir * s_holdDistance;
     CVector delta = target - ph->GetPosition();
     // pull towards the point in front of the gun, in the units the game uses (m per frame at 50 fps)
     CVector speed = delta * 0.25f;

@@ -5,7 +5,8 @@
 
 bool CFlight::ms_bFlyEnabled = false;
 bool CFlight::ms_bSpeedEnabled = false;
-int CFlight::ms_nLevel = 3;
+int CFlight::ms_nRunLevel = 3;
+int CFlight::ms_nFlyLevel = 3;
 int CFlight::ms_nWheel = 0;
 
 namespace
@@ -88,6 +89,7 @@ void OrientBody(CPed* ped, float heading, float pitch)
     ped->UpdateRwFrame();
 }
 
+bool s_dropping = false;
 int s_animKind = 0;  // 0 float, 1 forward, 2 backwards, 3 left, 4 right
 const char* AnimFor(int kind)
 {
@@ -106,7 +108,7 @@ void Send()
     Packets::Skin::PlayerPower p{};
     p.power = 3;
     p.phase = (uint8_t)((s_flying ? 1 : 0) | (CFlight::ms_bSpeedEnabled ? 2 : 0));
-    p.level = (float)CFlight::ms_nLevel;
+    p.level = (float)CFlight::ms_nRunLevel;
     p.heading = (float)s_animKind;
     p.pitch = s_bodyPitch;
     GetPacketFactory().Send(p);
@@ -124,6 +126,11 @@ void StopFlying(CPlayerPed* me)
     Send();
 }
 }  // namespace
+
+bool CFlight::IsHovering()
+{
+    return s_flying && s_animKind == 0;
+}
 
 bool CFlight::IsFlying()
 {
@@ -144,7 +151,9 @@ void CFlight::Process()
     // speed bar: Alt + wheel
     if (ms_nWheel != 0)
     {
-        ms_nLevel = std::max(1, std::min(10, ms_nLevel + ms_nWheel));
+        // two separate levels: the wheel changes the flight one while flying, the running one on the ground
+        int& level = s_flying ? ms_nFlyLevel : ms_nRunLevel;
+        level = std::max(1, std::min(10, level + ms_nWheel));
         ms_nWheel = 0;
         s_barUntil = now + 2500;
         Send();
@@ -153,12 +162,13 @@ void CFlight::Process()
     if (!me)
         return;
 
-    bool busy = me->m_nPedFlags.bInVehicle || me->m_fHealth <= 0.0f || CKamehameha::IsLocalActive();
+    bool kame = CKamehameha::IsLocalActive();  // allowed while floating: we just hold still in the air
+    bool busy = me->m_nPedFlags.bInVehicle || me->m_fHealth <= 0.0f || (kame && !s_flying);
     CPad* pad = CPad::GetPad(0);
 
     // ---- running speed
     if (ms_bSpeedEnabled && !s_flying && !busy)
-        ApplyRunSpeed(me, RunMultiplier(ms_nLevel));
+        ApplyRunSpeed(me, RunMultiplier(ms_nRunLevel));
 
     // ---- flight
     if (!ms_bFlyEnabled || busy)
@@ -195,7 +205,38 @@ void CFlight::Process()
             }
         }
 
-        if (s_flying)
+        // double tap crouch while floating: stop flying and fall (landing stays harmless)
+        static bool crouchWas = false;
+        static unsigned int lastCrouch = 0;
+        bool crouch = pad->NewState.ShockButtonL != 0;
+        if (crouch && !crouchWas && s_flying && !kame)
+        {
+            if (now - lastCrouch < 350)
+            {
+                StopFlying(me);
+                s_dropping = true;
+            }
+            lastCrouch = now;
+        }
+        crouchWas = crouch;
+        if (s_dropping && me->m_nPedFlags.bIsStanding)
+        {
+            s_dropping = false;
+            s_flyingSince = now;  // 1.5 s more without fall damage, then back to normal
+        }
+        if (s_dropping)
+            s_flyingSince = now;
+
+        if (s_flying && kame)
+        {
+            // floating kamehameha: stay where you are, the kamehameha controls pose and camera
+            me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
+            me->m_nPhysicalFlags.bApplyGravity = false;
+            me->m_nPedFlags.bIsStanding = false;
+            s_anim = nullptr;  // the flight pose is played again afterwards
+            s_animKind = 0;
+        }
+        else if (s_flying)
         {
             const CVector& front = TheCamera.m_aCams[TheCamera.m_nActiveCam].m_vecFront;
             CVector fwd(front.x, front.y, front.z);
@@ -203,7 +244,7 @@ void CFlight::Process()
             float heading = atan2f(-front.x, front.y);
             CVector right(cosf(heading), sinf(heading), 0.0f);
             float sx = pad->NewState.LeftStickX / 128.0f, sy = -pad->NewState.LeftStickY / 128.0f;
-            float speed = FlySpeed(ms_nLevel) * (pad->NewState.ButtonCross ? 1.6f : 1.0f);  // sprint key = boost
+            float speed = FlySpeed(ms_nFlyLevel) * (pad->NewState.ButtonCross ? 1.6f : 1.0f);  // sprint key = boost
 
             CVector v(0.0f, 0.0f, 0.0f);
             float targetPitch = 0.0f;
@@ -323,7 +364,8 @@ void CFlight::Draw()
     float seg = w / 10.0f;
     for (int i = 0; i < 10; i++)
     {
-        CRGBA col = i < ms_nLevel ? CRGBA(172, 203, 241, 255) : CRGBA(50, 60, 75, 255);  // HUD blue
+        int lvl = s_flying ? ms_nFlyLevel : ms_nRunLevel;
+        CRGBA col = i < lvl ? CRGBA(172, 203, 241, 255) : CRGBA(50, 60, 75, 255);  // HUD blue
         CSprite2d::DrawRect(CRect(CUtil::HUD_X(x + i * seg + 1.0f), CUtil::HUD_Y(y), CUtil::HUD_X(x + (i + 1) * seg - 1.0f),
                                 CUtil::HUD_Y(y + h)),
             col);
