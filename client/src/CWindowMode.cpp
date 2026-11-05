@@ -197,22 +197,27 @@ static void HookResetOf(IDirect3DDevice9* device)
     printf("[window] Reset hooked\n");
 }
 
-// IDirect3D9 objects share one vtable inside d3d9.dll: patching it through our own
-// instance also catches the one RenderWare creates later
+// RenderWare creates its IDirect3D9 at 0x7F630B (`push 31; call Direct3DCreate9`). We hook that
+// call instead of creating D3D ourselves: our DLL is loaded from DllMain (loader lock), where
+// calling Direct3DCreate9 is not allowed and broke the game's start-up.
+typedef IDirect3D9*(__stdcall* Direct3DCreate9_t)(UINT);
+static Direct3DCreate9_t s_pOriginalDirect3DCreate9 = nullptr;
+
+static IDirect3D9* __stdcall Direct3DCreate9_Hook(UINT sdkVersion)
+{
+    IDirect3D9* d3d = s_pOriginalDirect3DCreate9(sdkVersion);
+    if (d3d)
+    {
+        PatchVtable(*reinterpret_cast<void***>(d3d), 16, (void*)CreateDevice_Hook, (void**)&s_pOriginalCreateDevice);
+        printf("[window] CreateDevice hooked (mode %d)\n", CWindowMode::ms_nMode);
+    }
+    return d3d;
+}
+
 static void HookCreateDevice()
 {
-    HMODULE d3d9 = LoadLibraryA("d3d9.dll");
-    if (d3d9 == nullptr)
-        return;
-    auto create = reinterpret_cast<IDirect3D9*(WINAPI*)(UINT)>(GetProcAddress(d3d9, "Direct3DCreate9"));
-    if (create == nullptr)
-        return;
-    IDirect3D9* d3d = create(D3D_SDK_VERSION);
-    if (d3d == nullptr)
-        return;
-    PatchVtable(*reinterpret_cast<void***>(d3d), 16, (void*)CreateDevice_Hook, (void**)&s_pOriginalCreateDevice);
-    d3d->Release();
-    printf("[window] CreateDevice hooked (mode %d)\n", CWindowMode::ms_nMode);
+    s_pOriginalDirect3DCreate9 = reinterpret_cast<Direct3DCreate9_t>(injector::GetBranchDestination(0x7F630B).as_int());
+    patch::RedirectCall(0x7F630B, (void*)Direct3DCreate9_Hook);
 }
 
 void CWindowMode::HookDevice()
