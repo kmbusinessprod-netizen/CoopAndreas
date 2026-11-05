@@ -250,7 +250,7 @@ PACKET_HANDLER(ePacketType::REBUILD_PLAYER, Packets::Players::RebuildPlayer* pRe
         if (auto pPlayerPed = pNetworkPlayer->m_pPed)
         {
             *pPlayerPed->m_pPlayerData->m_pPedClothesDesc = pRebuildPlayer->clothesDesc;
-            if (pPlayerPed->m_pRwClump)
+            if (pPlayerPed->m_pRwClump && pNetworkPlayer->m_nSkin == 0)
             {
                 // [private build] true = keep the fat/muscle of the clothes desc we just received;
                 // false made the game overwrite them with OUR stats (nobody saw anyone fat)

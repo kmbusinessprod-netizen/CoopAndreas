@@ -37,6 +37,7 @@ public:
     // [private build] last known position (on foot or inside a vehicle), for proximity ownership
     CVector m_vecPos{};
     bool m_bHasPos = false;
+    uint16_t m_nSkin = 0;  // ped model, 0 = CJ
 
     void RemoveFromVehicle();
 

@@ -21,7 +21,7 @@ bool CPools__SavePedPool_Reimpl()
 
     CPlayerPed* ped = FindPlayerPed(0);
     int pedRef = CPools::GetPedRef(ped);
-    int modelIndex = ped->m_nModelIndex;
+    int modelIndex = 0;  // [private build] skins are not saved, CJ always
     int pedType = ped->m_nPedType;
 
     CGenericGameStorage::_SaveDataToWorkBuffer(&pedRef,  4);

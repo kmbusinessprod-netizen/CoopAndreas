@@ -1,0 +1,16 @@
+#pragma once
+// [private build] skins: any ped model on a player, CJ's animations are kept (CPlayerPed picks its anim
+// groups from the fat/muscle stats, not from the model). 0 = CJ with his clothes.
+class CSkin
+{
+public:
+    static uint16_t ms_nLocalSkin;
+
+    static bool IsValidPedModel(int modelId);
+    static const char* ModelName(int modelId);
+    static void ApplyToPed(CPlayerPed* ped, uint16_t modelId);  // streaming + SetModelIndex (+ clothes for CJ)
+
+    static void SetLocal(uint16_t modelId);        // apply here and tell everybody
+    static void SendLocal();                        // re-send (a player joined)
+    static void OnPacket(Packets::Skin::PlayerSkin* packet);
+};

@@ -16,6 +16,7 @@ public:
     static void OnCheatActivated(Packets::Cheats::CheatActivated* packet);
     static void OnVote(Packets::Cheats::CheatVote* packet);
     static void OnState(Packets::Cheats::CheatState* packet);
+    static void ActivateFromMenu(int cheatIndex);  // same path as typing the code
 
     static bool IsWorldCheat(int cheatIndex) { return CheatInfo::IsWorld(cheatIndex); }
     static const char* GetCheatName(int cheatIndex) { return CheatInfo::Name(cheatIndex); }

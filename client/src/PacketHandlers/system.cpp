@@ -4,6 +4,8 @@
 #include "network/packet_types.h"
 #include "network/packets/system.h"
 #include "stdafx.h"
+#include "CSkin.h"
+#include "CPropertySync.h"
 #include <CWeatherSync.h>
 #include <CMoonSync.h>
 #include <game_sa/CTagManager.h>
@@ -21,6 +23,8 @@ PACKET_HANDLER(ePacketType::PLAYER_CONNECTED, Packets::System::PlayerConnected* 
     if (!pNetworkPlayer->m_bHasBeenConnectedBeforeMe)
     {
         CChat::AddMessage("{c7a6ff}[Player] {d6dce8}" + pNetworkPlayer->GetName() + " connected");
+        if (CSkin::ms_nLocalSkin != 0)
+            CSkin::SendLocal();  // [private build] the newcomer must see my skin
     }
     // TODO REFACTOR
     if (CLocalPlayer::m_bIsHost)
@@ -90,6 +94,7 @@ PACKET_HANDLER(ePacketType::PLAYER_HANDSHAKE, Packets::System::PlayerHandshake* 
     CNetworkObjectManager::ResetIdAllocator();
 
     CNetwork::m_bAuthenticated = true;
+    CPropertySync::Reset();  // [private build]
     CPatch::RevertTemporaryPatches();
     logger::info("Authenticated, playerid %s", to_string(pPlayerHandshake->yourid).c_str());
 }
@@ -187,4 +192,15 @@ PACKET_HANDLER(ePacketType::ADMIN_ACTION, Packets::Admin::AdminAction* pAction)
     CNetworkPlayer* host = CNetworkPlayerManager::GetPlayer(pAction->senderPlayerid);
     CUtil::TeleportLocalPlayer(pAction->pos, pAction->areaCode);
     CChat::AddMessage("{c7a6ff}[Player] {d6dce8}%s te trajo a su posicion", host ? host->GetName().c_str() : "El host");
+}
+
+// [private build]
+PACKET_HANDLER(ePacketType::PLAYER_SKIN, Packets::Skin::PlayerSkin* pSkin)
+{
+    CSkin::OnPacket(pSkin);
+}
+
+PACKET_HANDLER(ePacketType::PROPERTY_BOUGHT, Packets::Skin::PropertyBought* pProp)
+{
+    CPropertySync::OnPacket(pProp);
 }

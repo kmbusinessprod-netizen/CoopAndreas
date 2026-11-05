@@ -29,6 +29,10 @@
 #include <CKeySync.h>
 #include <CCompatibilityChecker.h>
 #include <CWeatherSync.h>
+#include <UI/CModMenu.h>
+#include <CUnlockAll.h>
+#include <CPropertySync.h>
+#include <CFixes.h>
 #include <network/packets/scripts.h>
 
 unsigned int lastOnFootSyncTickRate = 0;
@@ -79,6 +83,10 @@ public:
         Events::gameProcessEvent += []
         {
             CPrompt::Process();  // [private build]
+            CModMenu::Process();
+            CUnlockAll::Process();
+            CPropertySync::Process();
+            CFixes::Process();
             CNetworkAnimQueue::Process();
             CEntryExitTransitionSync::Process();
             CDiscordRPCMgr::Update();
@@ -258,6 +266,7 @@ public:
             CChat::Draw();
             CChat::DrawInput();
             CPrompt::Draw();  // [private build]
+            CModMenu::Draw();
 
             if (FrontEndMenuManager.m_bPrefsShowHud)
             {

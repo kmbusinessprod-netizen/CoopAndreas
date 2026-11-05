@@ -5,6 +5,7 @@
 #include "network/packets/cheats.h"
 #include "network/packets/admin.h"
 #include "network/packets/teleport.h"
+#include "network/packets/skin.h"
 #include "cheat_info.h"
 #include <unordered_map>
 class CNetworkPlayer;

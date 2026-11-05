@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "CSkin.h"
 #include <CTaskSimpleCarSetPedOut.h>
 #include <CCarEnterExit.h>
 #include <CTaskSimpleCarSetPedInAsPassenger.h>
@@ -47,6 +48,8 @@ void CNetworkPlayer::CreatePed(CVector position)
     *m_pPed->m_pPlayerData->m_pPedClothesDesc = m_pPedClothesDesc;
 
     CClothes::RebuildPlayer(m_pPed, true);  // [private build] keep his fat/muscle, not ours
+    if (m_nSkin != 0)
+        CSkin::ApplyToPed(m_pPed, m_nSkin);
 
     // THIS IS AN EXPERIMENTAL SOLUTION FOR THE 0x4D68BA CRASH
     m_pPed->m_bStreamingDontDelete = true;

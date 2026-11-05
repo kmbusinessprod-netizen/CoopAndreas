@@ -245,6 +245,26 @@ void CNetwork::HandlePlayerConnected(ENetPeer* pENetPeer, Packets::System::Playe
             i->m_waypointState.senderPlayerid = i->m_playerId;
             GetPacketFactory().Send(i->m_waypointState, pNewNetworkPlayer);
         }
+
+        if (i->m_nSkin != 0)  // [private build]
+        {
+            Packets::Skin::PlayerSkin skinPacket{};
+            skinPacket.senderPlayerid = i->m_playerId;
+            skinPacket.modelId = i->m_nSkin;
+            GetPacketFactory().Send(skinPacket, pNewNetworkPlayer);
+        }
+    }
+
+    // [private build] properties bought so far in this game
+    {
+        extern std::vector<uint8_t> g_boughtProperties;
+        for (uint8_t index : g_boughtProperties)
+        {
+            Packets::Skin::PropertyBought propPacket{};
+            propPacket.senderPlayerid.value = playerid_t{};  // "the server"
+            propPacket.index = index;
+            GetPacketFactory().Send(propPacket, pNewNetworkPlayer);
+        }
     }
 
     for (auto i : CNetworkVehicleManager::m_pVehicles)

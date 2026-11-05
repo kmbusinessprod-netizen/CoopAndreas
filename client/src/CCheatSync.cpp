@@ -81,6 +81,17 @@ bool CCheatSync::OnLocalCheat(int cheatIndex)
     return false;
 }
 
+void CCheatSync::ActivateFromMenu(int cheatIndex)
+{
+    if (cheatIndex < 0 || cheatIndex >= CheatInfo::COUNT)
+        return;
+    if (OnLocalCheat(cheatIndex))
+    {
+        ApplyLocally(cheatIndex);
+        HelpBox(TheText.Get("CHEAT1"));
+    }
+}
+
 void CCheatSync::OnCheatActivated(Packets::Cheats::CheatActivated* packet)
 {
     int i = packet->cheatIndex;

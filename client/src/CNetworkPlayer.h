@@ -29,6 +29,7 @@ public:
 	CNetworkPlayerStats m_stats{};
 	CPedClothesDesc m_pPedClothesDesc{};
 	bool m_bHasBeenConnectedBeforeMe = false;
+	uint16_t m_nSkin = 0;  // [private build] ped model, 0 = CJ
 
 	bool m_bExtrapolating = false;
 
