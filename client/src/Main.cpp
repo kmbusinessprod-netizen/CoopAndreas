@@ -36,6 +36,7 @@
 #include <CHoldSync.h>
 #include <CKamehameha.h>
 #include <CGravityGun.h>
+#include <CEmoteWheel.h>
 #include <CTrace.h>
 #include <network/packets/scripts.h>
 
@@ -96,6 +97,7 @@ public:
             CHoldSync::Process();
             CKamehameha::Process();
             CGravityGun::Process();
+            CEmoteWheel::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();
@@ -281,6 +283,7 @@ public:
             CChat::DrawInput();
             CPrompt::Draw();  // [private build]
             CModMenu::Draw();
+            CEmoteWheel::Draw();
 
             if (FrontEndMenuManager.m_bPrefsShowHud)
             {

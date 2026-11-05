@@ -59,21 +59,18 @@ void Send(const Caster& c)
     GetPacketFactory().Send(p);
 }
 
-void StartSound(Caster& c)
-{
-    if (c.soundStarted || !CPoolGuard::IsPedAlive(c.ped))
-        return;
-    // only one caster can own the slot: the local player first, then whoever started last
-    Command<Commands::LOAD_MISSION_AUDIO>(SOUND_SLOT, SOUND_ID);
-    c.soundStarted = true;
-}
-
+// the original replays the sample every frame of its loop: keep it going while the power is on
 void PumpSound(Caster& c)
 {
-    if (!c.soundStarted || c.phase == OFF)
+    static int state = 0;  // 0 idle, 1 loading, 2 playing
+    if (c.phase == OFF)
         return;
-    static bool playing = false;
-    if (Command<Commands::HAS_MISSION_AUDIO_LOADED>(SOUND_SLOT) && !playing)
+    if (state == 0)
+    {
+        Command<Commands::LOAD_MISSION_AUDIO>(SOUND_SLOT, SOUND_ID);
+        state = 1;
+    }
+    else if (state == 1 && Command<Commands::HAS_MISSION_AUDIO_LOADED>(SOUND_SLOT))
     {
         if (!c.local)
         {
@@ -81,14 +78,17 @@ void PumpSound(Caster& c)
             Command<Commands::SET_MISSION_AUDIO_POSITION>(SOUND_SLOT, p.x, p.y, p.z);
         }
         Command<Commands::PLAY_MISSION_AUDIO>(SOUND_SLOT);
-        playing = true;
+        state = 2;
     }
-    if (playing && Command<Commands::HAS_MISSION_AUDIO_FINISHED>(SOUND_SLOT))
+    else if (state == 2 && Command<Commands::HAS_MISSION_AUDIO_FINISHED>(SOUND_SLOT))
     {
-        playing = false;
-        c.soundStarted = false;  // done, allow the next one
-        Command<Commands::CLEAR_MISSION_AUDIO>(SOUND_SLOT);
+        state = 0;  // load + play again next frame
     }
+}
+
+void StopSound()
+{
+    Command<Commands::CLEAR_MISSION_AUDIO>(SOUND_SLOT);
 }
 
 void ApplyPose(Caster& c)
@@ -98,6 +98,20 @@ void ApplyPose(Caster& c)
     int ref = CPools::GetPedRef(c.ped);
     Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "GunMove_BWD", "PED", 4.0f, 1, 1, 1, 1, -1);
     c.animApplied = true;
+}
+
+// GunMove_BWD is "walk backwards": the original pauses it at 27% so CJ stands with the arms forward
+void HoldPose(Caster& c)
+{
+    if (!c.animApplied || !CPoolGuard::IsPedAlive(c.ped))
+        return;
+    int ref = CPools::GetPedRef(c.ped);
+    if (Command<Commands::IS_CHAR_PLAYING_ANIM>(ref, "GunMove_BWD"))
+    {
+        Command<Commands::SET_CHAR_ANIM_SPEED>(ref, "GunMove_BWD", 0.0f);
+        Command<Commands::SET_CHAR_ANIM_CURRENT_TIME>(ref, "GunMove_BWD", 0.27f);
+    }
+    c.ped->m_vecMoveSpeed.x = c.ped->m_vecMoveSpeed.y = 0.0f;
 }
 
 void ReleasePose(Caster& c)
@@ -203,6 +217,9 @@ void SetPhase(Caster& c, int phase)
     if (phase == OFF)
     {
         ReleasePose(c);
+        bool anyOther = (c.local ? false : s_local.phase != OFF);
+        if (!anyOther)
+            StopSound();
         if (c.local)
         {
             if (CPoolGuard::IsPedAlive(c.ped))
@@ -215,7 +232,6 @@ void SetPhase(Caster& c, int phase)
         ApplyPose(c);
         if (old == OFF)
         {
-            StartSound(c);
             if (c.local && CPoolGuard::IsPedAlive(c.ped))
             {
                 c.wasExplosionProof = c.ped->m_nPhysicalFlags.bExplosionProof;
@@ -232,14 +248,18 @@ void LocalCamera(Caster& c)
         return;
     CVector dir = Direction(c);
     CVector flat(-sinf(c.heading), cosf(c.heading), 0.0f);
-    CVector pos = c.ped->GetPosition() - flat * 4.5f + CVector(0.0f, 0.0f, 2.2f);
-    CVector look = c.ped->GetPosition() + dir * 12.0f + CVector(0.0f, 0.0f, 0.5f);
+    CVector side(flat.y, -flat.x, 0.0f);  // a bit to the right, over the shoulder
+    CVector pos = c.ped->GetPosition() - flat * 3.2f + side * 0.6f + CVector(0.0f, 0.0f, 0.55f);
+    CVector look = c.ped->GetPosition() + dir * 15.0f + CVector(0.0f, 0.0f, 0.3f);
     Command<Commands::SET_FIXED_CAMERA_POSITION>(pos.x, pos.y, pos.z, 0.0f, 0.0f, 0.0f);
     Command<Commands::POINT_CAMERA_AT_POINT>(look.x, look.y, look.z, 2 /*JUMP_CUT*/);
     if (c.phase == FIRE)
         Command<Commands::SHAKE_CAM>(90);
 }
 }  // namespace
+
+float CKamehameha::ms_fMouseX = 0.0f;
+float CKamehameha::ms_fMouseY = 0.0f;
 
 bool CKamehameha::IsLocalActive()
 {
@@ -261,10 +281,16 @@ void CKamehameha::Process()
         bool canUse = !me->m_nPedFlags.bInVehicle && me->m_fHealth > 0.0f && !CChat::m_bInputActive &&
                       !FrontEndMenuManager.m_bMenuActive;
 
-        // aim follows the camera
+        // start: aim where the camera looks; afterwards the mouse steers (the camera is fixed meanwhile)
         const CVector& front = TheCamera.m_aCams[TheCamera.m_nActiveCam].m_vecFront;
         float heading = atan2f(-front.x, front.y);
-        float pitch = std::max(-0.26f, std::min(0.8f, asinf(std::max(-1.0f, std::min(1.0f, front.z))) + 0.12f));
+        float pitch = 0.05f;
+        if (s_local.phase != OFF)
+        {
+            heading = s_local.heading - ms_fMouseX * 0.004f;
+            pitch = std::max(-0.26f, std::min(0.78f, s_local.pitch - ms_fMouseY * 0.003f));
+        }
+        ms_fMouseX = ms_fMouseY = 0.0f;
 
         if (s_local.phase == OFF)
         {
@@ -305,6 +331,7 @@ void CKamehameha::Process()
             {
                 LocalCamera(s_local);
                 PumpSound(s_local);
+                HoldPose(s_local);
                 Draw(s_local);
             }
         }
@@ -320,7 +347,9 @@ void CKamehameha::Process()
             continue;
         }
         it->ped->m_fCurrentRotation = it->ped->m_fAimingRotation = it->heading;
-        PumpSound(*it);
+        if (s_local.phase == OFF)
+            PumpSound(*it);
+        HoldPose(*it);
         Draw(*it);
         ++it;
     }

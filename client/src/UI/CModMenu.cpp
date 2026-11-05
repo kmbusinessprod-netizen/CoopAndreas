@@ -5,6 +5,7 @@
 #include "CSkinImport.h"
 #include "CKamehameha.h"
 #include "CGravityGun.h"
+#include "CEmoteWheel.h"
 #include "CUnlockAll.h"
 #include "CPrompt.h"
 #include <unordered_map>
@@ -374,7 +375,17 @@ static uintptr_t s_UpdatePads_orig = 0;
 static void __cdecl CPad__UpdatePads_Hook()
 {
     plugin::CallDyn(s_UpdatePads_orig);
-    if (!CModMenu::IsOpen() && !CKamehameha::IsLocalActive())
+    bool kame = CKamehameha::IsLocalActive();
+    bool wheel = CEmoteWheel::IsOpen();
+    if (kame || wheel)
+    {
+        CKamehameha::ms_fMouseX += CPad::NewMouseControllerState.x;
+        CKamehameha::ms_fMouseY += CPad::NewMouseControllerState.y;
+        CEmoteWheel::ms_fMouseX += CPad::NewMouseControllerState.x;
+        CEmoteWheel::ms_fMouseY += CPad::NewMouseControllerState.y;
+        CPad::NewMouseControllerState.x = CPad::NewMouseControllerState.y = 0.0f;
+    }
+    if (!CModMenu::IsOpen() && !kame)
         return;
     if (CPad* pad = CPad::GetPad(0))
     {
@@ -764,7 +775,7 @@ void CModMenu::BuildWeapons(CModMenu* m)
         {46, "Paracaidas", 1}, {40, "Detonador", 1},
     };
     std::vector<Item> items;
-    items.push_back({"~y~Gravity gun (Alt+G)", []() -> std::string { return CGravityGun::IsActive() ? "~g~ON" : "~r~OFF"; },
+    items.push_back({"~y~Gravity gun (en la escopeta de combate, Alt+G)", []() -> std::string { return CGravityGun::IsActive() ? "~g~ON" : "~r~OFF"; },
         [] { CGravityGun::Toggle(); }, nullptr});
     for (const W& w : weapons)
     {

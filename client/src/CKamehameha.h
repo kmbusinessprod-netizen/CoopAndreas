@@ -10,4 +10,5 @@ public:
     static bool IsLocalActive();
     static void OnPacket(Packets::Skin::PlayerPower* packet);
     static void OnPlayerRemoved(CPed* ped);
+    static float ms_fMouseX, ms_fMouseY;  // mouse movement collected before the camera eats it
 };

@@ -66,13 +66,22 @@ static bool AttachRemote(RemoteHold& h)
     Command<Commands::SET_OBJECT_COLLISION>(handle, false);
     h.objectHandle = handle;
 
-    void* task = plugin::CallAndReturn<void*, 0x61A5A0, unsigned int>(0x3C);  // CTask::operator new
-    if (task == nullptr)
-        return true;
-    CVector offset = h.data.offset;
-    plugin::CallMethod<0x6913A0, void*, CEntity*, CVector*, char, unsigned char, int, int, bool>(task, object, &offset,
-        (char)h.data.bone, h.data.boneFlags, (int)h.data.animId, (int)h.data.animGroup, false);
-    h.ped->m_pIntelligence->m_TaskMgr.SetTaskSecondary((CTask*)task, 4 /*TASK_SECONDARY_PARTIAL_ANIM*/);
+    if (model == 348 && h.data.bone == 6 && h.data.boneFlags == 16)
+    {
+        // the gravity gun: held without an animation, like the original mod does it
+        Command<Commands::TASK_PICK_UP_OBJECT>(CPools::GetPedRef(h.ped), handle, h.data.offset.x, h.data.offset.y,
+            h.data.offset.z, 6, 16, "NULL", "NULL", -1);
+    }
+    else
+    {
+        void* task = plugin::CallAndReturn<void*, 0x61A5A0, unsigned int>(0x3C);  // CTask::operator new
+        if (task == nullptr)
+            return true;
+        CVector offset = h.data.offset;
+        plugin::CallMethod<0x6913A0, void*, CEntity*, CVector*, char, unsigned char, int, int, bool>(task, object, &offset,
+            (char)h.data.bone, h.data.boneFlags, (int)h.data.animId, (int)h.data.animGroup, false);
+        h.ped->m_pIntelligence->m_TaskMgr.SetTaskSecondary((CTask*)task, 4 /*TASK_SECONDARY_PARTIAL_ANIM*/);
+    }
     h.attached = true;
 
     // the gravity gun of another player: add its parts so it looks like the real thing

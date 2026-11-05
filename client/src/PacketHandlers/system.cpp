@@ -8,6 +8,7 @@
 #include "CPropertySync.h"
 #include "CHoldSync.h"
 #include "CKamehameha.h"
+#include "CEmoteWheel.h"
 #include <CWeatherSync.h>
 #include <CMoonSync.h>
 #include <game_sa/CTagManager.h>
@@ -226,5 +227,8 @@ PACKET_HANDLER(ePacketType::PLAYER_HOLD, Packets::Skin::PlayerHold* pHold)
 
 PACKET_HANDLER(ePacketType::PLAYER_POWER, Packets::Skin::PlayerPower* pPower)
 {
-    CKamehameha::OnPacket(pPower);
+    if (pPower->power == 1)
+        CEmoteWheel::OnPacket(pPower);
+    else
+        CKamehameha::OnPacket(pPower);
 }

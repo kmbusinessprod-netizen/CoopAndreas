@@ -57,10 +57,8 @@ void CGravityGun::BuildGun()
         Command<Commands::ATTACH_OBJECT_TO_OBJECT>(*parts[i], ms_nGunObject, off[i][0], off[i][1], off[i][2], rot[i][0],
             rot[i][1], rot[i][2]);
     }
-    // in the hand (same bone/flags as the original's 070A): the hold sync shows it to the others too
-    CObject* gun = CPools::GetObject(ms_nGunObject);
-    if (gun)
-        CHoldSync::HoldLocally(gun, CVector(0.0f, 0.0f, 0.0f), 6, 16);
+    // in the hand exactly like the original (070A, bone 6, flags 16, no anim); the hold sync shows it to the others
+    Command<Commands::TASK_PICK_UP_OBJECT>(CPools::GetPedRef(me), ms_nGunObject, 0.0f, 0.0f, 0.0f, 6, 16, "NULL", "NULL", -1);
 }
 
 void CGravityGun::DestroyGun()
@@ -76,26 +74,41 @@ void CGravityGun::DestroyGun()
     }
 }
 
+// Like the original mod, the gravity gun takes the place of the combat shotgun (weapon 27): it shows up
+// in the weapon wheel and works while that weapon is in your hands (it does not shoot shells).
+static constexpr int GG_WEAPON = 27;
+bool CGravityGun::ms_bEnabled = false;
+
+static bool HoldingGravityWeapon(CPlayerPed* me)
+{
+    return me->m_aWeapons[me->m_nActiveWeaponSlot].m_eWeaponType == GG_WEAPON;
+}
+
 void CGravityGun::Toggle()
 {
-    if (ms_bActive)
+    CPlayerPed* me = FindPlayerPed(0);
+    if (!me)
+        return;
+    if (ms_bEnabled)
     {
+        ms_bEnabled = false;
         Drop();
         DestroyGun();
         ms_bActive = false;
-        CChat::AddMessage("{a0f0a0}[coop] {d6dce8}gravity gun apagada");
+        Command<Commands::SET_PLAYER_FIRE_BUTTON>(0, true);
+        CChat::AddMessage("{a0f0a0}[coop] {d6dce8}gravity gun desactivada (la escopeta de combate vuelve a disparar)");
         return;
     }
-    CPlayerPed* me = FindPlayerPed(0);
-    if (!me || me->m_nPedFlags.bInVehicle)
+    ms_bEnabled = true;
+    CWeaponInfo* info = CWeaponInfo::GetWeaponInfo((eWeaponType)GG_WEAPON, 1);
+    if (info && info->m_nModelId1 > 0)
     {
-        CChat::AddMessage("{f07878}[coop] {d6dce8}bajate del vehiculo para usar la gravity gun");
-        return;
+        CStreaming::RequestModel(info->m_nModelId1, GAME_REQUIRED);
+        CStreaming::LoadAllRequestedModels(false);
     }
-    BuildGun();
-    ms_bActive = ms_nGunObject >= 0;
-    if (ms_bActive)
-        CChat::AddMessage("{a0f0a0}[coop] {d6dce8}gravity gun: clic derecho agarra / suelta, clic izquierdo lanza, Alt+G apaga");
+    me->GiveWeapon((eWeaponType)GG_WEAPON, 1, true);
+    me->SetCurrentWeapon((eWeaponType)GG_WEAPON);
+    CChat::AddMessage("{a0f0a0}[coop] {d6dce8}gravity gun en el lugar de la escopeta de combate: apunta (clic der.) y clic izq. agarra / lanza, E suelta. Alt+G la quita");
 }
 
 void CGravityGun::Shutdown()
@@ -234,60 +247,67 @@ void CGravityGun::Process()
         Toggle();
     comboWas = combo;
 
-    if (!ms_bActive || !me)
+    if (!me)
         return;
-    if (me->m_nPedFlags.bInVehicle || me->m_fHealth <= 0.0f)
+
+    // the gun model is in the hands only while the gravity weapon is selected, on foot and alive
+    bool want = ms_bEnabled && !me->m_nPedFlags.bInVehicle && me->m_fHealth > 0.0f && HoldingGravityWeapon(me);
+    if (want && !ms_bActive)
     {
-        Toggle();
-        return;
+        BuildGun();
+        ms_bActive = ms_nGunObject >= 0;
+        Command<Commands::SET_PLAYER_FIRE_BUTTON>(0, false);
     }
+    else if (!want && ms_bActive)
+    {
+        Drop();
+        DestroyGun();
+        ms_bActive = false;
+        Command<Commands::SET_PLAYER_FIRE_BUTTON>(0, true);
+    }
+    if (!ms_bActive)
+        return;
+
+    // keep it in the hand (the game drops held objects now and then: jumping, falling...)
+    if (!me->GetHoldingTask() && CPools::GetObject(ms_nGunObject))
+        Command<Commands::TASK_PICK_UP_OBJECT>(CPools::GetPedRef(me), ms_nGunObject, 0.0f, 0.0f, 0.0f, 6, 16, "NULL", "NULL", -1);
 
     const CVector& front = TheCamera.m_aCams[TheCamera.m_nActiveCam].m_vecFront;
     CVector dir = front;
     dir.Normalise();
     CVector from = me->GetPosition() + CVector(0.0f, 0.0f, 0.5f);
 
-    // face where the camera looks while holding
-    if (ms_pHeld)
-    {
-        float heading = atan2f(-front.x, front.y);
-        me->m_fCurrentRotation = me->m_fAimingRotation = heading;
-        me->SetHeading(heading);
-    }
-
     CPad* pad = CPad::GetPad(0);
-    static bool rmbWas = false, lmbWas = false;
-    bool rmb = pad && pad->NewState.RightShoulder1 != 0;  // aim
-    bool lmb = pad && pad->NewState.ButtonCircle != 0;    // fire
-    bool rmbPressed = rmb && !rmbWas, lmbPressed = lmb && !lmbWas;
-    rmbWas = rmb;
+    static bool lmbWas = false, eWas = false;
+    bool aiming = pad && pad->NewState.RightShoulder1 != 0;
+    bool lmb = pad && pad->NewState.ButtonCircle != 0;
+    bool e = CPad::NewKeyState.standardKeys['E'] != 0 || CPad::NewKeyState.standardKeys['e'] != 0;
+    bool lmbPressed = lmb && !lmbWas, ePressed = e && !eWas;
     lmbWas = lmb;
+    eWas = e;
 
     if (ms_pHeld && !EntityAlive(ms_pHeld, ms_nHeldType))
         Drop();
 
-    if (rmbPressed)
-    {
-        if (ms_pHeld)
-            Drop();
-        else
-        {
-            int type = 0;
-            if (CEntity* e = FindTarget(from, dir, type))
-                Grab(e, type);
-        }
-    }
-    else if (lmbPressed && ms_pHeld && GetTickCount() - ms_nLastShot > 200)
+    if (lmbPressed && GetTickCount() - ms_nLastShot > 200)
     {
         ms_nLastShot = GetTickCount();
-        Throw(dir);
+        if (ms_pHeld)
+            Throw(dir);
+        else if (aiming)
+        {
+            int type = 0;
+            if (CEntity* target = FindTarget(from, dir, type))
+                Grab(target, type);
+        }
     }
+    else if (ePressed && ms_pHeld)
+        Drop();
 
     if (ms_pHeld)
     {
+        float heading = atan2f(-front.x, front.y);
+        me->m_fCurrentRotation = me->m_fAimingRotation = heading;
         Hold(from, dir);
-        // the game must not fire the real weapon
-        if (pad)
-            pad->NewState.ButtonCircle = 0;
     }
 }
