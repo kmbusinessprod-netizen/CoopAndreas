@@ -44,6 +44,7 @@ private:
     static void BuildCheats(CModMenu* m);
     static void BuildCheatCategory(CModMenu* m, int category);
     static void BuildMissions(CModMenu* m);
+    static void BuildWeapons(CModMenu* m);
     static void BuildVehicles(CModMenu* m);
     static void BuildVehicleCategory(CModMenu* m, int category);
     static void BuildSkins(CModMenu* m);

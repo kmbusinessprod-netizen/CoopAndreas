@@ -4,6 +4,7 @@
 #include "CSkin.h"
 #include "CSkinImport.h"
 #include "CKamehameha.h"
+#include "CGravityGun.h"
 #include "CUnlockAll.h"
 #include "CPrompt.h"
 #include <unordered_map>
@@ -73,6 +74,7 @@ void CModMenu::BuildRoot(CModMenu* m)
             {"Vehiculos", nullptr, nullptr, BuildVehicles},
             {"Skin", [] { return std::string(CSkin::ModelName(CSkin::ms_nLocalSkin)); }, nullptr, BuildSkins},
             {"Jugador", nullptr, nullptr, BuildPlayer},
+            {"Armas", nullptr, nullptr, BuildWeapons},
             {"Teletransporte", nullptr, nullptr, BuildTeleport},
             {"Misiones (pruebas)", nullptr, nullptr, BuildMissions},
             {"Guardar partida", nullptr,
@@ -737,4 +739,55 @@ void CModMenu::BuildMissions(CModMenu* m)
             nullptr});
     }
     m->Open("MISIONES  (solo host, puede romper el orden de la historia)", std::move(items));
+}
+
+// ------------------------------------------------------------------------------------------------
+// weapons: everything, including the ones no cheat gives (they add to what you carry)
+
+void CModMenu::BuildWeapons(CModMenu* m)
+{
+    struct W
+    {
+        int id;
+        const char* name;
+        int ammo;
+    };
+    static const W weapons[] = {
+        {38, "Minigun", 5000}, {17, "Granada de humo", 30}, {16, "Granada", 30}, {18, "Molotov", 30}, {39, "Carga explosiva (satchel)", 30},
+        {35, "Lanzacohetes", 50}, {36, "Lanzacohetes guiado", 50}, {37, "Lanzallamas", 5000}, {8, "Katana", 1}, {9, "Motosierra", 1},
+        {24, "Desert Eagle", 500}, {23, "Pistola silenciada", 500}, {22, "Pistola", 500}, {27, "Escopeta de combate (SPAS)", 500},
+        {26, "Escopeta recortada", 500}, {25, "Escopeta", 500}, {29, "MP5", 1000}, {28, "Uzi", 1000}, {32, "Tec-9", 1000},
+        {31, "M4", 1000}, {30, "AK-47", 1000}, {33, "Rifle", 500}, {34, "Francotirador", 500}, {4, "Cuchillo", 1},
+        {5, "Bate", 1}, {6, "Pala", 1}, {7, "Taco de billar", 1}, {3, "Porra", 1}, {2, "Palo de golf", 1}, {1, "Manopla", 1},
+        {15, "Baston", 1}, {14, "Flores", 1}, {10, "Consolador", 1}, {11, "Consolador 2", 1}, {12, "Vibrador", 1}, {13, "Vibrador 2", 1},
+        {41, "Spray", 5000}, {42, "Extintor", 5000}, {43, "Camara", 500}, {44, "Vision nocturna", 1}, {45, "Vision termica", 1},
+        {46, "Paracaidas", 1}, {40, "Detonador", 1},
+    };
+    std::vector<Item> items;
+    items.push_back({"~y~Gravity gun (Alt+G)", []() -> std::string { return CGravityGun::IsActive() ? "~g~ON" : "~r~OFF"; },
+        [] { CGravityGun::Toggle(); }, nullptr});
+    for (const W& w : weapons)
+    {
+        int id = w.id, ammo = w.ammo;
+        std::string name = w.name;
+        items.push_back({name, nullptr,
+            [id, ammo, name]
+            {
+                CPlayerPed* me = FindPlayerPed(0);
+                if (!me)
+                    return;
+                CWeaponInfo* info = CWeaponInfo::GetWeaponInfo((eWeaponType)id, 1);
+                if (info && info->m_nModelId1 > 0)
+                {
+                    CStreaming::RequestModel(info->m_nModelId1, GAME_REQUIRED);
+                    if (info->m_nModelId2 > 0)
+                        CStreaming::RequestModel(info->m_nModelId2, GAME_REQUIRED);
+                    CStreaming::LoadAllRequestedModels(false);
+                }
+                me->GiveWeapon((eWeaponType)id, ammo, true);
+                SetStatus(name + " lista");
+            },
+            nullptr});
+    }
+    m->Open("ARMAS  (se suman a las que ya tienes)", std::move(items));
 }

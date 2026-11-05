@@ -35,6 +35,7 @@
 #include <CFixes.h>
 #include <CHoldSync.h>
 #include <CKamehameha.h>
+#include <CGravityGun.h>
 #include <CTrace.h>
 #include <network/packets/scripts.h>
 
@@ -94,6 +95,7 @@ public:
             CTrace::Mark("gp: skin ok");
             CHoldSync::Process();
             CKamehameha::Process();
+            CGravityGun::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();

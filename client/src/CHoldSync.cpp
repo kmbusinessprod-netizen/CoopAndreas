@@ -12,6 +12,7 @@ struct RemoteHold
     Packets::Skin::PlayerHold data;
     unsigned int pendingSince;
     bool attached;
+    std::vector<int> parts;
 };
 static std::vector<RemoteHold> s_remote;
 static uint16_t s_lastLocalModel = 0;
@@ -33,6 +34,10 @@ static void SendLocal(uint16_t model, void* task)
 
 static void ReleaseRemote(RemoteHold& h)
 {
+    for (int part : h.parts)
+        if (CPools::GetObject(part))
+            Command<Commands::DELETE_OBJECT>(part);
+    h.parts.clear();
     if (CPoolGuard::IsPedAlive(h.ped) && h.attached)
         h.ped->DropEntityThatThisPedIsHolding(1);
     if (h.objectHandle >= 0)
@@ -69,7 +74,46 @@ static bool AttachRemote(RemoteHold& h)
         (char)h.data.bone, h.data.boneFlags, (int)h.data.animId, (int)h.data.animGroup, false);
     h.ped->m_pIntelligence->m_TaskMgr.SetTaskSecondary((CTask*)task, 4 /*TASK_SECONDARY_PARTIAL_ANIM*/);
     h.attached = true;
+
+    // the gravity gun of another player: add its parts so it looks like the real thing
+    if (model == 348 && h.data.bone == 6 && h.data.boneFlags == 16)
+    {
+        float rot[4][3] = {{0.0f, 82.5f, 0.0f}, {0.0f, 15.0f, 0.0f}, {120.0f, 15.0f, 0.0f}, {240.0f, 15.0f, 0.0f}};
+        float off[4][3] = {{0.1f, 0.025f, 0.1f}, {0.5f, 0.025f, 0.2f}, {0.5f, -0.025f, 0.125f}, {0.5f, 0.025f, 0.125f}};
+        int models[4] = {2976, 2956, 2956, 2956};
+        float scale[4] = {0.75f, 0.025f, 0.025f, 0.025f};
+        for (int i = 0; i < 4; i++)
+        {
+            if (CStreaming::ms_aInfoForModel[models[i]].m_nLoadState != LOADSTATE_LOADED)
+            {
+                CStreaming::RequestModel(models[i], GAME_REQUIRED);
+                CStreaming::LoadAllRequestedModels(false);
+            }
+            int part = -1;
+            Command<Commands::CREATE_OBJECT>(models[i], pos.x, pos.y, pos.z + 1.0f, &part);
+            if (part < 0)
+                continue;
+            Command<Commands::SET_OBJECT_COLLISION>(part, false);
+            Command<Commands::SET_OBJECT_SCALE>(part, scale[i]);
+            Command<Commands::ATTACH_OBJECT_TO_OBJECT>(part, handle, off[i][0], off[i][1], off[i][2], rot[i][0], rot[i][1], rot[i][2]);
+            h.parts.push_back(part);
+        }
+    }
     return true;
+}
+
+void CHoldSync::HoldLocally(CObject* object, const CVector& offset, int bone, int boneFlags)
+{
+    CPlayerPed* me = FindPlayerPed(0);
+    if (!me || !object)
+        return;
+    void* task = plugin::CallAndReturn<void*, 0x61A5A0, unsigned int>(0x3C);
+    if (!task)
+        return;
+    CVector off = offset;
+    plugin::CallMethod<0x6913A0, void*, CEntity*, CVector*, char, unsigned char, int, int, bool>(task, object, &off, (char)bone,
+        (unsigned char)boneFlags, 0, 0, false);
+    me->m_pIntelligence->m_TaskMgr.SetTaskSecondary((CTask*)task, 4);
 }
 
 void CHoldSync::Process()
@@ -95,8 +139,8 @@ void CHoldSync::Process()
     {
         if (!CPoolGuard::IsPedAlive(it->ped))
         {
-            if (it->objectHandle >= 0 && CPools::GetObject(it->objectHandle))
-                Command<Commands::DELETE_OBJECT>(it->objectHandle);
+            it->attached = false;
+            ReleaseRemote(*it);
             it = s_remote.erase(it);
             continue;
         }
@@ -129,7 +173,7 @@ void CHoldSync::OnPacket(Packets::Skin::PlayerHold* packet)
     }
     if (packet->modelId == 0)
         return;
-    s_remote.push_back({player->m_pPed, -1, *packet, GetTickCount(), false});
+    s_remote.push_back({player->m_pPed, -1, *packet, GetTickCount(), false, {}});
 }
 
 void CHoldSync::OnPlayerRemoved(CPlayerPed* ped)

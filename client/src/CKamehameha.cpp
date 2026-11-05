@@ -27,7 +27,12 @@ struct Caster
     unsigned int lastSent = 0;
     bool local = false;
     bool animApplied = false;
+    bool wasExplosionProof = false;
+    bool soundStarted = false;
 };
+
+constexpr int SOUND_SLOT = 3;      // mission audio slot, like the original mod
+constexpr int SOUND_ID = 6402;
 
 Caster s_local;
 std::vector<Caster> s_remote;
@@ -52,6 +57,38 @@ void Send(const Caster& c)
     p.heading = c.heading;
     p.pitch = c.pitch;
     GetPacketFactory().Send(p);
+}
+
+void StartSound(Caster& c)
+{
+    if (c.soundStarted || !CPoolGuard::IsPedAlive(c.ped))
+        return;
+    // only one caster can own the slot: the local player first, then whoever started last
+    Command<Commands::LOAD_MISSION_AUDIO>(SOUND_SLOT, SOUND_ID);
+    c.soundStarted = true;
+}
+
+void PumpSound(Caster& c)
+{
+    if (!c.soundStarted || c.phase == OFF)
+        return;
+    static bool playing = false;
+    if (Command<Commands::HAS_MISSION_AUDIO_LOADED>(SOUND_SLOT) && !playing)
+    {
+        if (!c.local)
+        {
+            CVector p = c.ped->GetPosition();
+            Command<Commands::SET_MISSION_AUDIO_POSITION>(SOUND_SLOT, p.x, p.y, p.z);
+        }
+        Command<Commands::PLAY_MISSION_AUDIO>(SOUND_SLOT);
+        playing = true;
+    }
+    if (playing && Command<Commands::HAS_MISSION_AUDIO_FINISHED>(SOUND_SLOT))
+    {
+        playing = false;
+        c.soundStarted = false;  // done, allow the next one
+        Command<Commands::CLEAR_MISSION_AUDIO>(SOUND_SLOT);
+    }
 }
 
 void ApplyPose(Caster& c)
@@ -145,8 +182,9 @@ void Draw(Caster& c)
         c.lastBlast = now;
         if (c.local)
         {
-            Command<Commands::ADD_EXPLOSION_NO_SOUND>(hit.x, hit.y, hit.z, 8);  // damage: only the caster's game
-            Command<Commands::SHAKE_CAM>(120);
+            // damage: only the caster's game, never closer than 6 m (the caster is explosion-proof meanwhile)
+            if (length > 6.0f)
+                Command<Commands::ADD_EXPLOSION_NO_SOUND>(hit.x, hit.y, hit.z, 8);
         }
         else
         {
@@ -159,12 +197,47 @@ void Draw(Caster& c)
 
 void SetPhase(Caster& c, int phase)
 {
+    int old = c.phase;
     c.phase = phase;
     c.phaseSince = GetTickCount();
     if (phase == OFF)
+    {
         ReleasePose(c);
+        if (c.local)
+        {
+            if (CPoolGuard::IsPedAlive(c.ped))
+                c.ped->m_nPhysicalFlags.bExplosionProof = c.wasExplosionProof;
+            Command<Commands::RESTORE_CAMERA_JUMPCUT>();
+        }
+    }
     else
+    {
         ApplyPose(c);
+        if (old == OFF)
+        {
+            StartSound(c);
+            if (c.local && CPoolGuard::IsPedAlive(c.ped))
+            {
+                c.wasExplosionProof = c.ped->m_nPhysicalFlags.bExplosionProof;
+                c.ped->m_nPhysicalFlags.bExplosionProof = true;
+            }
+        }
+    }
+}
+
+// camera like the original mod: behind and above the caster, looking along the beam, shaking while firing
+void LocalCamera(Caster& c)
+{
+    if (!CPoolGuard::IsPedAlive(c.ped))
+        return;
+    CVector dir = Direction(c);
+    CVector flat(-sinf(c.heading), cosf(c.heading), 0.0f);
+    CVector pos = c.ped->GetPosition() - flat * 4.5f + CVector(0.0f, 0.0f, 2.2f);
+    CVector look = c.ped->GetPosition() + dir * 12.0f + CVector(0.0f, 0.0f, 0.5f);
+    Command<Commands::SET_FIXED_CAMERA_POSITION>(pos.x, pos.y, pos.z, 0.0f, 0.0f, 0.0f);
+    Command<Commands::POINT_CAMERA_AT_POINT>(look.x, look.y, look.z, 2 /*JUMP_CUT*/);
+    if (c.phase == FIRE)
+        Command<Commands::SHAKE_CAM>(90);
 }
 }  // namespace
 
@@ -183,7 +256,7 @@ void CKamehameha::Process()
     {
         s_local.ped = me;
         s_local.local = true;
-        bool tab = CPad::NewKeyState.tab != 0;
+        bool alt = CPad::NewKeyState.lmenu != 0 || CPad::NewKeyState.rmenu != 0;
         bool h = CPad::NewKeyState.standardKeys['H'] != 0 || CPad::NewKeyState.standardKeys['h'] != 0;
         bool canUse = !me->m_nPedFlags.bInVehicle && me->m_fHealth > 0.0f && !CChat::m_bInputActive &&
                       !FrontEndMenuManager.m_bMenuActive;
@@ -195,7 +268,7 @@ void CKamehameha::Process()
 
         if (s_local.phase == OFF)
         {
-            if (canUse && tab && h)
+            if (canUse && alt && h)
             {
                 s_local.heading = heading;
                 s_local.pitch = pitch;
@@ -211,7 +284,7 @@ void CKamehameha::Process()
             me->m_fCurrentRotation = me->m_fAimingRotation = heading;
             me->SetHeading(heading);
 
-            bool stop = !canUse || (s_local.phase == FIRE && (!tab || now - s_local.phaseSince > MAX_FIRE_MS));
+            bool stop = !canUse || (s_local.phase == FIRE && (!h || now - s_local.phaseSince > MAX_FIRE_MS));
             if (stop)
             {
                 SetPhase(s_local, OFF);
@@ -228,7 +301,12 @@ void CKamehameha::Process()
                 s_local.lastSent = now;
                 Send(s_local);  // aim updates
             }
-            Draw(s_local);
+            if (s_local.phase != OFF)
+            {
+                LocalCamera(s_local);
+                PumpSound(s_local);
+                Draw(s_local);
+            }
         }
     }
 
@@ -242,6 +320,7 @@ void CKamehameha::Process()
             continue;
         }
         it->ped->m_fCurrentRotation = it->ped->m_fAimingRotation = it->heading;
+        PumpSound(*it);
         Draw(*it);
         ++it;
     }
