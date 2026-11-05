@@ -24,6 +24,8 @@ struct Remote
     bool flying;
     int level;  // run speed
     const char* anim;
+    int kind;
+    float pitch;
 };
 std::vector<Remote> s_remote;
 
@@ -33,7 +35,7 @@ float RunMultiplier(int level)
 }
 float FlySpeed(int level)
 {
-    return 0.12f + level * 0.09f;  // metres per frame at 50 fps: ~6 m/s .. ~50 m/s
+    return 0.15f + level * 0.17f;  // metres per frame at 50 fps: ~16 m/s .. ~93 m/s (x1.6 with sprint)
 }
 
 void PlayAnim(CPed* ped, const char*& current, const char* anim)
@@ -70,13 +72,43 @@ void ApplyRunSpeed(CPed* ped, float mult)
     }
 }
 
+// point the body along a direction: the sky-dive pose lies along the ped's forward axis, so turning that
+// axis towards the travel direction makes him dive, climb or go straight up head first
+float s_bodyPitch = 0.0f;
+void OrientBody(CPed* ped, float heading, float pitch)
+{
+    CVector f(-sinf(heading) * cosf(pitch), cosf(heading) * cosf(pitch), sinf(pitch));
+    CVector r(cosf(heading), sinf(heading), 0.0f);  // right of the heading, stays horizontal
+    CVector a(r.y * f.z - r.z * f.y, r.z * f.x - r.x * f.z, r.x * f.y - r.y * f.x);  // r x f
+    CMatrix* m = ped->GetMatrix();
+    m->right = r;
+    m->up = f;
+    m->at = a;
+    ped->UpdateRwMatrix();
+    ped->UpdateRwFrame();
+}
+
+int s_animKind = 0;  // 0 float, 1 forward, 2 backwards, 3 left, 4 right
+const char* AnimFor(int kind)
+{
+    switch (kind)
+    {
+    case 1: return "FALL_SkyDive_Accel";
+    case 2: return "FALL_skyDive";
+    case 3: return "FALL_SkyDive_L";
+    case 4: return "FALL_SkyDive_R";
+    default: return "PARA_float";
+    }
+}
+
 void Send()
 {
     Packets::Skin::PlayerPower p{};
     p.power = 3;
     p.phase = (uint8_t)((s_flying ? 1 : 0) | (CFlight::ms_bSpeedEnabled ? 2 : 0));
     p.level = (float)CFlight::ms_nLevel;
-    p.heading = s_anim && strcmp(s_anim, "FALL_SkyDive_Accel") == 0 ? 1.0f : 0.0f;
+    p.heading = (float)s_animKind;
+    p.pitch = s_bodyPitch;
     GetPacketFactory().Send(p);
 }
 
@@ -168,32 +200,61 @@ void CFlight::Process()
             const CVector& front = TheCamera.m_aCams[TheCamera.m_nActiveCam].m_vecFront;
             CVector fwd(front.x, front.y, front.z);
             fwd.Normalise();
-            CVector right(fwd.y, -fwd.x, 0.0f);
-            right.Normalise();
+            float heading = atan2f(-front.x, front.y);
+            CVector right(cosf(heading), sinf(heading), 0.0f);
             float sx = pad->NewState.LeftStickX / 128.0f, sy = -pad->NewState.LeftStickY / 128.0f;
             float speed = FlySpeed(ms_nLevel) * (pad->NewState.ButtonCross ? 1.6f : 1.0f);  // sprint key = boost
-            CVector v = (fwd * sy + right * sx) * speed;
+
+            CVector v(0.0f, 0.0f, 0.0f);
+            float targetPitch = 0.0f;
+            if (sy > 0.2f)
+            {
+                // forward: where the camera looks, up and down included - head first
+                s_animKind = 1;
+                v = fwd * (sy * speed) + right * (sx * speed * 0.5f);
+                targetPitch = asinf(std::max(-1.0f, std::min(1.0f, fwd.z)));
+            }
+            else if (sy < -0.2f)
+            {
+                // backwards: slower, upright, leaning back a bit
+                s_animKind = 2;
+                CVector flat(fwd.x, fwd.y, 0.0f);
+                flat.Normalise();
+                v = flat * (sy * speed * 0.55f) + right * (sx * speed * 0.4f);
+                targetPitch = 0.0f;
+            }
+            else if (fabsf(sx) > 0.2f)
+            {
+                s_animKind = sx < 0.0f ? 3 : 4;
+                v = right * (sx * speed * 0.7f);
+            }
+            else
+                s_animKind = 0;
+
+            // jump / crouch: float up and down without turning the body
             if (pad->NewState.ButtonSquare)
-                v.z += speed * 0.7f;
+                v.z += speed * 0.6f;
             if (pad->NewState.ShockButtonL)
-                v.z -= speed * 0.7f;
+                v.z -= speed * 0.6f;
+
             me->m_vecMoveSpeed = v;
             me->m_nPhysicalFlags.bApplyGravity = false;
             me->m_nPedFlags.bIsStanding = false;
-
-            float heading = atan2f(-front.x, front.y);
             me->m_fCurrentRotation = me->m_fAimingRotation = heading;
-            me->SetHeading(heading);
-            bool moving = fabsf(sx) + fabsf(sy) > 0.2f;
-            PlayAnim(me, s_anim, moving ? "FALL_SkyDive_Accel" : "PARA_float");
+
+            s_bodyPitch += (targetPitch - s_bodyPitch) * 0.2f;  // smooth
+            PlayAnim(me, s_anim, AnimFor(s_animKind));
+            OrientBody(me, heading, s_animKind == 1 ? s_bodyPitch : 0.0f);
 
             // land: going down onto the ground
             float groundZ = CWorld::FindGroundZForCoord(me->GetPosition().x, me->GetPosition().y);
             if (now - s_flyingSince > 800 && v.z <= 0.0f && me->GetPosition().z - groundZ < 1.3f)
                 StopFlying(me);
 
-            if (now - s_lastSent > 500)
+            static int lastKind = -1;
+            if (now - s_lastSent > 150 || lastKind != s_animKind)
             {
+                lastKind = s_animKind;
                 s_lastSent = now;
                 Send();
             }
@@ -210,6 +271,7 @@ void CFlight::Process()
         }
         if (it->flying)
         {
+            OrientBody(it->ped, it->ped->m_fCurrentRotation, it->kind == 1 ? it->pitch : 0.0f);
             it->ped->m_vecMoveSpeed.z = std::max(it->ped->m_vecMoveSpeed.z, 0.0f) * 0.5f;  // no falling between updates
             it->ped->m_nPhysicalFlags.bApplyGravity = false;
         }
@@ -230,13 +292,15 @@ void CFlight::OnPacket(Packets::Skin::PlayerPower* packet)
             r = &x;
     if (!r)
     {
-        s_remote.push_back({player->m_pPed, false, 0, nullptr});
+        s_remote.push_back({player->m_pPed, false, 0, nullptr, 0, 0.0f});
         r = &s_remote.back();
     }
     bool flying = (packet->phase & 1) != 0;
     r->level = (packet->phase & 2) ? (int)packet->level : 0;
+    r->kind = (int)packet->heading;
+    r->pitch = packet->pitch;
     if (flying)
-        PlayAnim(r->ped, r->anim, packet->heading > 0.5f ? "FALL_SkyDive_Accel" : "PARA_float");
+        PlayAnim(r->ped, r->anim, AnimFor(r->kind));
     else if (r->flying)
     {
         StopAnim(r->ped, r->anim);

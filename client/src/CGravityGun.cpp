@@ -131,6 +131,10 @@ CEntity* CGravityGun::FindTarget(const CVector&, const CVector& dir, int& type)
     {
         if (entity == nullptr || entity == me)
             return false;
+        // only real things: drawn, solid and with a model (no collision-only or hidden objects, no props of
+        // other features like the emote cigarette or someone's gravity gun)
+        if (!entity->m_bIsVisible || !entity->m_bUsesCollision || entity->m_pRwObject == nullptr)
+            return false;
         if (entity->m_nType == ENTITY_TYPE_VEHICLE)
         {
             CVehicle* v = (CVehicle*)entity;
@@ -150,6 +154,12 @@ CEntity* CGravityGun::FindTarget(const CVector&, const CVector& dir, int& type)
         {
             CObject* o = (CObject*)entity;
             if (o == CPools::GetObject(ms_nGunObject) || o->m_pAttachedTo != nullptr)
+                return false;
+            CColModel* col = CModelInfo::ms_modelInfoPtrs[o->m_nModelIndex] ? CModelInfo::ms_modelInfoPtrs[o->m_nModelIndex]->m_pColModel : nullptr;
+            if (col == nullptr)
+                return false;
+            CVector size = col->m_boundBox.m_vecMax - col->m_boundBox.m_vecMin;
+            if (size.x * size.y * size.z < 0.001f || size.Magnitude() > 25.0f)  // nothing invisible-thin or building-sized
                 return false;
             outType = 3;
             return true;
