@@ -320,17 +320,11 @@ void FixCrashes()
     patch::SetFloat(0x86D26C, 10.0f);
 
     // patch isAlreadyRunning, so we can run more than one game instance
-    if (GetModuleHandleA("SilentPatchSA.asi"))
-    {
-        patch::SetRaw(0x74872D, (void*)"\xE8\xAE\xE1\xFF\xFF\x85\xC0\x75\x0F", 9);
-        patch::PutRetn0(0x7468E0);
-    }
-    else
-    {
-        patch::SetUChar(0x406946, 0xDC);
-        patch::PutRetn0(0x7468E0);
-        patch::Nop(0x74872D, 9);
-    }
+    // [private build] we load BEFORE SilentPatch, so GetModuleHandle("SilentPatchSA.asi") was always
+    // false and we NOP'ed 0x74872D; SilentPatch then reads that call to hook it -> crash at 0x74872F.
+    // Leave the call alone and just make IsAlreadyRunning() return 0: works with and without SilentPatch.
+    patch::SetUChar(0x406946, 0xDC);
+    patch::PutRetn0(0x7468E0);
 
     // allow vertical camera movement during a camera fade
     patch::SetUChar(0x524084, 0xFF);
