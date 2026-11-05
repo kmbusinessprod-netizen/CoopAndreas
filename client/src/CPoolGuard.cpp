@@ -208,8 +208,18 @@ static CTask* __fastcall CTaskManager__GetActiveTask_Safe(CTaskManager* mgr, int
     return task ? task : (CTask*)s_fakeTask;
 }
 
+// [private build] CAEVehicleAudioEntity::Service (0x502302) turns the radio on for any vehicle whose
+// driver "is a player" - remote players are CPlayerPed too, so everybody heard everybody's radio.
+// Only the local player counts.
+static bool __fastcall CPed__IsLocalPlayer_Hook(CPed* ped, int)
+{
+    return ped != nullptr && ped == FindPlayerPed(0);
+}
+
 void CPoolGuard::Install()
 {
+    patch::RedirectCall(0x502302, (void*)CPed__IsLocalPlayer_Hook);
+
     injector::MakeJMP(0x6E2D90, (void*)CVehicle__operator_delete_Hook);
     injector::MakeJMP(0x5E4760, (void*)CPed__operator_delete_Hook);
 

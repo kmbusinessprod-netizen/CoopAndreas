@@ -204,6 +204,11 @@ void PatchPools()
     // push 6Eh -> push FFh
     patch::SetRaw(0x551024, (void*)"\x6A\x00\x68\xFF\x00\x00\x00", 7);
     
+    // [private build] col model pool (10150 -> 25000): it ran out when a ped model streamed in while
+    // two players kept far-apart areas loaded (crash in CColModel::AllocateData with this == NULL)
+    // push 27A6h -> push 61A8h
+    patch::SetRaw(0x551106, (void*)"\x68\xA8\x61\x00\x00", 5);
+
     // fixes the 0x4C9691 crash
     // vehicle struct pool (127)
     // push 32h -> push 7Fh
