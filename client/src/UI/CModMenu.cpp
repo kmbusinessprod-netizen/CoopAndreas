@@ -2,6 +2,7 @@
 #include "CModMenu.h"
 #include "CCheatSync.h"
 #include "CSkin.h"
+#include "CSkinImport.h"
 #include "CUnlockAll.h"
 #include "CPrompt.h"
 #include <unordered_map>
@@ -236,7 +237,7 @@ void CModMenu::BuildSkins(CModMenu* m)
     std::vector<Item> items;
     auto add = [&](int id)
     {
-        items.push_back({std::string(CSkin::ModelName(id)) + (id < 1000 && id > 0 ? "  ~b~#" + std::to_string(id) : ""),
+        items.push_back({std::string(CSkinImport::IsImportedId(id) ? "~p~*~s~ " : "") + CSkin::ModelName(id) + (id < 1000 && id > 0 ? "  ~b~#" + std::to_string(id) : ""),
             [id]() -> std::string { return CSkin::ms_nLocalSkin == id ? "~g~actual" : ""; },
             [id]
             {
@@ -246,6 +247,8 @@ void CModMenu::BuildSkins(CModMenu* m)
             nullptr});
     };
     add(0);
+    for (const auto& imported : CSkinImport::GetAll())  // CoopAndreas\skins
+        add(imported.id);
     for (int i = 0; i < CSkin::SpecialCount(); i++)  // story characters
         if (CSkin::IsValidPedModel(CSkin::SpecialSkin(i)))
             add(CSkin::SpecialSkin(i));

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CSkin.h"
 #include "CTrace.h"
+#include "CSkinImport.h"
 #include <map>
 
 // Skin ids (what travels over the network):
@@ -81,7 +82,23 @@ static const SpecialChar s_special[] = {
 static constexpr int SPECIAL_BASE = 1000;
 static constexpr int SPECIAL_COUNT = sizeof(s_special) / sizeof(s_special[0]);
 
+static bool IsBuiltinSpecial(int skin);
 static bool IsSpecial(int skin)
+{
+    if (CSkinImport::IsImportedId(skin))
+        return CSkinImport::Find((uint16_t)skin) != nullptr;
+    return IsBuiltinSpecial(skin);
+}
+static const char* SpecialFile(int skin)
+{
+    if (CSkinImport::IsImportedId(skin))
+    {
+        const CSkinImport::Entry* e = CSkinImport::Find((uint16_t)skin);
+        return e ? e->internal.c_str() : nullptr;
+    }
+    return s_special[skin - SPECIAL_BASE].file;
+}
+static bool IsBuiltinSpecial(int skin)
 {
     return skin >= SPECIAL_BASE && skin < SPECIAL_BASE + SPECIAL_COUNT;
 }
@@ -105,6 +122,8 @@ bool CSkin::IsValidPedModel(int skin)
 {
     if (skin == 0)
         return true;
+    if (CSkinImport::IsImportedId(skin))
+        return CSkinImport::Find((uint16_t)skin) != nullptr;
     if (IsSpecial(skin))
         return SpecialExists(skin - SPECIAL_BASE);
     if (skin < 1 || skin >= 290 || s_pedNames[skin][0] == 0)
@@ -115,6 +134,11 @@ bool CSkin::IsValidPedModel(int skin)
 
 const char* CSkin::ModelName(int skin)
 {
+    if (CSkinImport::IsImportedId(skin))
+    {
+        const CSkinImport::Entry* e = CSkinImport::Find((uint16_t)skin);
+        return e ? e->display.c_str() : "(skin importada que no tienes)";
+    }
     if (IsSpecial(skin))
         return s_special[skin - SPECIAL_BASE].name;
     if (skin < 0 || skin >= 300 || s_pedNames[skin][0] == 0)
@@ -197,8 +221,8 @@ void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t skin)
         int slot = NextSlotFor(ped);
         model = 289 + slot;
         // the slot may still hold this character from before
-        Command<Commands::LOAD_SPECIAL_CHARACTER>(slot, s_special[skin - SPECIAL_BASE].file);
-        CTrace::Mark("skin: special '%s' requested in slot %d (model %d)", s_special[skin - SPECIAL_BASE].file, slot, model);
+        Command<Commands::LOAD_SPECIAL_CHARACTER>(slot, SpecialFile(skin));
+        CTrace::Mark("skin: special '%s' requested in slot %d (model %d)", SpecialFile(skin), slot, model);
     }
     else if (model != 0 && CStreaming::ms_aInfoForModel[model].m_nLoadState != LOADSTATE_LOADED)
     {
@@ -283,5 +307,13 @@ void CSkin::OnPacket(Packets::Skin::PlayerSkin* packet)
     if (player == nullptr)
         return;
     player->m_nSkin = packet->modelId;
+    if (!IsValidPedModel(packet->modelId))
+    {
+        // an imported skin I don't have: show him as CJ
+        CChat::AddMessage("{f0d060}[skin] {d6dce8}%s usa una skin importada que no tienes (pon el mismo .dff/.txd en CoopAndreas\\skins)",
+            player->GetName().c_str());
+        ApplyToPed(player->m_pPed, 0);
+        return;
+    }
     ApplyToPed(player->m_pPed, packet->modelId);
 }
