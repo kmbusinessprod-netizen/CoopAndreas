@@ -251,3 +251,14 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   archivo (antes leía todo a memoria: cientos de MB en un proceso de 32 bits) y se reutiliza si la carpeta no
   cambió (coop_skins.idx con firma nombre+tamaño+fecha). Directorio de objetos extra 550 → 4000 entradas.
 - Ignoradas por nombre: "HDTommySAb1.dff" + "HDTommySA1024V1.txd" (nombres distintos) y "SONIC1 (2).dff" (sin txd).
+
+## 2026-11-05 17:50
+- Kamehameha: Alt+H inicia, mantener H dispara. Sonido = audio de misión 6402 (slot 3, igual que el .cs);
+  cámara fija detrás/arriba apuntando por el rayo (SET_FIXED_CAMERA_POSITION + POINT_CAMERA_AT_POINT, restaurada con
+  RESTORE_CAMERA_JUMPCUT), SHAKE_CAM 90 por frame mientras dispara; bExplosionProof al lanzador y sin explosiones
+  a < 6 m (se hería a sí mismo).
+- Gravity gun nativa (CGravityGun, Alt+G o F2 > Armas): pistola = objeto 348 + 2976 + 3×2956 en la mano (hold
+  sync bone 6/16, los remotos añaden las partes). RMB agarra/suelta (raycast cámara 25 m: autos, peds no-jugador,
+  objetos), LMB lanza. Mantener = m_vecMoveSpeed hacia el punto a 4 m, sin gravedad. Sync de lo agarrado: por
+  propiedad por proximidad (el que lo sostiene es el más cercano).
+- Menú > Armas: todas las armas con munición (RequestModel + LoadAllRequestedModels + GiveWeapon).
