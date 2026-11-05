@@ -78,6 +78,7 @@ public:
         };
         Events::gameProcessEvent += []
         {
+            CPrompt::Process();  // [private build]
             CNetworkAnimQueue::Process();
             CEntryExitTransitionSync::Process();
             CDiscordRPCMgr::Update();
@@ -256,6 +257,7 @@ public:
             CNetworkPlayerNameTag::Process();
             CChat::Draw();
             CChat::DrawInput();
+            CPrompt::Draw();  // [private build]
 
             if (FrontEndMenuManager.m_bPrefsShowHud)
             {

@@ -216,8 +216,30 @@ static bool __fastcall CPed__IsLocalPlayer_Hook(CPed* ped, int)
     return ped != nullptr && ped == FindPlayerPed(0);
 }
 
+// [private build] dying must not change the world for everybody: the game passes 12 hours and
+// wipes every vehicle/ped within 4 km when the player is wasted/busted. In a coop game the
+// time comes from the host and the vehicles belong to everyone, so skip both while connected.
+static void __cdecl CGameLogic__PassTime_Hook(unsigned int minutes)
+{
+    if (CNetwork::m_bConnected)
+        return;
+    plugin::Call<0x4414C0, unsigned int>(minutes);
+}
+
+static void __cdecl CWorld__ClearExcitingStuffFromArea_Hook(const CVector* point, float radius, unsigned char removeProjectiles)
+{
+    if (CNetwork::m_bConnected)
+        return;
+    plugin::Call<0x56A0D0, const CVector*, float, unsigned char>(point, radius, removeProjectiles);
+}
+
 void CPoolGuard::Install()
 {
+    patch::RedirectCall(0x4429C5, (void*)CGameLogic__PassTime_Hook);
+    patch::RedirectCall(0x442FCF, (void*)CGameLogic__PassTime_Hook);
+    patch::RedirectCall(0x4429BB, (void*)CWorld__ClearExcitingStuffFromArea_Hook);
+    patch::RedirectCall(0x442F08, (void*)CWorld__ClearExcitingStuffFromArea_Hook);
+
     patch::RedirectCall(0x502302, (void*)CPed__IsLocalPlayer_Hook);
 
     injector::MakeJMP(0x6E2D90, (void*)CVehicle__operator_delete_Hook);

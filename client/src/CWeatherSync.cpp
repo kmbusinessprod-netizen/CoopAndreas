@@ -10,7 +10,9 @@ void CWeatherSync::SyncCurrentState()
 	Packets::World::GameWeatherTime packet{};
 	packet.newWeather = static_cast<eWeatherType>(CWeather::NewWeatherType);
 	packet.oldWeather = static_cast<eWeatherType>(CWeather::OldWeatherType);
-	//packet.forcedWeather = CWeather::ForcedWeatherType;
+	packet.forcedWeather = CWeather::ForcedWeatherType;
+	packet.interpolation = (int)(CWeather::InterpolationValue * 1000.0f);
+	packet.timeScale = (int)(CTimer::ms_fTimeScale * 1000.0f);
 	packet.currentMonth = CClock::ms_nGameClockMonth;
 	packet.currentDay = CClock::CurrentDay;
 	packet.currentHour = CClock::ms_nGameClockHours;
@@ -22,7 +24,14 @@ void CWeatherSync::HandlePacket(Packets::World::GameWeatherTime* pGameWeatherTim
 {
 	CWeather::OldWeatherType = pGameWeatherTime->oldWeather;
 	CWeather::NewWeatherType = pGameWeatherTime->newWeather;
-	//CWeather::ForcedWeatherType = pGameWeatherTime->forcedWeather;
+	CWeather::ForcedWeatherType = (short)pGameWeatherTime->forcedWeather;
+	// only snap the blend when we are clearly out of sync, otherwise it flickers
+	float interp = pGameWeatherTime->interpolation / 1000.0f;
+	if (fabsf(CWeather::InterpolationValue - interp) > 0.15f)
+		CWeather::InterpolationValue = interp;
+	float timeScale = pGameWeatherTime->timeScale / 1000.0f;
+	if (fabsf(CTimer::ms_fTimeScale - timeScale) > 0.01f)
+		CTimer::ms_fTimeScale = timeScale;
 	CClock::ms_nGameClockMonth = pGameWeatherTime->currentMonth;
 	CClock::CurrentDay = pGameWeatherTime->currentDay;
 	CClock::ms_nGameClockHours = pGameWeatherTime->currentHour;

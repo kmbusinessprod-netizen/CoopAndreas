@@ -1,19 +1,27 @@
 #pragma once
 // [private build] cheat sync.
-// Every cheat typed by a player is announced to the others ("X activo un truco: ...").
-// Cheats that change the world (wanted level, weather, time, peds, traffic) are applied on
-// every machine so everybody sees the same thing; personal cheats (weapons, health, body,
-// vehicle spawns) stay local to the player who typed them.
+// Personal cheats (weapons, health, body, vehicle spawns...) apply locally and the others are told.
+// World cheats (wanted level, weather, time, peds, traffic...) are proposed to everyone: they are
+// applied on every machine only when all players press Y. The server remembers the world cheat
+// state and sends it to players that join later.
 class CCheatSync
 {
 public:
     static void Install();
 
-    // called from the game's cheat dispatcher for the local player
-    static void OnLocalCheat(int cheatIndex);
-    // called when another player activated a cheat
-    static void OnRemoteCheat(const char* playerName, int cheatIndex, bool active);
+    // game dispatcher, local player typed a cheat. returns true if the game may apply it now
+    static bool OnLocalCheat(int cheatIndex);
+    static void Process();  // sends the "state report" a frame after a world cheat was applied
 
-    static bool IsWorldCheat(int cheatIndex);
-    static const char* GetCheatName(int cheatIndex);
+    static void OnCheatActivated(Packets::Cheats::CheatActivated* packet);
+    static void OnVote(Packets::Cheats::CheatVote* packet);
+    static void OnState(Packets::Cheats::CheatState* packet);
+
+    static bool IsWorldCheat(int cheatIndex) { return CheatInfo::IsWorld(cheatIndex); }
+    static const char* GetCheatName(int cheatIndex) { return CheatInfo::Name(cheatIndex); }
+
+private:
+    static void ApplyLocally(int cheatIndex);
+    static void ReportState();
+    static int ms_nReportPending;
 };

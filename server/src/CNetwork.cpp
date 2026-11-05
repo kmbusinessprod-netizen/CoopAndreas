@@ -8,6 +8,7 @@
 #include "stdafx.h"
 #include "CBanList.h"
 #include "CProximityOwnership.h"
+#include "CCheatVote.h"
 #include <network/packets/vehicles.h>
 #include <network/packets/peds.h>
 #include <network/packets/scripts.h>
@@ -43,6 +44,7 @@ bool CNetwork::Init(unsigned short port)
         CServerTime::Update();
         CRTTBroadcastManager::Update();
         CProximityOwnership::Update();  // [private build]
+        CCheatVote::Update();
 
         while (enet_host_service(pENetHost, &eNetEvent, 1) > 0)
         {
@@ -121,6 +123,7 @@ void CNetwork::HandlePlayerDisconnected(ENetEvent& event)
     CNetworkVehicleManager::RemoveAllHostedAndNotify(pNetworkPlayer);
     CNetworkObjectManager::RemoveAllHostedAndNotify(pNetworkPlayer);
 
+    CCheatVote::PlayerLeft(pNetworkPlayer);  // [private build]
     CNetworkPlayerManager::Remove(pNetworkPlayer);
 
     Packets::System::PlayerDisconnected playerDisconnected{};
@@ -195,6 +198,8 @@ void CNetwork::HandlePlayerConnected(ENetPeer* pENetPeer, Packets::System::Playe
     Packets::System::PlayerHandshake playerHandshake{};
     playerHandshake.yourid = newPlayerId;
     GetPacketFactory().Send(playerHandshake, pNewNetworkPlayer);
+
+    CCheatVote::SendStateTo(pNewNetworkPlayer);  // [private build] world cheats currently active
 
     // Send OLD players TO the NEW one
     Packets::System::PlayerConnected oldPlayerConnected{};

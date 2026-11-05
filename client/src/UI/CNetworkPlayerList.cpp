@@ -256,13 +256,16 @@ void CNetworkPlayerList::ProcessInput(const std::vector<playerid_t>& vPlayerId)
     if (pTarget == nullptr)
         return;
 
+    if (CPrompt::IsActive())
+        return;  // Y/N belong to the question on screen
+
     if (CharJustPressed('T'))
-        TeleportToPlayer(pTarget);
+        CTeleportRequest::RequestGoTo(pTarget);
+    if (CharJustPressed('Y'))
+        CTeleportRequest::RequestBring(pTarget);
 
     if (CLocalPlayer::m_bIsHost)
     {
-        if (CharJustPressed('Y'))
-            SendAdminAction(pTarget, Packets::Admin::ADMIN_BRING);
         if (CharJustPressed('K'))
             SendAdminAction(pTarget, Packets::Admin::ADMIN_KICK);
         if (CharJustPressed('B'))
@@ -292,17 +295,17 @@ void CNetworkPlayerList::DrawHints(float fX, float fY, bool bLocalSelected)
     CFont::SetScale(CUtil::HUD_X(0.22f), CUtil::HUD_Y(0.55f));
     CFont::SetColor(CRGBA(200, 200, 200, 255));
 
-    const char* line1 = bLocalSelected ? "~u~ / ~d~  elegir jugador" : "~u~ / ~d~  elegir jugador     ~y~T~s~  ir al jugador";
+    const char* line1 = bLocalSelected ? "~u~ / ~d~  elegir jugador" : "~u~ / ~d~  elegir     ~y~T~s~  ir al jugador     ~y~Y~s~  traerlo";
     CFont::PrintString(CUtil::HUD_X(fX + 8.0f), CUtil::HUD_Y(fTop + 4.0f), line1);
 
     if (CLocalPlayer::m_bIsHost && !bLocalSelected)
     {
         CFont::PrintString(CUtil::HUD_X(fX + 8.0f), CUtil::HUD_Y(fTop + 22.0f),
-            "~y~Y~s~  traer     ~y~K~s~  expulsar     ~y~B~s~  banear");
+            "host:  ~y~K~s~  expulsar     ~y~B~s~  banear");
     }
-    else if (CLocalPlayer::m_bIsHost)
+    else if (!bLocalSelected)
     {
-        CFont::PrintString(CUtil::HUD_X(fX + 8.0f), CUtil::HUD_Y(fTop + 22.0f), "sos el host");
+        CFont::PrintString(CUtil::HUD_X(fX + 8.0f), CUtil::HUD_Y(fTop + 22.0f), "(el otro jugador debe aceptar con Y)");
     }
 }
 

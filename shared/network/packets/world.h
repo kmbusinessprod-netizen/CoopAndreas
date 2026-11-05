@@ -12,7 +12,9 @@ class GameWeatherTime : public Packet
 public:
     eWeatherType newWeather;
     eWeatherType oldWeather;
-    // eWeatherType forcedWeather;
+    int forcedWeather = -1;        // [private build] CWeather::ForcedWeatherType (-1 = none)
+    int interpolation = 0;         // [private build] CWeather::InterpolationValue * 1000
+    int timeScale = 1000;          // [private build] CTimer::ms_fTimeScale * 1000 (slow/fast cheats)
     uint8_t currentMonth;
     uint8_t currentDay;
     uint8_t currentHour;
@@ -26,7 +28,9 @@ private:
         {
             newWeather = VCLAMP(newWeather, WEATHER_EXTRASUNNY_LA, WEATHER_EXTRACOLOURS_2);
             oldWeather = VCLAMP(oldWeather, WEATHER_EXTRASUNNY_LA, WEATHER_EXTRACOLOURS_2);
-            // forcedWeather = VCLAMP(forcedWeather, WEATHER_EXTRASUNNY_LA, WEATHER_EXTRACOLOURS_2);
+            forcedWeather = VCLAMP(forcedWeather, -1, (int)WEATHER_EXTRACOLOURS_2);
+            interpolation = VCLAMP(interpolation, 0, 1000);
+            timeScale = VCLAMP(timeScale, 0, 8000);
             currentMonth = VCLAMP(currentMonth, 1, 12);
             currentDay = VCLAMP(currentDay, 1, 31);
             currentHour = VCLAMP(currentHour, 0, 23);
@@ -34,7 +38,9 @@ private:
         }
         serialize_int(stream, (int&)newWeather, WEATHER_EXTRASUNNY_LA, WEATHER_EXTRACOLOURS_2);
         serialize_int(stream, (int&)oldWeather, WEATHER_EXTRASUNNY_LA, WEATHER_EXTRACOLOURS_2);
-        // serialize_int(stream, (int&)forcedWeather, WEATHER_EXTRASUNNY_LA, WEATHER_EXTRACOLOURS_2);
+        serialize_int(stream, forcedWeather, -1, WEATHER_EXTRACOLOURS_2);
+        serialize_int(stream, interpolation, 0, 1000);
+        serialize_int(stream, timeScale, 0, 8000);
 
         serialize_int(stream, currentMonth, 1, 12);
         serialize_int(stream, currentDay, 1, 31);

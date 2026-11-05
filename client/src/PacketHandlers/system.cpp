@@ -156,11 +156,26 @@ PACKET_HANDLER(ePacketType::PLAYER_CHAT_MESSAGE, Packets::System::ChatMessage* p
     }
 }
 
-// [private build] another player activated a cheat
+// [private build] cheats, see CCheatSync
 PACKET_HANDLER(ePacketType::CHEAT_ACTIVATED, Packets::Cheats::CheatActivated* pCheat)
 {
-    CNetworkPlayer* player = CNetworkPlayerManager::GetPlayer(pCheat->senderPlayerid);
-    CCheatSync::OnRemoteCheat(player ? player->GetName().c_str() : "?", pCheat->cheatIndex, pCheat->active);
+    CCheatSync::OnCheatActivated(pCheat);
+}
+
+PACKET_HANDLER(ePacketType::CHEAT_VOTE, Packets::Cheats::CheatVote* pVote)
+{
+    CCheatSync::OnVote(pVote);
+}
+
+PACKET_HANDLER(ePacketType::CHEAT_STATE, Packets::Cheats::CheatState* pState)
+{
+    CCheatSync::OnState(pState);
+}
+
+// [private build] teleport requests (Tab menu), both sides must agree
+PACKET_HANDLER(ePacketType::TELEPORT_REQUEST, Packets::Teleport::TeleportRequest* pRequest)
+{
+    CTeleportRequest::OnPacket(pRequest);
 }
 
 // [private build] the host teleported us somewhere (ADMIN_BRING)

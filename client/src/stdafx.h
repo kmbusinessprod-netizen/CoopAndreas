@@ -106,6 +106,8 @@ using namespace plugin;
 #include <network/packets/objects.h>
 #include <network/packets/cheats.h>
 #include <network/packets/admin.h>
+#include <network/packets/teleport.h>
+#include <cheat_info.h>
 #include "network/packet_types.h"
 #include "CCore.h"
 #include "CUnicode.h"
@@ -124,6 +126,8 @@ using namespace plugin;
 #include "CPoolGuard.h"
 #include "CCheatSync.h"
 #include "CWindowMode.h"
+#include "CTeleportRequest.h"
+#include "UI/CPrompt.h"
 #include "Hooks/CHook.h"
 #include "Events.h"
 #include "CLocalPlayer.h"
