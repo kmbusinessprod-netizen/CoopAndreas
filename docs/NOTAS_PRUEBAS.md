@@ -111,6 +111,26 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   CWindowMode propio queda desactivado.
 - Host migration funciona: al salir el host, otro jugador pasa a ser host y siguen jugando.
 
+### 9. Crash 0x0156173D en el limite SF/LV (moto), tambien visto al host el 04/11
+- EIP dentro de un trampolin HOODLUM = CColModel::AllocateData (0x40F870) con this=NULL, EDX=0x27A6:
+  el pool de CColModel (10150) se lleno (CPedModelInfo::CreateHitColModelSkinned al cargar un ped).
+  Fix: pool ampliado a 25000 (push en 0x551106).
+
+## Hecho (2026-11-05)
+- Radio: solo el jugador local enciende la radio del auto (0x502302).
+- Morir ya no pasa 12 h ni borra vehiculos (PassTime / ClearExcitingStuffFromArea anulados en red).
+- Host sincroniza ForcedWeatherType, InterpolationValue y ms_fTimeScale.
+- Votacion de trucos de mundo (CCheatVote server / CCheatSync cliente / CPrompt UI), estado de trucos
+  para quien entra (CheatState), TP a pedido con aceptar/rechazar (CTeleportRequest).
+- Gordo/musculoso visibles para los demas (RebuildPlayer(remote, true)).
+- Copiloto trabado al salir: watchdog del cambio de arma en driveby; bInModControlledDriveby solo local.
+
+## Pendiente / a investigar
+- "Copiloto como si apuntara a cada rato": revisar ApplyWeaponSnapshot y el flag driveby del passenger update.
+- Avion deformado que aparece y desaparece: pedir captura/modelo; posible vehiculo de red creado antes de
+  cargar el modelo o entidad con matriz corrupta.
+- SensFix (punteria): pendiente de que el usuario pase el archivo.
+
 ## Pedidos de funciones
 - Trucos de mundo sincronizados: policia/nivel de busqueda, cazarecompensas, autos vuelan, tiempo lento,
   etc. se aplican a todos (los personales como armas/vida/jetpack siguen siendo locales).
