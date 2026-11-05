@@ -208,3 +208,12 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   a pie; printf "[skin] apply/done" para ver en consola dónde se cuelga si sigue pasando.
 - Pendiente: botín de robo de casas no se ve en otros; avión blanco deformado (captura: Andromada/
   Shamal con geometría estirada cerca de Grove); mira.
+
+## 2026-11-05 06:25
+- Skin "no hace nada": SetLocal rechazaba si `m_pVehicle != null`, pero CPed::m_pVehicle se queda con el
+  último auto al bajarse → siempre decía "bájate". Ahora solo mira bInVehicle.
+- Crash 06:11 (build 07:14 UTC) con Cesar: EIP en CRunningScript__Process_Hook (DLL+0x56D90), script #94 con
+  IP 0x01C0FFFF. Era la build con SetModelIndex a mano; la actual usa SET_PLAYER_MODEL (0x109C7).
+- Botín de robos: nuevo paquete PLAYER_HOLD. Local: CPed::GetHoldingTask → modelo + offset/hueso/anim.
+  Remoto: crea un CObject sin colisión y le da CTaskSimpleHoldEntity (ctor 0x6913A0, CTask new 0x61A5A0)
+  en la tarea secundaria 4. Modelo 0 = suelta y borra el objeto.
