@@ -318,3 +318,11 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Velocidad: m_fSpeed de las asociaciones walk/run/sprint (ids 0-2) = 1 + 0.45·(nivel-1).
 - Sync PLAYER_POWER power=3 (bit0 vuela, bit1 velocidad, level).
 - Bailes GFUNK/RUNNINGMAN/WOP: dance_loop es idéntico en los tres (md5); ahora encadenan Dance_B1..B16 de su archivo.
+
+## 2026-11-05 20:10
+- Gravity gun: solo agarra entidades visibles, con modelo (m_pRwObject) y colisión; objetos con esfera de colisión
+  entre 0.05 y 12 m; nunca las piezas de armas/props del coop.
+- Volar: más rápido (0.15 + 0.17·nivel m/frame, turbo x1.6); hacia adelante sigue la cámara completa (también
+  arriba/abajo) y el cuerpo se inclina en esa dirección (matriz del ped rotada sobre su eje derecho después del
+  procesado); hacia atrás más lento (0.55) con FALL_skyDive; laterales FALL_SkyDive_L/R; flotar (salto/C) = mitad de
+  la velocidad de la barra. Los demás ven la inclinación (pitch en PLAYER_POWER).
