@@ -6,6 +6,7 @@
 #include "CKamehameha.h"
 #include "CGravityGun.h"
 #include "CEmoteWheel.h"
+#include "CFlight.h"
 #include "CUnlockAll.h"
 #include "CPrompt.h"
 #include <unordered_map>
@@ -295,6 +296,18 @@ void CModMenu::BuildPlayer(CModMenu* m)
             {"Armas: juego 3", nullptr, [] { CCheatSync::ActivateFromMenu(2); }},
             {"Jetpack", nullptr, [] { CCheatSync::ActivateFromMenu(64); }},
             {"Paracaidas", nullptr, [] { CCheatSync::ActivateFromMenu(63); }},
+            {"Volar (doble salto)", []() -> std::string { return CFlight::ms_bFlyEnabled ? "~g~ON" : "~r~OFF"; },
+                []
+                {
+                    CFlight::ms_bFlyEnabled = !CFlight::ms_bFlyEnabled;
+                    SetStatus(CFlight::ms_bFlyEnabled ? "salta y vuelve a saltar en el aire para volar" : "volar desactivado");
+                }},
+            {"Super velocidad", []() -> std::string { return CFlight::ms_bSpeedEnabled ? "~g~ON" : "~r~OFF"; },
+                []
+                {
+                    CFlight::ms_bSpeedEnabled = !CFlight::ms_bSpeedEnabled;
+                    SetStatus(CFlight::ms_bSpeedEnabled ? "Alt + rueda del mouse cambia la velocidad" : "velocidad normal");
+                }},
             {"Cuerpo normal (quitar gordo / musculo)", nullptr,
                 []
                 {
@@ -379,6 +392,16 @@ static void __cdecl CPad__UpdatePads_Hook()
     {
         CKamehameha::ms_bLmb = pad->NewState.ButtonCircle != 0;
         CKamehameha::ms_bRmb = pad->NewState.RightShoulder1 != 0;
+    }
+    if (CFlight::WantsWheel())  // Alt + wheel = speed level, not the weapon switch
+    {
+        if (CPad::NewMouseControllerState.wheelUp)
+            CFlight::ms_nWheel++;
+        if (CPad::NewMouseControllerState.wheelDown)
+            CFlight::ms_nWheel--;
+        CPad::NewMouseControllerState.wheelUp = CPad::NewMouseControllerState.wheelDown = 0;
+        if (CPad* pad = CPad::GetPad(0))
+            pad->NewState.DPadLeft = pad->NewState.DPadRight = 0;
     }
     bool kame = CKamehameha::IsLocalActive();
     bool wheel = CEmoteWheel::IsOpen();

@@ -9,6 +9,7 @@
 #include "CHoldSync.h"
 #include "CKamehameha.h"
 #include "CEmoteWheel.h"
+#include "CFlight.h"
 #include <CWeatherSync.h>
 #include <CMoonSync.h>
 #include <game_sa/CTagManager.h>
@@ -229,6 +230,8 @@ PACKET_HANDLER(ePacketType::PLAYER_POWER, Packets::Skin::PlayerPower* pPower)
 {
     if (pPower->power == 1)
         CEmoteWheel::OnPacket(pPower);
+    else if (pPower->power == 3)
+        CFlight::OnPacket(pPower);
     else if (pPower->power == 2)
     {
         if (CNetworkPlayer* player = CNetworkPlayerManager::GetPlayer(pPower->senderPlayerid))

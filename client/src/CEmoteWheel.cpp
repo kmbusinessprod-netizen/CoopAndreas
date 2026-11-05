@@ -27,9 +27,9 @@ struct Emote
     Prop prop = NONE;
 };
 static const Emote s_emotes[] = {
-    {"G-Funk", "GFUNK", "dance_loop", true},
-    {"Running Man", "RUNNINGMAN", "dance_loop", true},
-    {"Wop", "WOP", "dance_loop", true},
+    {"G-Funk", "GFUNK", "*", true},
+    {"Running Man", "RUNNINGMAN", "*", true},
+    {"Wop", "WOP", "*", true},
     {"Disco", "DANCING", "dnce_M_d", true},
     {"Sensual", "STRIP", "STR_Loop_A", true},
     {"Rapear", "RAPPING", "RAP_B_Loop", true},
@@ -161,17 +161,71 @@ static void UpdateProps()
     }
 }
 
+// club dances (GFUNK/RUNNINGMAN/WOP): their "dance_loop" is the same in the three files; the style is in
+// the 16 moves Dance_B1..B16, so those play one after another
+struct DanceSeq
+{
+    CPed* ped;
+    const char* block;
+    int move;
+};
+static std::vector<DanceSeq> s_dances;
+static char s_moveName[16];
+
+static void PlayMove(DanceSeq& d)
+{
+    sprintf_s(s_moveName, "Dance_B%d", d.move + 1);
+    Command<Commands::TASK_PLAY_ANIM>(CPools::GetPedRef(d.ped), s_moveName, d.block, 4.0f, 0, 0, 0, 0, -1);
+}
+
+static void StopDance(CPed* ped)
+{
+    for (auto it = s_dances.begin(); it != s_dances.end(); ++it)
+        if (it->ped == ped)
+        {
+            s_dances.erase(it);
+            return;
+        }
+}
+
+static void UpdateDances()
+{
+    for (auto it = s_dances.begin(); it != s_dances.end();)
+    {
+        if (!CPoolGuard::IsPedAlive(it->ped))
+        {
+            it = s_dances.erase(it);
+            continue;
+        }
+        sprintf_s(s_moveName, "Dance_B%d", it->move + 1);
+        if (!Command<Commands::IS_CHAR_PLAYING_ANIM>(CPools::GetPedRef(it->ped), s_moveName))
+        {
+            it->move = (it->move + 1) % 16;
+            PlayMove(*it);
+        }
+        ++it;
+    }
+}
+
 static void PlayOn(CPed* ped, int index)
 {
     if (!ped || index < 0 || index >= COUNT)
         return;
     const Emote& e = s_emotes[index];
+    StopDance(ped);
     AddProp(ped, e.prop);
+    if (e.anim[0] == '*')
+    {
+        s_dances.push_back({ped, e.block, 0});
+        PlayMove(s_dances.back());
+        return;
+    }
     Command<Commands::TASK_PLAY_ANIM>(CPools::GetPedRef(ped), e.anim, e.block, 4.0f, e.loop, 0, 0, !e.loop, -1);
 }
 
 static void StopOn(CPed* ped)
 {
+    StopDance(ped);
     RemoveProp(ped);
     if (ped && CPoolGuard::IsPedAlive(ped))
         Command<Commands::CLEAR_CHAR_TASKS>(CPools::GetPedRef(ped));
@@ -271,6 +325,7 @@ void CEmoteWheel::Process()
     }
 
     UpdateProps();
+    UpdateDances();
 
     for (auto it = s_pendingRemote.begin(); it != s_pendingRemote.end();)
     {

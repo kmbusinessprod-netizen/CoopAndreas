@@ -37,6 +37,7 @@
 #include <CKamehameha.h>
 #include <CGravityGun.h>
 #include <CEmoteWheel.h>
+#include <CFlight.h>
 #include <CTrace.h>
 #include <network/packets/scripts.h>
 
@@ -98,6 +99,7 @@ public:
             CKamehameha::Process();
             CGravityGun::Process();
             CEmoteWheel::Process();
+            CFlight::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();
@@ -284,6 +286,7 @@ public:
             CPrompt::Draw();  // [private build]
             CModMenu::Draw();
             CEmoteWheel::Draw();
+            CFlight::Draw();
 
             if (FrontEndMenuManager.m_bPrefsShowHud)
             {
