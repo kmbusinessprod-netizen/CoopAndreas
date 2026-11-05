@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CSkin.h"
+#include "CTrace.h"
 
 uint16_t CSkin::ms_nLocalSkin = 0;
 
@@ -88,13 +89,15 @@ static std::vector<PendingSkin> s_pending;
 
 static void ApplyNow(CPlayerPed* ped, uint16_t modelId)
 {
-    printf("[skin] apply %d to %p (local=%d)\n", modelId, ped, ped == FindPlayerPed(0));
+    CTrace::Mark("skin: apply %d to %p local=%d curModel=%d animGroup=%d", modelId, ped, ped == FindPlayerPed(0),
+        ped->m_nModelIndex, *(int*)((uintptr_t)ped + 0x4D4));
     if (ped->m_nModelIndex != modelId)
     {
         if (ped == FindPlayerPed(0))
         {
             // the game's own CHANGE_PLAYER_MODEL (09C7), the same thing CLEO skin selectors use
             Command<Commands::SET_PLAYER_MODEL>(0, (int)modelId);
+            CTrace::Mark("skin: opcode 09C7 returned, model now %d", ped->m_nModelIndex);
         }
         else
         {
@@ -111,7 +114,7 @@ static void ApplyNow(CPlayerPed* ped, uint16_t modelId)
     }
     if (modelId == 0)
         CClothes::RebuildPlayer(ped, ped != FindPlayerPed(0));
-    printf("[skin] done\n");
+    CTrace::Mark("skin: done");
 }
 
 void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
@@ -160,6 +163,9 @@ void CSkin::SetLocal(uint16_t modelId)
         return;
     }
     ms_nLocalSkin = modelId;
+    CTrace::Arm("skin change requested");
+    CTrace::Mark("skin: SetLocal %d (%s), loaded=%d", modelId, ModelName(modelId),
+        modelId == 0 || CStreaming::ms_aInfoForModel[modelId].m_nLoadState == LOADSTATE_LOADED);
     ApplyToPed(FindPlayerPed(0), modelId);
     SendLocal();
 }

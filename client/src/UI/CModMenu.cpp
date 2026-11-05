@@ -718,6 +718,21 @@ void CModMenu::BuildMissions(CModMenu* m)
                     SetStatus("ya hay una mision en curso (cancelala primero)");
                     return;
                 }
+                // everybody plays it: bring every player next to the host first
+                if (CPlayerPed* me = FindPlayerPed(0))
+                {
+                    int n = 0;
+                    for (auto player : CNetworkPlayerManager::m_pPlayers)
+                    {
+                        Packets::Admin::AdminAction bring{};
+                        bring.targetPlayerid = player->m_iPlayerId;
+                        bring.action = Packets::Admin::ADMIN_BRING;
+                        float angle = (float)(n++) * 1.2566f;  // around the host, 2 m away
+                        bring.pos = me->GetPosition() + CVector(2.0f * cosf(angle), 2.0f * sinf(angle), 0.0f);
+                        bring.areaCode = (uint8_t)me->m_nAreaCode;
+                        GetPacketFactory().Send(bring);
+                    }
+                }
                 *(int*)(CTheScripts::ScriptSpace + CTheScripts::OnAMissionFlag) = 1;
                 Command<Commands::LOAD_AND_LAUNCH_MISSION_INTERNAL>(id);
                 ms_bOpen = false;

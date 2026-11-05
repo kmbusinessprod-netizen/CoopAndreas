@@ -34,6 +34,7 @@
 #include <CPropertySync.h>
 #include <CFixes.h>
 #include <CHoldSync.h>
+#include <CTrace.h>
 #include <network/packets/scripts.h>
 
 unsigned int lastOnFootSyncTickRate = 0;
@@ -59,6 +60,7 @@ public:
 			};
         Events::gameProcessEvent.before += []
         {
+            CTrace::Mark("gp.before: frame start");
             if (CNetwork::m_bConnected)
             {
                 bBeenConnected = true;
@@ -83,13 +85,17 @@ public:
         };
         Events::gameProcessEvent += []
         {
-            CPrompt::Process();  // [private build]
+            CTrace::Mark("gp: begin (after CGame::Process)");  // [private build]
+            CPrompt::Process();
             CModMenu::Process();
+            CTrace::Mark("gp: menu ok");
             CSkin::Process();
+            CTrace::Mark("gp: skin ok");
             CHoldSync::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();
+            CTrace::Mark("gp: private modules ok");
             CNetworkAnimQueue::Process();
             CEntryExitTransitionSync::Process();
             CDiscordRPCMgr::Update();
@@ -251,6 +257,7 @@ public:
         };
         Events::drawingEvent += []
         {
+            CTrace::Mark("draw: begin");
             if (CEntryExitMarkerSync::ms_bUpdateAfterProcessingThisFrame && CLocalPlayer::m_bIsHost &&
                 CEntryExitMarkerSync::ms_nLastUpdate + 5000 < GetTickCount())
             {
