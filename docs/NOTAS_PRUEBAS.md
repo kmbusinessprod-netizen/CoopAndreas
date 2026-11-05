@@ -102,6 +102,15 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   nunca a <60 m de otro jugador. (= intento de arreglar #7; a probar)
 - CI: mapas de simbolos en build/symbols, publicacion con reintentos.
 
+### 8. Crash 0x54F493 con "autos que vuelan" + jetpack (2026-11-05)
+- ECX=ESI=0 en ~CPlaceable durante el desenrollado de excepcion (funclets 0x8488xx): un constructor
+  de vehiculo corrio sobre NULL. El operator new del juego devuelve NULL con el pool lleno y C++ igual
+  llama al constructor. Fix: CPoolGuard::EnsureFreeVehicleSlot/EnsureFreePedSlot antes de crear
+  vehiculos/peds de red (libera el mas lejano propio o no crea).
+- Ventana/pantalla ancha: se usan III.VC.SA.WindowedMode.asi y GTASA.WidescreenFix.asi (ThirteenAG) en scripts/.
+  CWindowMode propio queda desactivado.
+- Host migration funciona: al salir el host, otro jugador pasa a ser host y siguen jugando.
+
 ## Pedidos de funciones
 - Trucos de mundo sincronizados: policia/nivel de busqueda, cazarecompensas, autos vuelan, tiempo lento,
   etc. se aplican a todos (los personales como armas/vida/jetpack siguen siendo locales).
