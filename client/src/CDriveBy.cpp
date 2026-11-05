@@ -11,6 +11,7 @@ CTaskSimpleGangDriveBy* pSwitchingDriveByTask = nullptr;
 bool bSavedDisableFlag = false;
 
 bool bInModControlledDriveby = false;
+static unsigned int nSwitchingSince = 0;  // [private build] watchdog for a weapon switch whose anim callback never comes
 
 void ProcessWeaponSwitching(CAnimBlendAssociation* pAnim, void* pData)
 {
@@ -106,6 +107,23 @@ void CTaskSimpleGangDriveBy__FinishAnimCB(CAnimBlendAssociation* pAnim, void* pD
 
 void CDriveBy::Process(CPlayerPed* pPlayerPed)
 {
+    // [private build] if the switch anim callback never fired (sync hiccup, death, vehicle gone) the
+    // "enter/exit car" input stayed disabled forever: the passenger could not get out even when killed
+    if (bSwitchingWeapon)
+    {
+        bool stuck = GetTickCount() - nSwitchingSince > 1500 || !pPlayerPed->m_nPedFlags.bInVehicle ||
+                     pPlayerPed->m_fHealth <= 0.0f;
+        if (stuck)
+        {
+            bSwitchingWeapon = false;
+            bSwitchingRight = false;
+            bSwitchingLeft = false;
+            pSwitchingDriveByTask = nullptr;
+            CPad::GetPad(0)->bDisablePlayerEnterCar = bSavedDisableFlag;
+            TheCamera.m_bWaitForInterpolToFinish = false;
+        }
+    }
+
     bool bIsInDriveby = false;
     CTask* pTask = pPlayerPed->m_pIntelligence->m_TaskMgr.m_aPrimaryTasks[TASK_PRIMARY_PRIMARY];
     if (pTask && pTask->GetTaskType() == eTaskType::TASK_SIMPLE_GANG_DRIVEBY)
@@ -168,6 +186,7 @@ void CDriveBy::Process(CPlayerPed* pPlayerPed)
                 bSwitchingWeapon = true;
                 bSavedDisableFlag = pPad->bDisablePlayerEnterCar;
                 pPad->bDisablePlayerEnterCar = true;
+                nSwitchingSince = GetTickCount();
                 CDriveBy::StopDriveby(pPlayerPed);
                 TheCamera.m_bWaitForInterpolToFinish = true;
             }
@@ -227,7 +246,8 @@ CTask* CDriveBy::StartDriveby(CPed* ped)
     if (pTask)
     {
         ped->m_pIntelligence->m_TaskMgr.SetTask(pTask, TASK_PRIMARY_PRIMARY, false);
-        bInModControlledDriveby = true;
+        if (ped == FindPlayerPed(0))
+            bInModControlledDriveby = true;
     }
     ped->SetCurrentWeapon(ped->m_nActiveWeaponSlot);
     return pTask;
@@ -240,7 +260,8 @@ void CDriveBy::StopDriveby(CPed* ped)
     {
         pTask->MakeAbortable(ped, ABORT_PRIORITY_URGENT, nullptr);
     }
-    bInModControlledDriveby = false;
+    if (ped == FindPlayerPed(0))
+        bInModControlledDriveby = false;
 }
 
 void CTaskSimpleGangDriveBy__FinishAnimCB2(CAnimBlendAssociation* pAnim, void* pData)

@@ -252,7 +252,9 @@ PACKET_HANDLER(ePacketType::REBUILD_PLAYER, Packets::Players::RebuildPlayer* pRe
             *pPlayerPed->m_pPlayerData->m_pPedClothesDesc = pRebuildPlayer->clothesDesc;
             if (pPlayerPed->m_pRwClump)
             {
-                CClothes::RebuildPlayer(pPlayerPed, false);
+                // [private build] true = keep the fat/muscle of the clothes desc we just received;
+                // false made the game overwrite them with OUR stats (nobody saw anyone fat)
+                CClothes::RebuildPlayer(pPlayerPed, true);
             }
         }
 
