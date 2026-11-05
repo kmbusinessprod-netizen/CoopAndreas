@@ -200,3 +200,11 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Cada jugador remoto tiene su propio CPedClothesDesc (todos los CPlayerPed comparten el puntero del
   template 0xA430B0 → vestir a un remoto vestía al local).
 - OJO instalación: device_commit_files a veces dice "written" y el archivo no cambia; verificar tamaño.
+
+## 2026-11-05 06:10
+- Ropa al reconectar: el server solo guarda la ropa cuando llega un RebuildPlayer; al cargar partida y
+  conectar no se mandaba ninguno → ahora se envía la desc actual en el handshake.
+- Skin local: ahora vía opcode SET_PLAYER_MODEL (0x109C7, el mismo que usan los selectores CLEO), solo
+  a pie; printf "[skin] apply/done" para ver en consola dónde se cuelga si sigue pasando.
+- Pendiente: botín de robo de casas no se ve en otros; avión blanco deformado (captura: Andromada/
+  Shamal con geometría estirada cerca de Grove); mira.
