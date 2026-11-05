@@ -607,12 +607,19 @@ void VehicleHooks::InjectHooks()
     }
 
     // fix bmx on fire, now driver being set on fire instead of the local player, compatible with SilentPatch
-    patch::SetRaw(0x53A984, (void*)"\x90\x57", 2);  // nop, push edi
-    patch::SetRaw(0x53A9A7, (void*)"\x90\x57", 2);  // nop, push edi
-    patch::RedirectCall(0x53A984 + 2, BmxFix_FindPlayerPed_Hook);
-    patch::RedirectCall(0x53A9A7 + 2, BmxFix_FindPlayerPed_Hook);
-    patch::RedirectCall(0x53A990, CPlayerPed__DoStuffToGoOnFire_Hook);
-    patch::RedirectCall(0x53A9B7, CFireManager__StartFire_Hook);
+    auto applyBmxFireFix = []
+    {
+        patch::SetRaw(0x53A984, (void*)"\x90\x57", 2);  // nop, push edi
+        patch::SetRaw(0x53A9A7, (void*)"\x90\x57", 2);  // nop, push edi
+        patch::RedirectCall(0x53A984 + 2, BmxFix_FindPlayerPed_Hook);
+        patch::RedirectCall(0x53A9A7 + 2, BmxFix_FindPlayerPed_Hook);
+        patch::RedirectCall(0x53A990, CPlayerPed__DoStuffToGoOnFire_Hook);
+        patch::RedirectCall(0x53A9B7, CFireManager__StartFire_Hook);
+    };
+    applyBmxFireFix();
+    // [private build] SilentPatch patches the same spots when it loads (after us): re-apply ours once
+    // every .asi is in, so the network-aware version wins
+    Events::initGameEvent += applyBmxFireFix;
 
     // patch::RedirectCall(0x6D6494, CVehicle__PreRenderDriverAndPassengers_Hook); // TODO: enable this and in
     // proccontrol too
