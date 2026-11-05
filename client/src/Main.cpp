@@ -33,6 +33,7 @@
 #include <CUnlockAll.h>
 #include <CPropertySync.h>
 #include <CFixes.h>
+#include <CHoldSync.h>
 #include <network/packets/scripts.h>
 
 unsigned int lastOnFootSyncTickRate = 0;
@@ -85,6 +86,7 @@ public:
             CPrompt::Process();  // [private build]
             CModMenu::Process();
             CSkin::Process();
+            CHoldSync::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();

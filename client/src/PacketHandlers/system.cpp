@@ -6,6 +6,7 @@
 #include "stdafx.h"
 #include "CSkin.h"
 #include "CPropertySync.h"
+#include "CHoldSync.h"
 #include <CWeatherSync.h>
 #include <CMoonSync.h>
 #include <game_sa/CTagManager.h>
@@ -215,4 +216,9 @@ PACKET_HANDLER(ePacketType::PLAYER_SKIN, Packets::Skin::PlayerSkin* pSkin)
 PACKET_HANDLER(ePacketType::PROPERTY_BOUGHT, Packets::Skin::PropertyBought* pProp)
 {
     CPropertySync::OnPacket(pProp);
+}
+
+PACKET_HANDLER(ePacketType::PLAYER_HOLD, Packets::Skin::PlayerHold* pHold)
+{
+    CHoldSync::OnPacket(pHold);
 }

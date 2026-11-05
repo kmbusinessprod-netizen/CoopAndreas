@@ -154,7 +154,7 @@ void CSkin::Process()
 void CSkin::SetLocal(uint16_t modelId)
 {
     CPlayerPed* me = FindPlayerPed(0);
-    if (me && (me->m_nPedFlags.bInVehicle || me->m_pVehicle))
+    if (me && me->m_nPedFlags.bInVehicle)  // (m_pVehicle keeps the last car after getting out)
     {
         CChat::AddMessage("{f07878}[skin] {d6dce8}bajate del vehiculo para cambiar la skin");
         return;

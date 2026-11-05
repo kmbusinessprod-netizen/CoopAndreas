@@ -20,3 +20,9 @@ PACKET_HANDLER(ePacketType::PROPERTY_BOUGHT, Packets::Skin::PropertyBought* pPro
 	logger::info("player %s bought property #%d", to_string(pNetworkPlayer->m_playerId).c_str(), pProp->index);
 	GetPacketFactory().SendToAll(*pProp, pNetworkPlayer);
 }
+
+PACKET_HANDLER(ePacketType::PLAYER_HOLD, Packets::Skin::PlayerHold* pHold, CNetworkPlayer* pNetworkPlayer)
+{
+	pHold->senderPlayerid = pNetworkPlayer->m_playerId;
+	GetPacketFactory().SendToAll(*pHold, pNetworkPlayer);
+}

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CSkin.h"
+#include "CHoldSync.h"
 #include <CTaskSimpleCarSetPedOut.h>
 #include <CCarEnterExit.h>
 #include <CTaskSimpleCarSetPedInAsPassenger.h>
@@ -62,6 +63,7 @@ void CNetworkPlayer::CreatePed(CVector position)
 
 void CNetworkPlayer::DestroyPed()
 {
+    CHoldSync::OnPlayerRemoved(m_pPed);
     if (m_pOrigClothesDesc && m_pPed->m_pPlayerData)
     {
         m_pPed->m_pPlayerData->m_pPedClothesDesc = m_pOrigClothesDesc;
