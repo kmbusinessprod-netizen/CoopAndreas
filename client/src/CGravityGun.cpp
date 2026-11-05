@@ -298,16 +298,16 @@ void CGravityGun::Glow(int gun, const int parts[3], bool holding, unsigned int i
     if (gun < 0 || !CPools::GetObject(gun))
         return;
     CRGBA col = holding ? CRGBA(64, 255, 128, 255) : CRGBA(16, 64, 32, 255);
-    float big = holding ? 0.55f : 0.375f, small = holding ? 0.12f : 0.075f;
+    float bigR = holding ? 0.55f : 0.375f, smallR = holding ? 0.12f : 0.075f;
     CVector tip = GunPoint(gun, 0.7f, 0.0f, 0.15f);
-    CCoronas::RegisterCorona(idBase, nullptr, col.r, col.g, col.b, 255, tip, big, 150.0f, eCoronaType::CORONATYPE_SHINYSTAR,
+    CCoronas::RegisterCorona(idBase, nullptr, col.r, col.g, col.b, 255, tip, bigR, 150.0f, eCoronaType::CORONATYPE_SHINYSTAR,
         eCoronaFlareType::FLARETYPE_NONE, false, false, 0, 0.0f, false, 0.3f, 0, 15.0f, false, false);
     for (int i = 0; i < 3; i++)
     {
         if (parts[i] < 0)
             continue;
         CVector p = GunPoint(parts[i], 0.25f, 0.0f, 0.15f);
-        CCoronas::RegisterCorona(idBase + 1 + i, nullptr, col.r, col.g, col.b, 255, p, small, 150.0f,
+        CCoronas::RegisterCorona(idBase + 1 + i, nullptr, col.r, col.g, col.b, 255, p, smallR, 150.0f,
             eCoronaType::CORONATYPE_SHINYSTAR, eCoronaFlareType::FLARETYPE_NONE, false, false, 0, 0.0f, false, 0.3f, 0, 15.0f,
             false, false);
     }
