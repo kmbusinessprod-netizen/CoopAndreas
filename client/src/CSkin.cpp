@@ -3,6 +3,8 @@
 #include "CTrace.h"
 #include "CSkinImport.h"
 #include <map>
+#include "CCutsceneMgr.h"
+#include "CKeyGen.h"
 
 // Skin ids (what travels over the network):
 //   0          CJ with his clothes
@@ -148,28 +150,53 @@ const char* CSkin::ModelName(int skin)
 
 // special slots: each ped owns two and alternates, so a story character can replace another one
 // (loading into the slot the ped is wearing right now does nothing). Me: 10/9, the others: 8/7, 6/5.
+// special slots: each ped owns two. If one of them already holds the wanted character it is reused
+// (re-loading the same character into the other slot shared one texture dictionary between two models
+// and left the skin white); otherwise the slot the ped is NOT wearing is cleared and loaded.
+// Me: 10/9, the others: 8/7, 6/5. Cutscenes can borrow these slots: Validate() puts the skin back.
 struct SlotPair
 {
     int a, b;
-    bool useA;
 };
 static std::map<CPlayerPed*, SlotPair> s_slots;
-static int NextSlotFor(CPlayerPed* ped)
+
+static SlotPair SlotsFor(CPlayerPed* ped)
 {
     auto it = s_slots.find(ped);
     if (it == s_slots.end())
     {
-        SlotPair pair{10, 9, true};
+        SlotPair pair{10, 9};
         if (ped != FindPlayerPed(0))
         {
             static int nextRemote = 0;
-            pair = (nextRemote++ % 2 == 0) ? SlotPair{8, 7, true} : SlotPair{6, 5, true};
+            pair = (nextRemote++ % 2 == 0) ? SlotPair{8, 7} : SlotPair{6, 5};
         }
         it = s_slots.emplace(ped, pair).first;
     }
-    int slot = it->second.useA ? it->second.a : it->second.b;
-    it->second.useA = !it->second.useA;
-    return slot;
+    return it->second;
+}
+
+static bool SlotHolds(int slot, const char* file)
+{
+    CBaseModelInfo* info = CModelInfo::ms_modelInfoPtrs[289 + slot];
+    return info && info->m_nKey == CKeyGen::GetUppercaseKey(file) &&
+           CStreaming::ms_aInfoForModel[289 + slot].m_nLoadState == LOADSTATE_LOADED;
+}
+
+// returns the slot to use; *ready = already loaded with that character
+static int ChooseSlot(CPlayerPed* ped, const char* file, bool* ready)
+{
+    SlotPair pair = SlotsFor(ped);
+    for (int slot : {pair.a, pair.b})
+    {
+        if (SlotHolds(slot, file))
+        {
+            *ready = true;
+            return slot;
+        }
+    }
+    *ready = false;
+    return (ped->m_nModelIndex == 289 + pair.a) ? pair.b : pair.a;
 }
 
 struct PendingSkin
@@ -218,9 +245,16 @@ void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t skin)
     int model = skin;
     if (IsSpecial(skin))
     {
-        int slot = NextSlotFor(ped);
+        bool ready = false;
+        int slot = ChooseSlot(ped, SpecialFile(skin), &ready);
         model = 289 + slot;
-        // the slot may still hold this character from before
+        if (ready)
+        {
+            if (ped->m_nModelIndex != model)
+                ApplyNow(ped, model);
+            return;
+        }
+        Command<Commands::UNLOAD_SPECIAL_CHARACTER>(slot);
         Command<Commands::LOAD_SPECIAL_CHARACTER>(slot, SpecialFile(skin));
         CTrace::Mark("skin: special '%s' requested in slot %d (model %d)", SpecialFile(skin), slot, model);
     }
@@ -283,12 +317,60 @@ void CSkin::SendLocal()
 
 static int s_restoreLocal = -1;  // skin the server remembered for me, applied once I am on foot
 
+static bool GameIsPlayable(CPlayerPed* me)
+{
+    CPad* pad = CPad::GetPad(0);
+    return me != nullptr && !me->m_nPedFlags.bInVehicle && CNetwork::m_bAuthenticated && !CCutsceneMgr::ms_running &&
+           !TheCamera.m_bWideScreenOn && pad && !pad->DisablePlayerControls && me->m_fHealth > 0.0f;
+}
+
+// a cutscene or the game itself (respawn, new game) may have put another model on a player: put the skin back
+static void Validate(CPlayerPed* ped, uint16_t skin)
+{
+    if (!ped || skin == 0 || !CPoolGuard::IsPedAlive(ped) || ped->m_nPedFlags.bInVehicle)
+        return;
+    for (auto& p : s_pending)
+        if (p.ped == ped)
+            return;
+    bool ok;
+    if (IsSpecial(skin))
+    {
+        int model = ped->m_nModelIndex;
+        ok = model >= 290 && model <= 299 && SlotHolds(model - 289, SpecialFile(skin));
+    }
+    else
+        ok = ped->m_nModelIndex == skin;
+    if (!ok)
+    {
+        CTrace::Mark("skin: validate found model %d for skin %d, re-applying", ped->m_nModelIndex, skin);
+        CSkin::ApplyToPed(ped, skin);
+    }
+}
+
 void CSkin::Process2()
 {
+    static unsigned int lastValidate = 0;
+    CPlayerPed* me = FindPlayerPed(0);
+    if (GetTickCount() - lastValidate > 1000 && !CCutsceneMgr::ms_running)
+    {
+        lastValidate = GetTickCount();
+        if (GameIsPlayable(me))
+            Validate(me, ms_nLocalSkin);
+        for (auto player : CNetworkPlayerManager::m_pPlayers)
+            Validate(player->m_pPed, player->m_nSkin);
+    }
+
     if (s_restoreLocal < 0)
         return;
-    CPlayerPed* me = FindPlayerPed(0);
-    if (me == nullptr || me->m_nPedFlags.bInVehicle || !CNetwork::m_bAuthenticated)
+    static unsigned int playableSince = 0;
+    if (!GameIsPlayable(me))
+    {
+        playableSince = 0;
+        return;
+    }
+    if (playableSince == 0)
+        playableSince = GetTickCount();
+    if (GetTickCount() - playableSince < 3000)  // let a new game / the intro settle first
         return;
     ms_nLocalSkin = (uint16_t)s_restoreLocal;
     s_restoreLocal = -1;

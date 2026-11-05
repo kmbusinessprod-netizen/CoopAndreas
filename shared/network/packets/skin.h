@@ -87,6 +87,7 @@ public:
     uint8_t phase = 0;  // 0 off, 1 charging, 2 firing
     float heading = 0.0f;
     float pitch = 0.0f;
+    float level = 0.0f;  // kamehameha charge 0..1
 
 private:
     template <typename Stream>
@@ -97,6 +98,7 @@ private:
         serialize_uint8(stream, phase);
         serialize_float(stream, heading);
         serialize_float(stream, pitch);
+        serialize_float(stream, level);
         return true;
     }
 };

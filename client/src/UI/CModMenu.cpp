@@ -77,7 +77,7 @@ void CModMenu::BuildRoot(CModMenu* m)
             {"Jugador", nullptr, nullptr, BuildPlayer},
             {"Armas", nullptr, nullptr, BuildWeapons},
             {"Teletransporte", nullptr, nullptr, BuildTeleport},
-            {"Misiones (pruebas)", nullptr, nullptr, BuildMissions},
+            {"Misiones", nullptr, nullptr, BuildMissions},
             {"Guardar partida", nullptr,
                 []
                 {
@@ -132,7 +132,7 @@ void CModMenu::BuildCheatCategory(CModMenu* m, int category)
             },
             [i] { CCheatSync::ActivateFromMenu(i); }, nullptr});
     }
-    m->Open(std::string("TRUCOS - ") + cat.name + "  (amarillo: todos aceptan)", std::move(items));
+    m->Open(std::string("TRUCOS - ") + cat.name, std::move(items));
 }
 
 // vehicle categories
@@ -259,7 +259,7 @@ void CModMenu::BuildSkins(CModMenu* m)
     for (int id = 1; id < 290; id++)
         if (CSkin::IsValidPedModel(id))
             add(id);
-    m->Open("SKIN  (solo cambia el modelo, CJ se mueve igual)", std::move(items));
+    m->Open("SKIN", std::move(items));
 }
 
 void CModMenu::BuildPlayer(CModMenu* m)
@@ -363,7 +363,7 @@ void CModMenu::BuildTeleport(CModMenu* m)
             },
             nullptr});
     }
-    m->Open("TELETRANSPORTE  (a jugadores: Tab)", std::move(items));
+    m->Open("TELETRANSPORTE", std::move(items));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -375,9 +375,14 @@ static uintptr_t s_UpdatePads_orig = 0;
 static void __cdecl CPad__UpdatePads_Hook()
 {
     plugin::CallDyn(s_UpdatePads_orig);
+    if (CPad* pad = CPad::GetPad(0))
+    {
+        CKamehameha::ms_bLmb = pad->NewState.ButtonCircle != 0;
+        CKamehameha::ms_bRmb = pad->NewState.RightShoulder1 != 0;
+    }
     bool kame = CKamehameha::IsLocalActive();
     bool wheel = CEmoteWheel::IsOpen();
-    if (kame || wheel)
+    if (CKamehameha::IsLocalFiring() || wheel)  // the mouse steers the beam / picks the emote, not the camera
     {
         CKamehameha::ms_fMouseX += CPad::NewMouseControllerState.x;
         CKamehameha::ms_fMouseY += CPad::NewMouseControllerState.y;
@@ -446,9 +451,9 @@ void CModMenu::Process()
         move = -1;
     else if (step(&CKeyboardState::down))
         move = 1;
-    else if (step(&CKeyboardState::pgup))
+    else if (step(&CKeyboardState::pgup) || step(&CKeyboardState::left))
         move = -ROWS;
-    else if (step(&CKeyboardState::pgdn))
+    else if (step(&CKeyboardState::pgdn) || step(&CKeyboardState::right))
         move = ROWS;
 
     if (move != 0 && count > 0)
@@ -569,7 +574,7 @@ void CModMenu::Draw()
         foot = "~g~" + ms_status;
     else
     {
-        foot = "~y~Flechas~s~ mover  ~y~Enter~s~ elegir  ~y~Retroceso~s~ volver  ~y~F2~s~ cerrar";
+        foot = "~y~Flechas~s~ mover  ~y~Enter~s~ elegir  ~y~Retroceso~s~ volver";
         if ((int)page.items.size() > ROWS)
             foot += "   " + std::to_string(page.selected + 1) + "/" + std::to_string(page.items.size());
     }
@@ -749,7 +754,7 @@ void CModMenu::BuildMissions(CModMenu* m)
             },
             nullptr});
     }
-    m->Open("MISIONES  (solo host, puede romper el orden de la historia)", std::move(items));
+    m->Open("MISIONES", std::move(items));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -775,8 +780,10 @@ void CModMenu::BuildWeapons(CModMenu* m)
         {46, "Paracaidas", 1}, {40, "Detonador", 1},
     };
     std::vector<Item> items;
-    items.push_back({"~y~Gravity gun (en la escopeta de combate, Alt+G)", []() -> std::string { return CGravityGun::IsActive() ? "~g~ON" : "~r~OFF"; },
+    items.push_back({"~y~Gravity gun", []() -> std::string { return CGravityGun::IsActive() ? "~g~ON" : "~r~OFF"; },
         [] { CGravityGun::Toggle(); }, nullptr});
+    items.push_back({"~y~Kamehameha", []() -> std::string { return CKamehameha::IsWeaponEnabled() ? "~g~ON" : "~r~OFF"; },
+        [] { CKamehameha::ToggleWeapon(); }, nullptr});
     for (const W& w : weapons)
     {
         int id = w.id, ammo = w.ammo;
@@ -800,5 +807,5 @@ void CModMenu::BuildWeapons(CModMenu* m)
             },
             nullptr});
     }
-    m->Open("ARMAS  (se suman a las que ya tienes)", std::move(items));
+    m->Open("ARMAS", std::move(items));
 }

@@ -27,17 +27,19 @@ struct Emote
     Prop prop = NONE;
 };
 static const Emote s_emotes[] = {
-    {"Bailar", "DANCING", "dance_loop", true},
-    {"Bailar 2", "DANCING", "DAN_Up_A", true},
-    {"Bailar 3", "DANCING", "dnce_M_b", true},
-    {"Fumar", "SMOKING", "M_smkstnd_loop", true, CIGGY},
+    {"G-Funk", "GFUNK", "dance_loop", true},
+    {"Running Man", "RUNNINGMAN", "dance_loop", true},
+    {"Wop", "WOP", "dance_loop", true},
+    {"Disco", "DANCING", "dnce_M_d", true},
+    {"Sensual", "STRIP", "STR_Loop_A", true},
+    {"Rapear", "RAPPING", "RAP_B_Loop", true},
+    {"Fumar", "SMOKING", "M_smk_drag", true, CIGGY},
     {"Beber", "BAR", "dnk_stndM_loop", true, BOTTLE},
     {"Mear", "PAULNMAC", "Piss_loop", true, PISS},
     {"Saludar", "ON_LOOKERS", "wave_loop", true},
     {"Reir", "RAPPING", "Laugh_01", true},
     {"Brazos cruzados", "COP_AMBIENT", "Coplook_loop", true},
     {"Sentarse", "BEACH", "ParkSit_M_loop", true},
-    {"Manos arriba", "PED", "handsup", false},
     {"Grosero", "PED", "fucku", false},
 };
 static constexpr int COUNT = sizeof(s_emotes) / sizeof(s_emotes[0]);
