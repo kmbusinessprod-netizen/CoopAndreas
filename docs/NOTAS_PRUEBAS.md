@@ -309,3 +309,12 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Menú: izquierda/derecha saltan una página; títulos sin textos explicativos.
 - Emotes: bailes de la discoteca (GFUNK/RUNNINGMAN/WOP dance_loop), DANCING dnce_M_d, STRIP STR_Loop_A, RAPPING;
   fumar = SMOKING M_smk_drag (M_smkstnd_loop era el de "dolor de cabeza"). Nombres verificados en anim.img.
+
+## 2026-11-05 19:50 — volar y super velocidad (CFlight)
+- F2 > Jugador: "Volar (doble salto)" y "Super velocidad", por jugador. Alt + rueda = nivel 1..10 (barra estilo HUD).
+- Volar: saltar de nuevo en el aire (< 2 s del primer salto). Dirección = cámara, W/S/A/D, salto sube, agacharse (C)
+  baja, sprint = turbo. m_vecMoveSpeed cada frame sin gravedad; anims PARACHUTE PARA_float / FALL_SkyDive_Accel.
+  Aterriza bajando a < 1.3 m del suelo; a prueba de golpes mientras vuela + 1.5 s.
+- Velocidad: m_fSpeed de las asociaciones walk/run/sprint (ids 0-2) = 1 + 0.45·(nivel-1).
+- Sync PLAYER_POWER power=3 (bit0 vuela, bit1 velocidad, level).
+- Bailes GFUNK/RUNNINGMAN/WOP: dance_loop es idéntico en los tres (md5); ahora encadenan Dance_B1..B16 de su archivo.
