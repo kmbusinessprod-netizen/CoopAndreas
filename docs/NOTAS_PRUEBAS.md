@@ -175,3 +175,16 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - **Radio tras morir** (`CFixes`): si no estoy en un vehículo y hay radio activa → StopRadio.
 - **Encerrado en interior** (`CFixes`): un cliente dentro de un interior nunca queda con enex deshabilitados.
 - Pendiente: misión de Ryder (falta saber qué falla), mira/SensFix, avión deformado, duplicado de autos.
+
+## Lote 2026-11-05 03:50
+- Skin crasheaba: ahora se cambia igual que el opcode 09C7 (DeleteRwObject y SetModelIndex virtuales,
+  modelo -1 antes, se conserva m_nAnimGroup 0x4D4).
+- Radio: todas las llamadas que encienden la radio (0x4F5BA0 desde 0x5022C9/0x642113/0x648A36/0x64CAAA y
+  0x4F5B20 desde 0x45F159/0x50237C) pasan por un filtro: solo si el vehículo es del jugador local. Causa:
+  las tareas de los jugadores remotos corren con CWorld::PlayerInFocus apuntando a ellos.
+- Autos que solo ve el que entra: si llega una actualización de un vehículo remoto cuya copia local el
+  juego borró, se vuelve a crear (CNetworkVehicle::EnsureGameVehicle, máx. cada 3 s).
+- Misiones: LocateAllPlayersOnFoot3D ahora basta con UN jugador (radio mínimo 1.5 m); si lo pisa un
+  cliente, el host es llevado al marcador. Menú F2 > Misiones (solo host) lanza cualquier misión 11-112
+  y permite cancelar la actual.
+- Menú: trucos por categoría, repetición de flechas 350 ms + 110 ms, teletransporte al marcador del mapa.
