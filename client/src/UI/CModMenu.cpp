@@ -330,7 +330,8 @@ void CModMenu::BuildTeleport(CModMenu* m)
                 return;
             }
             CVector pos = CRadar::ms_RadarTrace[index].m_vecPos;
-            CStreaming::LoadScene(CVector(pos.x, pos.y, 20.0f));
+            CVector scenePos(pos.x, pos.y, 20.0f);
+            CStreaming::LoadScene(&scenePos);
             float z = CWorld::FindGroundZForCoord(pos.x, pos.y);
             CUtil::TeleportLocalPlayer(CVector(pos.x, pos.y, z + 1.5f), 0);
             SetStatus("teletransportado al marcador");
