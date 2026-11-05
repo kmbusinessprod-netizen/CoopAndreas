@@ -225,3 +225,12 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   modelo 292 directamente colgaba el streaming. Ahora: skin 1000+i = personaje por nombre (sweet, cesar...),
   slot 10 para mí y 9..6 para los demás; 09C7 con el modelo del slot. Solo se listan los nombres que
   existen en ms_pExtraObjectsDir y los modelos normales con CdSize != 0.
+
+## 2026-11-05 07:45 — skins importadas
+- CoopAndreas\skins\NOMBRE.dff + NOMBRE.txd. Al arrancar (hook 0x5B8E1B, antes de CStreaming::LoadCdDirectory)
+  se empaquetan en CoopAndreas\coop_skins.img (IMG v2) como csk00..csk98 y se registran con
+  AddImageToList. Al no tener entrada en ninguna IDE quedan en ms_pExtraObjectsDir y se cargan como
+  personaje especial (023C + 09C7), igual que Cesar/Sweet. Id = 2000 + FNV1a(nombre) % 60000.
+- Si un remoto usa una importada que no tengo: aviso en el chat y se lo ve como CJ.
+- Pendiente probar con un dff real. Bug visual conocido: brazos estirados en el ragdoll tras matar/morir
+  con skin especial (se arregla re-eligiendo la skin).
