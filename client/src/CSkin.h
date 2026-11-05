@@ -6,7 +6,9 @@ class CSkin
 public:
     static uint16_t ms_nLocalSkin;
 
-    static bool IsValidPedModel(int modelId);
+    static bool IsValidPedModel(int skin);
+    static int SpecialCount();
+    static uint16_t SpecialSkin(int i);  // skin id of story character i
     static const char* ModelName(int modelId);
     static void ApplyToPed(CPlayerPed* ped, uint16_t modelId);  // requests the model, applies when loaded
     static void Process();  // gameProcessEvent: applies pending skins

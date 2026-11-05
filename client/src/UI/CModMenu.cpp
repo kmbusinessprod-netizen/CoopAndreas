@@ -236,7 +236,7 @@ void CModMenu::BuildSkins(CModMenu* m)
     std::vector<Item> items;
     auto add = [&](int id)
     {
-        items.push_back({std::string(CSkin::ModelName(id)) + "  ~b~#" + std::to_string(id),
+        items.push_back({std::string(CSkin::ModelName(id)) + (id < 1000 && id > 0 ? "  ~b~#" + std::to_string(id) : ""),
             [id]() -> std::string { return CSkin::ms_nLocalSkin == id ? "~g~actual" : ""; },
             [id]
             {
@@ -246,21 +246,12 @@ void CModMenu::BuildSkins(CModMenu* m)
             nullptr});
     };
     add(0);
-    // story characters first, then the rest
-    static const int story[] = {270, 271, 269, 292, 294, 295, 293, 297, 296, 298, 265, 266, 267, 290, 291, 1, 2, 3, 4, 5, 6,
-        42, 65, 268, 272, 299, 273, 8};
-    for (int id : story)
+    for (int i = 0; i < CSkin::SpecialCount(); i++)  // story characters
+        if (CSkin::IsValidPedModel(CSkin::SpecialSkin(i)))
+            add(CSkin::SpecialSkin(i));
+    for (int id = 1; id < 290; id++)
         if (CSkin::IsValidPedModel(id))
             add(id);
-    for (int id = 1; id < 300; id++)
-    {
-        bool isStory = false;
-        for (int s : story)
-            if (s == id)
-                isStory = true;
-        if (!isStory && CSkin::IsValidPedModel(id))
-            add(id);
-    }
     m->Open("SKIN  (solo cambia el modelo, CJ se mueve igual)", std::move(items));
 }
 

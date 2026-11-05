@@ -1,10 +1,16 @@
 #include "stdafx.h"
 #include "CSkin.h"
 #include "CTrace.h"
+#include <map>
 
+// Skin ids (what travels over the network):
+//   0          CJ with his clothes
+//   1..299     a normal ped model (only ids that really have a model in gta3.img)
+//   1000 + i   story character s_special[i]: those have NO model id of their own (Cesar, Sweet...). The
+//              game loads them by name into a "special character" slot (models 290..299), exactly what
+//              CLEO skin selectors do with 023C + 09C7. Requesting e.g. model 292 directly froze the game.
 uint16_t CSkin::ms_nLocalSkin = 0;
 
-// names of the 300 ped models (peds.ide order), story characters by their name
 static const char* s_pedNames[300] = {
     "CJ", "The Truth", "Maccer", "Andre", "Big Bear (flaco)", "Big Bear",
     "Emmet", "male01", "Conserje", "bfori", "bfost", "vbfycrp",
@@ -58,80 +64,143 @@ static const char* s_pedNames[300] = {
     "Wu Zi Mu", "Toreno", "Jizzy", "Madd Dogg", "Catalina", "Claude"
 };
 
-
-bool CSkin::IsValidPedModel(int modelId)
+struct SpecialChar
 {
-    if (modelId == 0)
+    const char* file;
+    const char* name;
+};
+static const SpecialChar s_special[] = {
+    {"sweet", "Sweet"}, {"ryder", "Ryder"}, {"smoke", "Big Smoke"}, {"cesar", "Cesar"}, {"kendl", "Kendl"},
+    {"ogloc", "OG Loc"}, {"wuzimu", "Wu Zi Mu"}, {"torino", "Toreno"}, {"maddogg", "Madd Dogg"},
+    {"jizzy", "Jizzy"}, {"cat", "Catalina"}, {"tenpen", "Tenpenny"}, {"pulaski", "Pulaski"},
+    {"hern", "Hernandez"}, {"rose", "Rosenberg"}, {"paul", "Paul"}, {"maccer", "Maccer"}, {"truth", "The Truth"},
+    {"claude", "Claude"}, {"zero", "Zero"}, {"jethro", "Jethro"}, {"dwayne", "Dwayne"}, {"emmet", "Emmet"},
+    {"andre", "Andre"}, {"bbthin", "Big Bear (flaco)"}, {"bb", "Big Bear"}, {"forelli", "Forelli"},
+    {"janitor", "Conserje"}, {"sindaco", "Mediador"}, {"suzie", "Suzie"}, {"wmosci", "Woozie (cientifico)"},
+};
+static constexpr int SPECIAL_BASE = 1000;
+static constexpr int SPECIAL_COUNT = sizeof(s_special) / sizeof(s_special[0]);
+
+static bool IsSpecial(int skin)
+{
+    return skin >= SPECIAL_BASE && skin < SPECIAL_BASE + SPECIAL_COUNT;
+}
+
+static bool SpecialExists(int i)
+{
+    return CStreaming::ms_pExtraObjectsDir && CStreaming::ms_pExtraObjectsDir->FindItem(s_special[i].file) != nullptr;
+}
+
+int CSkin::SpecialCount()
+{
+    return SPECIAL_COUNT;
+}
+
+uint16_t CSkin::SpecialSkin(int i)
+{
+    return (uint16_t)(SPECIAL_BASE + i);
+}
+
+bool CSkin::IsValidPedModel(int skin)
+{
+    if (skin == 0)
         return true;
-    if (modelId < 1 || modelId >= 300 || s_pedNames[modelId][0] == 0)
+    if (IsSpecial(skin))
+        return SpecialExists(skin - SPECIAL_BASE);
+    if (skin < 1 || skin >= 290 || s_pedNames[skin][0] == 0)
         return false;
-    CBaseModelInfo* info = CModelInfo::ms_modelInfoPtrs[modelId];
-    return info != nullptr && info->GetModelType() == MODEL_INFO_PED;
+    CBaseModelInfo* info = CModelInfo::ms_modelInfoPtrs[skin];
+    return info != nullptr && info->GetModelType() == MODEL_INFO_PED && CStreaming::ms_aInfoForModel[skin].m_nCdSize != 0;
 }
 
-
-const char* CSkin::ModelName(int modelId)
+const char* CSkin::ModelName(int skin)
 {
-    if (modelId < 0 || modelId >= 300 || s_pedNames[modelId][0] == 0)
+    if (IsSpecial(skin))
+        return s_special[skin - SPECIAL_BASE].name;
+    if (skin < 0 || skin >= 300 || s_pedNames[skin][0] == 0)
         return "?";
-    return s_pedNames[modelId];
+    return s_pedNames[skin];
 }
 
-// one pending change per ped: the model is requested and applied once the streaming has it,
-// never blocking the game (a blocking LoadAllRequestedModels froze the game for some models)
+// special slot per ped: 10 for me, 9..6 for the others (missions mostly use the low slots)
+static std::map<CPlayerPed*, int> s_slots;
+static int SlotFor(CPlayerPed* ped)
+{
+    if (ped == FindPlayerPed(0))
+        return 10;
+    auto it = s_slots.find(ped);
+    if (it != s_slots.end())
+        return it->second;
+    static int next = 9;
+    int slot = next;
+    next = next <= 6 ? 9 : next - 1;
+    s_slots[ped] = slot;
+    return slot;
+}
+
 struct PendingSkin
 {
     CPlayerPed* ped;
-    uint16_t modelId;
+    int model;  // real model id to wait for
     unsigned int since;
 };
 static std::vector<PendingSkin> s_pending;
 
-static void ApplyNow(CPlayerPed* ped, uint16_t modelId)
+static void ApplyNow(CPlayerPed* ped, int model)
 {
-    CTrace::Mark("skin: apply %d to %p local=%d curModel=%d animGroup=%d", modelId, ped, ped == FindPlayerPed(0),
-        ped->m_nModelIndex, *(int*)((uintptr_t)ped + 0x4D4));
-    if (ped->m_nModelIndex != modelId)
+    CTrace::Mark("skin: apply model %d to %p local=%d curModel=%d", model, ped, ped == FindPlayerPed(0), ped->m_nModelIndex);
+    if (ped->m_nModelIndex != model)
     {
         if (ped == FindPlayerPed(0))
         {
-            // the game's own CHANGE_PLAYER_MODEL (09C7), the same thing CLEO skin selectors use
-            Command<Commands::SET_PLAYER_MODEL>(0, (int)modelId);
-            CTrace::Mark("skin: opcode 09C7 returned, model now %d", ped->m_nModelIndex);
+            Command<Commands::SET_PLAYER_MODEL>(0, model);  // 09C7, like the CLEO skin selectors
         }
         else
         {
-            // 09C7 only works on player 0: do the same by hand for the remote ped
+            // 09C7 only works on player 0: same steps by hand for a remote ped
             using DeleteRwObject_t = void(__thiscall*)(CEntity*);
             using SetModelIndex_t = void(__thiscall*)(CEntity*, unsigned int);
             void** vtable = *(void***)ped;
             int savedAnimGroup = *(int*)((uintptr_t)ped + 0x4D4);
             ((DeleteRwObject_t)vtable[8])(ped);
             ped->m_nModelIndex = 0xFFFF;
-            ((SetModelIndex_t)vtable[5])(ped, modelId);
+            ((SetModelIndex_t)vtable[5])(ped, model);
             *(int*)((uintptr_t)ped + 0x4D4) = savedAnimGroup;
         }
     }
-    if (modelId == 0)
+    if (model == 0)
         CClothes::RebuildPlayer(ped, ped != FindPlayerPed(0));
-    CTrace::Mark("skin: done");
+    CTrace::Mark("skin: done, model now %d", ped->m_nModelIndex);
 }
 
-void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t modelId)
+void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t skin)
 {
-    if (ped == nullptr || !IsValidPedModel(modelId))
+    if (ped == nullptr || !IsValidPedModel(skin))
         return;
 
     for (auto it = s_pending.begin(); it != s_pending.end();)
         it = (it->ped == ped) ? s_pending.erase(it) : it + 1;
 
-    if (modelId == 0 || CStreaming::ms_aInfoForModel[modelId].m_nLoadState == LOADSTATE_LOADED)
+    int model = skin;
+    if (IsSpecial(skin))
     {
-        ApplyNow(ped, modelId);
+        int slot = SlotFor(ped);
+        model = 289 + slot;
+        // the slot may still hold this character from before
+        Command<Commands::LOAD_SPECIAL_CHARACTER>(slot, s_special[skin - SPECIAL_BASE].file);
+        CTrace::Mark("skin: special '%s' requested in slot %d (model %d)", s_special[skin - SPECIAL_BASE].file, slot, model);
+    }
+    else if (model != 0 && CStreaming::ms_aInfoForModel[model].m_nLoadState != LOADSTATE_LOADED)
+    {
+        CStreaming::RequestModel(model, GAME_REQUIRED);
+    }
+
+    if (model == 0 || (!IsSpecial(skin) && CStreaming::ms_aInfoForModel[model].m_nLoadState == LOADSTATE_LOADED))
+    {
+        ApplyNow(ped, model);
         return;
     }
-    CStreaming::RequestModel(modelId, GAME_REQUIRED);
-    s_pending.push_back({ped, modelId, GetTickCount()});
+    s_pending.push_back({ped, model, GetTickCount()});
 }
 
 void CSkin::Process()
@@ -139,17 +208,16 @@ void CSkin::Process()
     for (auto it = s_pending.begin(); it != s_pending.end();)
     {
         bool alive = CPoolGuard::IsPedAlive(it->ped);
-        bool loaded = alive && CStreaming::ms_aInfoForModel[it->modelId].m_nLoadState == LOADSTATE_LOADED;
+        bool loaded = alive && CStreaming::ms_aInfoForModel[it->model].m_nLoadState == LOADSTATE_LOADED;
         if (loaded)
-            ApplyNow(it->ped, it->modelId);
+            ApplyNow(it->ped, it->model);
         else if (alive && GetTickCount() - it->since < 8000)
         {
-            CStreaming::RequestModel(it->modelId, GAME_REQUIRED);
             ++it;
             continue;
         }
         else if (alive && it->ped == FindPlayerPed(0))
-            CChat::AddMessage("{f07878}[skin] {d6dce8}no se pudo cargar el modelo %d (%s)", it->modelId, ModelName(it->modelId));
+            CChat::AddMessage("{f07878}[skin] {d6dce8}no se pudo cargar la skin");
         it = s_pending.erase(it);
     }
 }
@@ -164,8 +232,7 @@ void CSkin::SetLocal(uint16_t modelId)
     }
     ms_nLocalSkin = modelId;
     CTrace::Arm("skin change requested");
-    CTrace::Mark("skin: SetLocal %d (%s), loaded=%d", modelId, ModelName(modelId),
-        modelId == 0 || CStreaming::ms_aInfoForModel[modelId].m_nLoadState == LOADSTATE_LOADED);
+    CTrace::Mark("skin: SetLocal %d (%s)", modelId, ModelName(modelId));
     ApplyToPed(FindPlayerPed(0), modelId);
     SendLocal();
 }
