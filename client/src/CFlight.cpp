@@ -89,6 +89,43 @@ void OrientBody(CPed* ped, float heading, float pitch)
     ped->UpdateRwFrame();
 }
 
+// hovering still = standing on an invisible slab under the feet: the game then treats CJ as standing, so
+// every weapon (and the kamehameha) works as on the ground
+int s_platform = -1;
+constexpr int PLATFORM_MODEL = 3095;  // flat 9x9 slab, used as invisible floor by many mods
+
+void RemovePlatform()
+{
+    if (s_platform >= 0 && CPools::GetObject(s_platform))
+        Command<Commands::DELETE_OBJECT>(s_platform);
+    s_platform = -1;
+}
+
+bool PlacePlatform(CPed* me)
+{
+    if (CStreaming::ms_aInfoForModel[PLATFORM_MODEL].m_nLoadState != LOADSTATE_LOADED)
+    {
+        CStreaming::RequestModel(PLATFORM_MODEL, GAME_REQUIRED);
+        return false;
+    }
+    CVector p = me->GetPosition();
+    float top = 0.0f;
+    if (CBaseModelInfo* mi = CModelInfo::ms_modelInfoPtrs[PLATFORM_MODEL])
+        if (mi->m_pColModel)
+            top = mi->m_pColModel->m_boundBox.m_vecMax.z;
+    float z = p.z - 1.0f - top - 0.02f;  // the ped's origin is ~1 m above its feet
+    if (s_platform < 0 || !CPools::GetObject(s_platform))
+    {
+        Command<Commands::CREATE_OBJECT>(PLATFORM_MODEL, p.x, p.y, z, &s_platform);
+        if (s_platform < 0)
+            return false;
+        Command<Commands::SET_OBJECT_VISIBLE>(s_platform, false);
+        Command<Commands::SET_OBJECT_COLLISION>(s_platform, true);
+        Command<Commands::FREEZE_OBJECT_POSITION>(s_platform, true);
+    }
+    return true;
+}
+
 bool s_dropping = false;
 int s_animKind = 0;  // 0 float, 1 forward, 2 backwards, 3 left, 4 right
 const char* AnimFor(int kind)
@@ -119,6 +156,7 @@ void StopFlying(CPlayerPed* me)
     if (!s_flying)
         return;
     s_flying = false;
+    RemovePlatform();
     StopAnim(me, s_anim);
     me->m_nPhysicalFlags.bApplyGravity = true;
     // keep the landing harmless for a moment
@@ -127,9 +165,12 @@ void StopFlying(CPlayerPed* me)
 }
 }  // namespace
 
+bool CFlight::ms_bJump = false;
+bool CFlight::ms_bCrouch = false;
+
 bool CFlight::IsHovering()
 {
-    return s_flying && s_animKind == 0;
+    return s_flying && (s_animKind == 0 || s_animKind == 5);
 }
 
 bool CFlight::IsFlying()
@@ -178,7 +219,7 @@ void CFlight::Process()
     else if (pad)
     {
         static bool jumpWas = false;
-        bool jump = pad->NewState.ButtonSquare != 0;
+        bool jump = s_flying ? ms_bJump : pad->NewState.ButtonSquare != 0;
         bool jumpPressed = jump && !jumpWas;
         jumpWas = jump;
 
@@ -208,7 +249,7 @@ void CFlight::Process()
         // double tap crouch while floating: stop flying and fall (landing stays harmless)
         static bool crouchWas = false;
         static unsigned int lastCrouch = 0;
-        bool crouch = pad->NewState.ShockButtonL != 0;
+        bool crouch = ms_bCrouch;
         if (crouch && !crouchWas && s_flying && !kame)
         {
             if (now - lastCrouch < 350)
@@ -227,17 +268,34 @@ void CFlight::Process()
         if (s_dropping)
             s_flyingSince = now;
 
-        if (s_flying && kame)
+        bool anyInput = pad && (abs(pad->NewState.LeftStickX) > 25 || abs(pad->NewState.LeftStickY) > 25 || ms_bJump ||
+                                   ms_bCrouch);
+        if (s_flying && (kame || !anyInput))
         {
-            // floating kamehameha: stay where you are, the kamehameha controls pose and camera
-            me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
-            me->m_nPhysicalFlags.bApplyGravity = false;
-            me->m_nPedFlags.bIsStanding = false;
-            s_anim = nullptr;  // the flight pose is played again afterwards
-            s_animKind = 0;
+            // still in the air: stand on the invisible slab (weapons, aiming and the kamehameha all work)
+            if (PlacePlatform(me))
+            {
+                if (s_anim)
+                    StopAnim(me, s_anim);
+                me->m_nPhysicalFlags.bApplyGravity = true;
+                s_animKind = 5;
+                s_bodyPitch = 0.0f;
+            }
+            else
+            {
+                me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
+                me->m_nPhysicalFlags.bApplyGravity = false;
+            }
+            static unsigned int lastHoverSent = 0;
+            if (now - lastHoverSent > 500)
+            {
+                lastHoverSent = now;
+                Send();
+            }
         }
         else if (s_flying)
         {
+            RemovePlatform();
             const CVector& front = TheCamera.m_aCams[TheCamera.m_nActiveCam].m_vecFront;
             CVector fwd(front.x, front.y, front.z);
             fwd.Normalise();
@@ -273,9 +331,9 @@ void CFlight::Process()
                 s_animKind = 0;
 
             // jump / crouch: float up and down without turning the body
-            if (pad->NewState.ButtonSquare)
+            if (ms_bJump)
                 v.z += speed * 0.5f;  // half the speed of the bar
-            if (pad->NewState.ShockButtonL)
+            if (ms_bCrouch)
                 v.z -= speed * 0.5f;
 
             me->m_vecMoveSpeed = v;
@@ -310,7 +368,12 @@ void CFlight::Process()
             it = s_remote.erase(it);
             continue;
         }
-        if (it->flying)
+        if (it->flying && it->kind == 5)
+        {
+            it->ped->m_vecMoveSpeed.z = std::max(it->ped->m_vecMoveSpeed.z, 0.0f) * 0.5f;
+            it->ped->m_nPhysicalFlags.bApplyGravity = false;
+        }
+        else if (it->flying)
         {
             OrientBody(it->ped, it->ped->m_fCurrentRotation, it->kind == 1 ? it->pitch : 0.0f);
             it->ped->m_vecMoveSpeed.z = std::max(it->ped->m_vecMoveSpeed.z, 0.0f) * 0.5f;  // no falling between updates
@@ -340,7 +403,9 @@ void CFlight::OnPacket(Packets::Skin::PlayerPower* packet)
     r->level = (packet->phase & 2) ? (int)packet->level : 0;
     r->kind = (int)packet->heading;
     r->pitch = packet->pitch;
-    if (flying)
+    if (flying && r->kind == 5)
+        StopAnim(r->ped, r->anim);  // standing in the air: his own animations (aiming, shooting...)
+    else if (flying)
         PlayAnim(r->ped, r->anim, AnimFor(r->kind));
     else if (r->flying)
     {

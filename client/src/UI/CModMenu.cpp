@@ -393,6 +393,10 @@ static void __cdecl CPad__UpdatePads_Hook()
     {
         CKamehameha::ms_bLmb = pad->NewState.ButtonCircle != 0;
         CKamehameha::ms_bRmb = pad->NewState.RightShoulder1 != 0;
+        CFlight::ms_bJump = pad->NewState.ButtonSquare != 0;
+        CFlight::ms_bCrouch = pad->NewState.ShockButtonL != 0;
+        if (CFlight::IsFlying())  // jump = go up, crouch = go down: CJ must not jump/crouch on the slab
+            pad->NewState.ButtonSquare = pad->NewState.ShockButtonL = 0;
     }
     if (CFlight::WantsWheel())  // Alt + wheel = speed level, not the weapon switch
     {

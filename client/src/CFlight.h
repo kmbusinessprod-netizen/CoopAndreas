@@ -20,5 +20,6 @@ public:
     static bool IsHovering();  // flying without moving
     static bool WantsWheel();  // Alt held with a power on: the wheel is ours, not the weapon switch
     static void OnPacket(Packets::Skin::PlayerPower* packet);
-    static int ms_nWheel;      // collected in the pad hook
+    static int ms_nWheel;
+    static bool ms_bJump, ms_bCrouch;  // read in the pad hook; while flying the game never sees them      // collected in the pad hook
 };
