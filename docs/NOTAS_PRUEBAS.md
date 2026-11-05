@@ -217,3 +217,11 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Botín de robos: nuevo paquete PLAYER_HOLD. Local: CPed::GetHoldingTask → modelo + offset/hueso/anim.
   Remoto: crea un CObject sin colisión y le da CTaskSimpleHoldEntity (ctor 0x6913A0, CTask new 0x61A5A0)
   en la tarea secundaria 4. Modelo 0 = suelta y borra el objeto.
+
+## 2026-11-05 07:10 — skin colgada: causa encontrada con CoopAndreas_trace.log
+- Traza: "SetLocal 292 (Cesar), loaded=0" → 2 frames → se corta dentro de CGame::Process (streaming).
+- Los personajes de historia (1-6, 8, 42, 65, 74, 86, 119, 149, 208, 265-273, 289-299) NO tienen modelo propio:
+  se cargan por nombre en un slot especial (023C LOAD_SPECIAL_CHARACTER → modelos 290-299). Pedir el
+  modelo 292 directamente colgaba el streaming. Ahora: skin 1000+i = personaje por nombre (sweet, cesar...),
+  slot 10 para mí y 9..6 para los demás; 09C7 con el modelo del slot. Solo se listan los nombres que
+  existen en ms_pExtraObjectsDir y los modelos normales con CdSize != 0.
