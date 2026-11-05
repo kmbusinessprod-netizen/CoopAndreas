@@ -54,6 +54,7 @@ void CWindowMode::FixWindow()
     int width = s_nBackBufferWidth > 0 ? s_nBackBufferWidth : RsGlobal.maximumWidth;
     int height = s_nBackBufferHeight > 0 ? s_nBackBufferHeight : RsGlobal.maximumHeight;
 
+    printf("[window] FixWindow mode=%d %dx%d\n", ms_nMode, width, height);
     HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
     MONITORINFO mi{sizeof(mi)};
     GetMonitorInfoA(monitor, &mi);
@@ -67,7 +68,8 @@ void CWindowMode::FixWindow()
         // a window as big as the screen covers it like fullscreen; a smaller one is centred
         int x = area.left + ((area.right - area.left) - width) / 2;
         int y = area.top + ((area.bottom - area.top) - height) / 2;
-        SetWindowPos(hwnd, HWND_TOP, x, y, width, height, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        // not topmost: the taskbar / Alt+Tab must be able to cover it
+        SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, width, height, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
     }
     else
     {
@@ -112,6 +114,8 @@ static HRESULT __stdcall Reset_Hook(IDirect3DDevice9* device, D3DPRESENT_PARAMET
     }
 
     HRESULT hr = s_pOriginalReset(device, pp);
+    printf("[window] Reset: windowed=%d %ux%u -> hr=0x%08X\n", pp ? (int)pp->Windowed : -1,
+        pp ? pp->BackBufferWidth : 0, pp ? pp->BackBufferHeight : 0, (unsigned)hr);
 
     if (SUCCEEDED(hr) && CWindowMode::IsWindowed())
     {
@@ -128,23 +132,92 @@ static HRESULT __stdcall Reset_Hook(IDirect3DDevice9* device, D3DPRESENT_PARAMET
     return hr;
 }
 
+typedef HRESULT(__stdcall* CreateDevice_t)(IDirect3D9*, UINT, D3DDEVTYPE, HWND, DWORD, D3DPRESENT_PARAMETERS*, IDirect3DDevice9**);
+static CreateDevice_t s_pOriginalCreateDevice = nullptr;
+
+static void HookResetOf(IDirect3DDevice9* device);
+
+static void MakeWindowed(D3DPRESENT_PARAMETERS* pp, HWND fallbackWindow)
+{
+    pp->Windowed = TRUE;
+    pp->FullScreen_RefreshRateInHz = 0;
+    if (pp->hDeviceWindow == nullptr)
+        pp->hDeviceWindow = fallbackWindow;
+    if (pp->PresentationInterval != D3DPRESENT_INTERVAL_IMMEDIATE && pp->PresentationInterval != D3DPRESENT_INTERVAL_ONE)
+        pp->PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
+}
+
+static HRESULT __stdcall CreateDevice_Hook(IDirect3D9* d3d, UINT adapter, D3DDEVTYPE type, HWND focusWindow, DWORD flags,
+    D3DPRESENT_PARAMETERS* pp, IDirect3DDevice9** outDevice)
+{
+    if (pp && CWindowMode::IsWindowed())
+        MakeWindowed(pp, focusWindow);
+    if (pp)
+    {
+        s_nBackBufferWidth = pp->BackBufferWidth;
+        s_nBackBufferHeight = pp->BackBufferHeight;
+    }
+
+    HRESULT hr = s_pOriginalCreateDevice(d3d, adapter, type, focusWindow, flags, pp, outDevice);
+    printf("[window] CreateDevice: windowed=%d %ux%u -> hr=0x%08X\n", pp ? (int)pp->Windowed : -1,
+        pp ? pp->BackBufferWidth : 0, pp ? pp->BackBufferHeight : 0, (unsigned)hr);
+
+    if (SUCCEEDED(hr) && outDevice && *outDevice)
+    {
+        HookResetOf(*outDevice);
+        if (CWindowMode::IsWindowed())
+        {
+            if (RsGlobal.ps)
+                RsGlobal.ps->fullScreen = FALSE;
+            s_bFixWindowNextFrame = true;
+            s_nFixWindowFrames = 3;
+        }
+    }
+    return hr;
+}
+
+static void PatchVtable(void** vtable, int index, void* hook, void** original)
+{
+    DWORD old;
+    VirtualProtect(&vtable[index], sizeof(void*), PAGE_EXECUTE_READWRITE, &old);
+    if (vtable[index] != hook)
+    {
+        *original = vtable[index];
+        vtable[index] = hook;
+    }
+    VirtualProtect(&vtable[index], sizeof(void*), old, &old);
+}
+
+static void HookResetOf(IDirect3DDevice9* device)
+{
+    if (s_bDeviceHooked || device == nullptr)
+        return;
+    PatchVtable(*reinterpret_cast<void***>(device), 16, (void*)Reset_Hook, (void**)&s_pOriginalReset);
+    s_bDeviceHooked = true;
+    printf("[window] Reset hooked\n");
+}
+
+// IDirect3D9 objects share one vtable inside d3d9.dll: patching it through our own
+// instance also catches the one RenderWare creates later
+static void HookCreateDevice()
+{
+    HMODULE d3d9 = LoadLibraryA("d3d9.dll");
+    if (d3d9 == nullptr)
+        return;
+    auto create = reinterpret_cast<IDirect3D9*(WINAPI*)(UINT)>(GetProcAddress(d3d9, "Direct3DCreate9"));
+    if (create == nullptr)
+        return;
+    IDirect3D9* d3d = create(D3D_SDK_VERSION);
+    if (d3d == nullptr)
+        return;
+    PatchVtable(*reinterpret_cast<void***>(d3d), 16, (void*)CreateDevice_Hook, (void**)&s_pOriginalCreateDevice);
+    d3d->Release();
+    printf("[window] CreateDevice hooked (mode %d)\n", CWindowMode::ms_nMode);
+}
+
 void CWindowMode::HookDevice()
 {
-    if (s_bDeviceHooked)
-        return;
-
-    IDirect3DDevice9* device = static_cast<IDirect3DDevice9*>(RwD3D9GetCurrentD3DDevice());
-    if (device == nullptr)
-        return;
-
-    void** vtable = *reinterpret_cast<void***>(device);
-    DWORD old;
-    VirtualProtect(&vtable[16], sizeof(void*), PAGE_EXECUTE_READWRITE, &old);
-    s_pOriginalReset = reinterpret_cast<Reset_t>(vtable[16]);
-    vtable[16] = reinterpret_cast<void*>(Reset_Hook);
-    VirtualProtect(&vtable[16], sizeof(void*), old, &old);
-
-    s_bDeviceHooked = true;
+    HookResetOf(static_cast<IDirect3DDevice9*>(RwD3D9GetCurrentD3DDevice()));
 }
 
 // RwD3D9ChangeVideoMode() returns early when the mode is the current one; clear the
@@ -185,8 +258,14 @@ void CWindowMode::OnRwInitialized()
     HookDevice();
     if (IsWindowed())
     {
-        ForceVideoModeReset();
         SetRunInBackground(true);
+        if (RsGlobal.ps && RsGlobal.ps->fullScreen)
+        {
+            printf("[window] device is still exclusive, forcing a reset\n");
+            ForceVideoModeReset();
+        }
+        s_bFixWindowNextFrame = true;
+        s_nFixWindowFrames = 3;
     }
 }
 
@@ -230,6 +309,7 @@ void CWindowMode::Process()
 void CWindowMode::Init()
 {
     LoadSetting();
+    HookCreateDevice();
     Events::initRwEvent += OnRwInitialized;
     Events::gameProcessEvent += Process;
 }
