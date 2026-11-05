@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CHoldSync.h"
+#include "CGravityGun.h"
 
 // CTaskSimpleHoldEntity layout (ctor 0x6913A0)
 static constexpr int HOLD_ENTITY = 8, HOLD_POS = 0xC, HOLD_BONE = 0x18, HOLD_FLAGS = 0x19, HOLD_ANIM = 0x20,
@@ -13,6 +14,7 @@ struct RemoteHold
     unsigned int pendingSince;
     bool attached;
     std::vector<int> parts;
+    bool ggHolding = false;
 };
 static std::vector<RemoteHold> s_remote;
 static uint16_t s_lastLocalModel = 0;
@@ -153,6 +155,11 @@ void CHoldSync::Process()
             it = s_remote.erase(it);
             continue;
         }
+        if (it->attached && it->parts.size() == 4)  // a gravity gun: glow like on its owner's screen
+        {
+            int claws[3] = {it->parts[1], it->parts[2], it->parts[3]};
+            CGravityGun::Glow(it->objectHandle, claws, it->ggHolding, 0x47470000 + (((uintptr_t)it->ped >> 4) & 0xFF) * 8);
+        }
         if (!it->attached && it->objectHandle < 0)
         {
             if (!AttachRemote(*it) && GetTickCount() - it->pendingSince > 8000)
@@ -183,6 +190,13 @@ void CHoldSync::OnPacket(Packets::Skin::PlayerHold* packet)
     if (packet->modelId == 0)
         return;
     s_remote.push_back({player->m_pPed, -1, *packet, GetTickCount(), false, {}});
+}
+
+void CHoldSync::SetGravityHolding(CPlayerPed* ped, bool holding)
+{
+    for (auto& h : s_remote)
+        if (h.ped == ped)
+            h.ggHolding = holding;
 }
 
 void CHoldSync::OnPlayerRemoved(CPlayerPed* ped)

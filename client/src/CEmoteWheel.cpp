@@ -59,7 +59,17 @@ struct PropState
     int object;
     FxSystem_c* fx;
     Prop prop;
+    RwMatrix* parent;  // follows the ped (the fx reads it every frame)
 };
+
+static void ToRw(const CMatrix& m, RwMatrix* out)
+{
+    out->right = {m.right.x, m.right.y, m.right.z};
+    out->up = {m.up.x, m.up.y, m.up.z};
+    out->at = {m.at.x, m.at.y, m.at.z};
+    out->pos = {m.pos.x, m.pos.y, m.pos.z};
+    out->flags = 0;
+}
 static std::vector<PropState> s_props;
 
 static void RemoveProp(CPed* ped)
@@ -70,6 +80,7 @@ static void RemoveProp(CPed* ped)
             continue;
         if (it->fx)
             it->fx->Kill();
+        delete it->parent;
         if (it->object >= 0 && CPools::GetObject(it->object))
         {
             if (CPoolGuard::IsPedAlive(ped) && ped->GetHoldingTask())
@@ -86,7 +97,7 @@ static void AddProp(CPed* ped, Prop prop)
     RemoveProp(ped);
     if (prop == NONE)
         return;
-    PropState st{ped, -1, nullptr, prop};
+    PropState st{ped, -1, nullptr, prop, new RwMatrix{}};
     int model = prop == CIGGY ? 1485 : prop == BOTTLE ? 1484 : 0;
     if (model)
     {
@@ -107,7 +118,7 @@ static void AddProp(CPed* ped, Prop prop)
     s_props.push_back(st);
 }
 
-// particles follow the ped every frame
+// particles follow the ped every frame: smoke at the cigarette, the stream forward from the hips
 static void UpdateProps()
 {
     for (auto it = s_props.begin(); it != s_props.end();)
@@ -116,35 +127,33 @@ static void UpdateProps()
         {
             if (it->fx)
                 it->fx->Kill();
+            delete it->parent;
             it = s_props.erase(it);
             continue;
         }
-        CVector fwd = it->ped->GetForward();
-        RwV3d pos{};
         const char* fxName = nullptr;
+        RwV3d offset{0.0f, 0.0f, 0.0f};
         if (it->prop == CIGGY)
         {
             CObject* o = CPools::GetObject(it->object);
-            CVector p = o ? o->GetPosition() : it->ped->GetPosition() + CVector(0.0f, 0.0f, 0.6f);
-            pos = {p.x, p.y, p.z + 0.05f};
+            CMatrix m = *it->ped->GetMatrix();
+            if (o)
+                m.pos = o->GetPosition();
+            ToRw(m, it->parent);
+            offset = {0.0f, 0.0f, 0.04f};
             fxName = "cigarette_smoke";
         }
         else if (it->prop == PISS)
         {
-            CVector p = it->ped->GetPosition() + fwd * 0.25f + CVector(0.0f, 0.0f, -0.05f);
-            pos = {p.x, p.y, p.z};
+            ToRw(*it->ped->GetMatrix(), it->parent);  // the effect shoots along its +Y = the ped's forward
+            offset = {0.05f, 0.22f, -0.12f};
             fxName = "petrolcan";
         }
-        if (fxName)
+        if (fxName && !it->fx)
         {
-            if (!it->fx)
-            {
-                it->fx = g_fxMan.CreateFxSystem((char*)fxName, &pos, nullptr, false);
-                if (it->fx)
-                    it->fx->Play();
-            }
-            else
-                it->fx->SetOffsetPos(&pos);
+            it->fx = g_fxMan.CreateFxSystem((char*)fxName, &offset, it->parent, true);
+            if (it->fx)
+                it->fx->Play();
         }
         ++it;
     }

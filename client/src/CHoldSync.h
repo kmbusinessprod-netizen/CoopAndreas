@@ -7,6 +7,7 @@ public:
     static void Process();  // local: detect changes; remote: keep tasks alive
     static void OnPacket(Packets::Skin::PlayerHold* packet);
     static void OnPlayerRemoved(CPlayerPed* ped);
+    static void SetGravityHolding(CPlayerPed* ped, bool holding);
     // put an object in the local player's hand (the change is picked up and sent like any other hold)
     static void HoldLocally(CObject* object, const CVector& offset, int bone, int boneFlags);
 };

@@ -55,6 +55,23 @@ static const float s_roads[][6] = {
 static const int s_floatStats[] = {STAT_STAMINA, STAT_MAX_HEALTH, STAT_LUNG_CAPACITY, 69, 70, 71, 72, 73, 74, 75, 76, 77,
     78, 79 /*weapon skills*/, STAT_DRIVING_SKILL, STAT_FLYING_SKILL, STAT_BIKE_SKILL, STAT_CYCLING_SKILL};
 
+// the "if your health reaches zero..." / "if you are busted..." cutscenes next to hospitals and police
+// stations (HELP script): mark them as already seen and take their info pickups away
+static void SkipTutorials()
+{
+    int* g = (int*)CTheScripts::ScriptSpace;
+    g[119] = 1;  // $wasted_help
+    g[126] = 1;  // $busted_help
+    for (int pickupVar : {669, 670, 671})  // $wasted_help1/2, $busted_help1
+    {
+        if (g[pickupVar] != 0)
+        {
+            Command<Commands::REMOVE_PICKUP>(g[pickupVar]);
+            g[pickupVar] = 0;
+        }
+    }
+}
+
 void CUnlockAll::ApplyNow()
 {
     if (!CTheScripts::ScriptSpace || FindPlayerPed(0) == nullptr)
@@ -83,6 +100,7 @@ void CUnlockAll::ApplyNow()
             if (ped->m_nModelIndex == 0)
                 CClothes::RebuildPlayer(ped, false);
     }
+    SkipTutorials();
     CWorld::Players[0].m_nMaxHealth = 176;
     CWorld::Players[0].m_nMaxArmour = 100;
 
@@ -110,6 +128,7 @@ void CUnlockAll::Process()
     if (GetTickCount() - ms_nLastCheck > 15000)
     {
         ms_nLastCheck = GetTickCount();
+        SkipTutorials();
         if (CStats::GetStatValue(181) < 4.0f)
             Command<Commands::SET_INT_STAT>(181, 4);
         for (const char* name : s_enex)

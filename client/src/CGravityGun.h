@@ -26,4 +26,9 @@ private:
     static void Hold(const CVector& from, const CVector& dir);
     static void Throw(const CVector& dir);
     static void Drop();
+    static void Effects(bool grab, const CVector& target);
+    static bool ms_bWasCollisionProof, ms_bWasMeleeProof;
+
+public:
+    static void Glow(int gun, const int parts[3], bool holding, unsigned int idBase);
 };

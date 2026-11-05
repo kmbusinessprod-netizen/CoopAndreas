@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "CGravityGun.h"
 #include "CHoldSync.h"
+#include "CBulletTraces.h"
+#include "CCoronas.h"
 
 bool CGravityGun::ms_bActive = false;
 int CGravityGun::ms_nGunObject = -1, CGravityGun::ms_nPart1 = -1, CGravityGun::ms_nPart2 = -1, CGravityGun::ms_nPart3 = -1,
@@ -9,7 +11,7 @@ CEntity* CGravityGun::ms_pHeld = nullptr;
 int CGravityGun::ms_nHeldType = 0;
 unsigned int CGravityGun::ms_nLastShot = 0;
 
-static constexpr float RANGE = 40.0f;
+static constexpr float RANGE = 60.0f;
 static constexpr float HOLD_DISTANCE = 4.0f;
 
 static bool EntityAlive(CEntity* e, int type)
@@ -169,7 +171,7 @@ CEntity* CGravityGun::FindTarget(const CVector&, const CVector& dir, int& type)
     // 2) cone
     CEntity* best = nullptr;
     float bestScore = 0.0f;
-    const float minCos = cosf(7.0f * 3.14159265f / 180.0f);
+    const float minCos = cosf(10.0f * 3.14159265f / 180.0f);
     auto consider = [&](CEntity* e, float extraRadius)
     {
         int t = 0;
@@ -218,12 +220,14 @@ void CGravityGun::Grab(CEntity* e, int type)
     }
     ph->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
     ph->m_vecTurnSpeed = CVector(0.0f, 0.0f, 0.0f);
-    if (type == 2)
-    {
-        CPed* ped = (CPed*)e;
-        Command<Commands::CLEAR_CHAR_TASKS_IMMEDIATELY>(CPools::GetPedRef(ped));
-        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(CPools::GetPedRef(ped), "KO_skid_back", "PED", 4.0f, 0, 0, 0, 1, -1);
-    }
+    // held things don't get hurt by bumping into stuff (people only die when you throw them, like the original)
+    ms_bWasCollisionProof = ph->m_nPhysicalFlags.bCollisionProof;
+    ms_bWasMeleeProof = ph->m_nPhysicalFlags.bMeleeProof;
+    ph->m_nPhysicalFlags.bCollisionProof = true;
+    ph->m_nPhysicalFlags.bMeleeProof = true;
+    CVector p = ph->GetPosition();
+    Command<Commands::ADD_ONE_OFF_SOUND>(p.x, p.y, p.z, 1058);
+    Effects(true, p);
 }
 
 void CGravityGun::Hold(const CVector& from, const CVector& dir)
@@ -256,6 +260,61 @@ void CGravityGun::Hold(const CVector& from, const CVector& dir)
     ph->m_nPhysicalFlags.bApplyGravity = false;
 }
 
+bool CGravityGun::ms_bWasCollisionProof = false;
+bool CGravityGun::ms_bWasMeleeProof = false;
+
+static CVector GunPoint(int objectHandle, float x, float y, float z)
+{
+    CObject* o = CPools::GetObject(objectHandle);
+    if (!o)
+        return CVector();
+    return *o->GetMatrix() * CVector(x, y, z);
+}
+
+// the original's beam: four bullet traces from the muzzle to the target and two bursts of sparks
+void CGravityGun::Effects(bool grab, const CVector& target)
+{
+    CVector muzzle = GunPoint(ms_nGunObject, 0.75f, 0.0f, 0.15f);
+    for (int i = 0; i < 4; i++)
+    {
+        CVector jitter((rand() % 100 - 50) / 400.0f, (rand() % 100 - 50) / 400.0f, (rand() % 100 - 50) / 400.0f);
+        CVector end = target + jitter;
+        CBulletTraces::AddTrace(&muzzle, &end, 0.012f, 300, 200);
+    }
+    CVector d = target - muzzle;
+    float len = d.Magnitude();
+    if (len > 0.01f)
+        d = d * (1.0f / len);
+    float k = grab ? -1.5f : -0.75f;
+    Command<Commands::ADD_SPARKS>(target.x, target.y, target.z, d.x * k, d.y * k, d.z * k, 150);
+    if (!grab)
+        Command<Commands::ADD_SPARKS>(target.x, target.y, target.z, d.x * k, d.y * k, d.z * k, 150);
+    Command<Commands::ADD_SPARKS>(muzzle.x, muzzle.y, muzzle.z, -d.x * 0.6f, -d.y * 0.6f, -d.z * 0.6f, 40);
+}
+
+// green glow of the muzzle and the three claws: dim when empty, bright while holding (like the original)
+void CGravityGun::Glow(int gun, const int parts[3], bool holding, unsigned int idBase)
+{
+    if (gun < 0 || !CPools::GetObject(gun))
+        return;
+    CRGBA col = holding ? CRGBA(64, 255, 128, 255) : CRGBA(16, 64, 32, 255);
+    float big = holding ? 0.55f : 0.375f, small = holding ? 0.12f : 0.075f;
+    CVector tip = GunPoint(gun, 0.7f, 0.0f, 0.15f);
+    CCoronas::RegisterCorona(idBase, nullptr, col.r, col.g, col.b, 255, tip, big, 150.0f, eCoronaType::CORONATYPE_SHINYSTAR,
+        eCoronaFlareType::FLARETYPE_NONE, false, false, 0, 0.0f, false, 0.3f, 0, 15.0f, false, false);
+    for (int i = 0; i < 3; i++)
+    {
+        if (parts[i] < 0)
+            continue;
+        CVector p = GunPoint(parts[i], 0.25f, 0.0f, 0.15f);
+        CCoronas::RegisterCorona(idBase + 1 + i, nullptr, col.r, col.g, col.b, 255, p, small, 150.0f,
+            eCoronaType::CORONATYPE_SHINYSTAR, eCoronaFlareType::FLARETYPE_NONE, false, false, 0, 0.0f, false, 0.3f, 0, 15.0f,
+            false, false);
+    }
+    if (holding)
+        Command<Commands::DRAW_LIGHT_WITH_RANGE>(tip.x, tip.y, tip.z, 64, 255, 128, 4.0f);
+}
+
 void CGravityGun::Throw(const CVector& dir)
 {
     if (!EntityAlive(ms_pHeld, ms_nHeldType))
@@ -265,6 +324,8 @@ void CGravityGun::Throw(const CVector& dir)
     }
     CPhysical* ph = (CPhysical*)ms_pHeld;
     ph->m_nPhysicalFlags.bApplyGravity = true;
+    ph->m_nPhysicalFlags.bCollisionProof = ms_bWasCollisionProof;
+    ph->m_nPhysicalFlags.bMeleeProof = ms_bWasMeleeProof;
     float speed = ms_nHeldType == 1 ? 1.6f : 2.5f;  // m per frame
     ph->m_vecMoveSpeed = dir * speed;
     if (ms_nHeldType == 2)
@@ -274,7 +335,8 @@ void CGravityGun::Throw(const CVector& dir)
         Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(CPools::GetPedRef(ped), "KO_skid_front", "PED", 4.0f, 0, 0, 0, 1, -1);
     }
     CVector p = ph->GetPosition();
-    Command<Commands::ADD_SPARKS>(p.x, p.y, p.z, -dir.x * 2.5f, -dir.y * 2.5f, -dir.z * 2.5f, 150);
+    Effects(false, p);
+    Command<Commands::ADD_ONE_OFF_SOUND>(p.x, p.y, p.z, 1052);
     ms_pHeld = nullptr;
     ms_nHeldType = 0;
 }
@@ -285,8 +347,10 @@ void CGravityGun::Drop()
     {
         CPhysical* ph = (CPhysical*)ms_pHeld;
         ph->m_nPhysicalFlags.bApplyGravity = true;
-        if (ms_nHeldType == 2)
-            Command<Commands::CLEAR_CHAR_TASKS_IMMEDIATELY>(CPools::GetPedRef((CPed*)ms_pHeld));
+        ph->m_nPhysicalFlags.bCollisionProof = ms_bWasCollisionProof;
+        ph->m_nPhysicalFlags.bMeleeProof = ms_bWasMeleeProof;
+        CVector p = ph->GetPosition();
+        Command<Commands::ADD_ONE_OFF_SOUND>(p.x, p.y, p.z, 1053);
     }
     ms_pHeld = nullptr;
     ms_nHeldType = 0;
@@ -366,4 +430,25 @@ void CGravityGun::Process()
         me->m_fCurrentRotation = me->m_fAimingRotation = heading;
         Hold(from, dir);
     }
+
+    // claws open while holding, glow, and tell the others (so they draw the same glow on my gun)
+    bool holding = ms_pHeld != nullptr;
+    static bool lastHolding = false;
+    if (holding != lastHolding)
+    {
+        lastHolding = holding;
+        float pitch = holding ? -10.0f : 15.0f;
+        int* parts[3] = {&ms_nPart2, &ms_nPart3, &ms_nPart4};
+        float off[3][3] = {{0.5f, 0.025f, 0.2f}, {0.5f, -0.025f, 0.125f}, {0.5f, 0.025f, 0.125f}};
+        float roll[3] = {0.0f, 120.0f, 240.0f};
+        for (int i = 0; i < 3; i++)
+            if (*parts[i] >= 0 && CPools::GetObject(*parts[i]))
+                Command<Commands::ATTACH_OBJECT_TO_OBJECT>(*parts[i], ms_nGunObject, off[i][0], off[i][1], off[i][2], roll[i], pitch, 0.0f);
+        Packets::Skin::PlayerPower p{};
+        p.power = 2;
+        p.phase = holding ? 1 : 0;
+        GetPacketFactory().Send(p);
+    }
+    int parts[3] = {ms_nPart2, ms_nPart3, ms_nPart4};
+    Glow(ms_nGunObject, parts, holding, 0x47475500);
 }

@@ -189,12 +189,12 @@ void Draw(Caster& c)
         CVector p = hands + dir * d;
         float k = d / BEAM_LENGTH;
         float wobble = 0.92f + 0.08f * sinf(t * 28.0f + d * 0.7f);
-        Corona(c, i++, p, (0.25f + 1.4f * k) * wobble, CRGBA(255, 255, 255, 220));
-        Corona(c, i++, p, (0.5f + 2.6f * k) * wobble, CRGBA(110, 180, 255, 110));
+        Corona(c, i++, p, (0.55f + 2.4f * k) * wobble, CRGBA(255, 255, 255, 220));
+        Corona(c, i++, p, (1.1f + 4.2f * k) * wobble, CRGBA(110, 180, 255, 120));
         if (((int)(d / 1.6f)) % 2 == 0)
-            Corona(c, i++, p, (0.7f + 3.4f * k) * wobble, rainbow[((int)(d / 3.2f) + (int)(t * 8.0f)) % 4]);
+            Corona(c, i++, p, (1.4f + 5.2f * k) * wobble, rainbow[((int)(d / 3.2f) + (int)(t * 8.0f)) % 4]);
     }
-    Corona(c, i++, hands, 0.9f, CRGBA(200, 230, 255, 200));
+    Corona(c, i++, hands, 1.4f, CRGBA(200, 230, 255, 210));
     if (grow >= 1.0f)
         Corona(c, i++, hit, 3.5f, CRGBA(220, 235, 255, 200));
     Command<Commands::DRAW_LIGHT_WITH_RANGE>(hands.x, hands.y, hands.z, 120, 190, 255, 12.0f);
@@ -260,8 +260,8 @@ void LocalCamera(Caster& c)
     CVector flat(-sinf(c.heading), cosf(c.heading), 0.0f);
     // from the side and a bit behind, low, so the whole beam is seen growing out of the hands (like the reference)
     CVector side(-flat.y, flat.x, 0.0f);  // left of the caster
-    CVector pos = c.ped->GetPosition() + side * 7.0f - flat * 3.0f + CVector(0.0f, 0.0f, 0.4f);
-    CVector look = c.ped->GetPosition() + dir * 9.0f + CVector(0.0f, 0.0f, 0.2f);
+    CVector pos = c.ped->GetPosition() + side * 3.2f - flat * 3.6f + CVector(0.0f, 0.0f, 0.8f);
+    CVector look = c.ped->GetPosition() + dir * 11.0f + CVector(0.0f, 0.0f, 0.3f);
     Command<Commands::SET_FIXED_CAMERA_POSITION>(pos.x, pos.y, pos.z, 0.0f, 0.0f, 0.0f);
     Command<Commands::POINT_CAMERA_AT_POINT>(look.x, look.y, look.z, 2 /*JUMP_CUT*/);
     if (c.phase == FIRE)
