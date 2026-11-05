@@ -1,6 +1,6 @@
  CoopAndreasSA
 
- Timestamp is 6aed09f5 (Thu Nov  5 22:57:57 2026)
+ Timestamp is 6aed0aae (Thu Nov  5 23:01:02 2026)
 
  Preferred load address is 10000000
 
@@ -7150,7 +7150,7 @@
  0002:00003680       ??_C@_0BE@CKABOKGD@CoopAndreas_crashes@ 10152680     CCrashLog.cpp.obj
  0002:00003694       ??_C@_0DG@BOGFNADJ@CoopAndreas_crashes?2?$CF04d?9?$CF02d?9?$CF0@ 10152694     CCrashLog.cpp.obj
  0002:000036cc       ??_C@_0BG@CGDJIDPA@Memory?5dump?5saved?5to?5@ 101526cc     CCrashLog.cpp.obj
- 0002:000036e4       ??_C@_08LNACNGJO@22?357?327@ 101526e4     CCrashLog.cpp.obj
+ 0002:000036e4       ??_C@_08KDDFEHHI@23?300?315@ 101526e4     CCrashLog.cpp.obj
  0002:000036f0       ??_C@_0M@GGEKBGKF@Nov?5?55?52026@ 101526f0     CCrashLog.cpp.obj
  0002:000036fc       ??_C@_0BI@GLFIECHI@?0?5CoopAndreas?5v?$CFs?5?$CFs?5?$CFs@ 101526fc     CCrashLog.cpp.obj
  0002:00003714       ??_C@_0CE@GFMCACCH@?$AN?6Unhandled?5exception?5at?50x?$CFp?5in@ 10152714     CCrashLog.cpp.obj
@@ -7634,43 +7634,43 @@
  0002:00075a6c       __real@3e4ccccd            101c4a6c     CFlight.cpp.obj
  0002:00075a70       __real@3ee66666            101c4a70     CFlight.cpp.obj
  0002:00075a74       __real@3f0ccccd            101c4a74     CFlight.cpp.obj
- 0002:00075a78       __real@3f19999a            101c4a78     CFlight.cpp.obj
- 0002:00075a7c       __real@3f333333            101c4a7c     CFlight.cpp.obj
- 0002:00075a80       __real@3fa66666            101c4a80     CFlight.cpp.obj
- 0002:00075a84       __real@3fcccccd            101c4a84     CFlight.cpp.obj
- 0002:00075a88       __real@41800000            101c4a88     CFlight.cpp.obj
- 0002:00075a8c       __real@436d0000            101c4a8c     CFlight.cpp.obj
- 0002:00075a90       __real@43700000            101c4a90     CFlight.cpp.obj
- 0002:00075a94       __real@43a00000            101c4a94     CFlight.cpp.obj
- 0002:00075a98       __real@43bf8000            101c4a98     CFlight.cpp.obj
- 0002:00075a9c       __real@43c68000            101c4a9c     CFlight.cpp.obj
- 0002:00075aa0       __real@43c80000            101c4aa0     CFlight.cpp.obj
- 0002:00075aa4       __real@43c98000            101c4aa4     CFlight.cpp.obj
- 0002:00075aa8       __real@43cc8000            101c4aa8     CFlight.cpp.obj
- 0002:00075aac       __real@43ce0000            101c4aac     CFlight.cpp.obj
- 0002:00075ab0       __real@be4ccccd            101c4ab0     CFlight.cpp.obj
- 0002:00075ac0       __xmm@7fffffff7fffffff7fffffff7fffffff 101c4ac0     CFlight.cpp.obj
- 0002:00075ad0       ??_C@_0FK@NPMACFKJ@?$HLa0f0a0?$HN?$FLcoop?$FN?5?$HLd6dce8?$HNgravity?5g@ 101c4ad0     CGravityGun.cpp.obj
- 0002:00075b30       ??_C@_0JC@DNNMOCFD@?$HLa0f0a0?$HN?$FLcoop?$FN?5?$HLd6dce8?$HNgravity?5g@ 101c4b30     CGravityGun.cpp.obj
- 0002:00075bc4       ??_C@_0O@PMAMOCDH@KO_skid_front@ 101c4bc4     CGravityGun.cpp.obj
- 0002:00075bd4       __real@3a03126f            101c4bd4     CGravityGun.cpp.obj
- 0002:00075bd8       __real@3a83126f            101c4bd8     CGravityGun.cpp.obj
- 0002:00075bdc       __real@3c23d70a            101c4bdc     CGravityGun.cpp.obj
- 0002:00075be0       __real@3d99999a            101c4be0     CGravityGun.cpp.obj
- 0002:00075be4       __real@3df5c28f            101c4be4     CGravityGun.cpp.obj
- 0002:00075be8       __real@3e800000            101c4be8     CGravityGun.cpp.obj
- 0002:00075bec       __real@3ec00000            101c4bec     CGravityGun.cpp.obj
- 0002:00075bf0       __real@3f666666            101c4bf0     CGravityGun.cpp.obj
- 0002:00075bf4       __real@3fc00000            101c4bf4     CGravityGun.cpp.obj
- 0002:00075bf8       __real@3fc6571860000000    101c4bf8     CGravityGun.cpp.obj
- 0002:00075c00       __real@40000000            101c4c00     CGravityGun.cpp.obj
- 0002:00075c04       __real@40200000            101c4c04     CGravityGun.cpp.obj
- 0002:00075c08       __real@41a00000            101c4c08     CGravityGun.cpp.obj
- 0002:00075c0c       __real@42700000            101c4c0c     CGravityGun.cpp.obj
- 0002:00075c10       __real@42880000            101c4c10     CGravityGun.cpp.obj
- 0002:00075c14       __real@bf400000            101c4c14     CGravityGun.cpp.obj
- 0002:00075c18       __real@bfc00000            101c4c18     CGravityGun.cpp.obj
- 0002:00075c1c       __real@c1200000            101c4c1c     CGravityGun.cpp.obj
+ 0002:00075a78       __real@3f333333            101c4a78     CFlight.cpp.obj
+ 0002:00075a7c       __real@3fa66666            101c4a7c     CFlight.cpp.obj
+ 0002:00075a80       __real@3fcccccd            101c4a80     CFlight.cpp.obj
+ 0002:00075a84       __real@41800000            101c4a84     CFlight.cpp.obj
+ 0002:00075a88       __real@436d0000            101c4a88     CFlight.cpp.obj
+ 0002:00075a8c       __real@43700000            101c4a8c     CFlight.cpp.obj
+ 0002:00075a90       __real@43a00000            101c4a90     CFlight.cpp.obj
+ 0002:00075a94       __real@43bf8000            101c4a94     CFlight.cpp.obj
+ 0002:00075a98       __real@43c68000            101c4a98     CFlight.cpp.obj
+ 0002:00075a9c       __real@43c80000            101c4a9c     CFlight.cpp.obj
+ 0002:00075aa0       __real@43c98000            101c4aa0     CFlight.cpp.obj
+ 0002:00075aa4       __real@43cc8000            101c4aa4     CFlight.cpp.obj
+ 0002:00075aa8       __real@43ce0000            101c4aa8     CFlight.cpp.obj
+ 0002:00075aac       __real@be4ccccd            101c4aac     CFlight.cpp.obj
+ 0002:00075ab0       __xmm@7fffffff7fffffff7fffffff7fffffff 101c4ab0     CFlight.cpp.obj
+ 0002:00075ac0       ??_C@_0FK@NPMACFKJ@?$HLa0f0a0?$HN?$FLcoop?$FN?5?$HLd6dce8?$HNgravity?5g@ 101c4ac0     CGravityGun.cpp.obj
+ 0002:00075b20       ??_C@_0JC@DNNMOCFD@?$HLa0f0a0?$HN?$FLcoop?$FN?5?$HLd6dce8?$HNgravity?5g@ 101c4b20     CGravityGun.cpp.obj
+ 0002:00075bb4       ??_C@_0O@PMAMOCDH@KO_skid_front@ 101c4bb4     CGravityGun.cpp.obj
+ 0002:00075bc4       __real@3a03126f            101c4bc4     CGravityGun.cpp.obj
+ 0002:00075bc8       __real@3a83126f            101c4bc8     CGravityGun.cpp.obj
+ 0002:00075bcc       __real@3c23d70a            101c4bcc     CGravityGun.cpp.obj
+ 0002:00075bd0       __real@3d99999a            101c4bd0     CGravityGun.cpp.obj
+ 0002:00075bd4       __real@3df5c28f            101c4bd4     CGravityGun.cpp.obj
+ 0002:00075bd8       __real@3e800000            101c4bd8     CGravityGun.cpp.obj
+ 0002:00075bdc       __real@3ec00000            101c4bdc     CGravityGun.cpp.obj
+ 0002:00075be0       __real@3f19999a            101c4be0     CGravityGun.cpp.obj
+ 0002:00075be4       __real@3f666666            101c4be4     CGravityGun.cpp.obj
+ 0002:00075be8       __real@3fc00000            101c4be8     CGravityGun.cpp.obj
+ 0002:00075bf0       __real@3fc6571860000000    101c4bf0     CGravityGun.cpp.obj
+ 0002:00075bf8       __real@40000000            101c4bf8     CGravityGun.cpp.obj
+ 0002:00075bfc       __real@40200000            101c4bfc     CGravityGun.cpp.obj
+ 0002:00075c00       __real@41a00000            101c4c00     CGravityGun.cpp.obj
+ 0002:00075c04       __real@42700000            101c4c04     CGravityGun.cpp.obj
+ 0002:00075c08       __real@42880000            101c4c08     CGravityGun.cpp.obj
+ 0002:00075c0c       __real@bf400000            101c4c0c     CGravityGun.cpp.obj
+ 0002:00075c10       __real@bfc00000            101c4c10     CGravityGun.cpp.obj
+ 0002:00075c14       __real@c1200000            101c4c14     CGravityGun.cpp.obj
  0002:00075c20       __xmm@3ccccccd3f0000003e000000bccccccd 101c4c20     CGravityGun.cpp.obj
  0002:00075c30       __xmm@3f0000003e4ccccd3ccccccd3f000000 101c4c30     CGravityGun.cpp.obj
  0002:00075c40       __xmm@3f6666663f6666663f6666663f666666 101c4c40     CGravityGun.cpp.obj
@@ -16450,10 +16450,10 @@
  0001:00000400       ??__Es_props@@YAXXZ        10001400 f   CEmoteWheel.cpp.obj
  0001:00000410       ??__E?ms_lastData@CEntryExitMarkerSync@@2VEnExSync@Scripts@Packets@@A@@YAXXZ 10001410 f   CEntryExitMarkerSync.cpp.obj
  0001:00000430       ??__E?ms_mapLastEnExUpdate@CEntryExitMarkerSync@@2V?$unordered_map@PAVCEntryExit@@IU?$hash@PAVCEntryExit@@@std@@U?$equal_to@PAVCEntryExit@@@3@V?$allocator@U?$pair@QAVCEntryExit@@I@std@@@3@@std@@A@@YAXXZ 10001430 f   CEntryExitMarkerSync.cpp.obj
- 0001:000004e0       ??__Eg_remoteTransitions@?A0xbb3911d4@@YAXXZ 100014e0 f   CEntryExitTransitionSync.cpp.obj
- 0001:00000590       ??__Es_remote@?A0xba72eb70@@YAXXZ 10001590 f   CFlight.cpp.obj
+ 0001:000004e0       ??__Eg_remoteTransitions@?A0x4ad37665@@YAXXZ 100014e0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:00000590       ??__Es_remote@?A0x3c40b89f@@YAXXZ 10001590 f   CFlight.cpp.obj
  0001:000005a0       ??__Es_remote@@YAXXZ       100015a0 f   CHoldSync.cpp.obj
- 0001:000005b0       ??__Es_remote@?A0x85c49613@@YAXXZ 100015b0 f   CKamehameha.cpp.obj
+ 0001:000005b0       ??__Es_remote@?A0x8c8925f0@@YAXXZ 100015b0 f   CKamehameha.cpp.obj
  0001:000005c0       ??__E?m_networkThread@CNetwork@@2VCNetworkThread@@A@@YAXXZ 100015c0 f   CNetwork.cpp.obj
  0001:00000680       ??__E?ms_vQueue@CNetworkAnimQueue@@0V?$vector@V?$vector@EV?$allocator@E@std@@@std@@V?$allocator@V?$vector@EV?$allocator@E@std@@@std@@@2@@std@@A@@YAXXZ 10001680 f   CNetworkAnimQueue.cpp.obj
  0001:00000690       ??__E?ms_vTaskSequences@CTaskSequenceSync@@2V?$vector@V?$vector@EV?$allocator@E@std@@@std@@V?$allocator@V?$vector@EV?$allocator@E@std@@@std@@@2@@std@@A@@YAXXZ 10001690 f   CNetworkAnimQueue.cpp.obj
@@ -18130,7 +18130,7 @@
  0001:00012f70       ??__Einitlocks@@YAXXZ      10013f70 f   libcpmt:cout.obj
  0001:00012f90       ??__Einit_atexit@@YAXXZ    10013f90 f   libcpmt:iosptrs.obj
  0001:00012fa0       ??__Einitlocks@std@@YAXXZ  10013fa0 f   libcpmt:iosptrs.obj
- 0001:000140d0       ??1?$_Hash_vec@V?$allocator@V?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@std@@@std@@@std@@@std@@@std@@QAE@XZ 100150d0 f i CEntryExitTransitionSync.cpp.obj
+ 0001:000140d0       ??1?$_Hash_vec@V?$allocator@V?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@std@@@std@@@std@@@std@@@std@@QAE@XZ 100150d0 f i CEntryExitTransitionSync.cpp.obj
  0001:00014130       ??1<lambda_dfb54fc699c3ee663d128cb7c52391eb>@@QAE@XZ 10015130 f i CCrashReporter.cpp.obj
  0001:00014ad4       $LN24                      10015ad4     CAimSync.cpp.obj
  0001:00014adc       $LN23                      10015adc     CAimSync.cpp.obj
@@ -18227,7 +18227,7 @@
  0001:00019590       ?_Get@?$_Func_impl_no_alloc@V<lambda_f0f35ecfe4b65072ccc327fc6c34de24>@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$$V@std@@EBEPBXXZ 1001a590 f i CModMenu.cpp.obj
  0001:00019590       ?_Get@?$_Func_impl_no_alloc@V<lambda_fcf2472eef165a9e7e248ca1609a810a>@@X$$V@std@@EBEPBXXZ 1001a590 f i CModMenu.cpp.obj
  0001:000195e0       ?_Target_type@?$_Func_impl_no_alloc@V<lambda_b074aae0486a801995f1571e16c91986>@@X_N@std@@EBEABVtype_info@@XZ 1001a5e0 f   CCheatSync.cpp.obj
- 0001:0001a9b0       ??$fill@PAV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@std@@@std@@@std@@V12@@std@@YAXQAV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@std@@@std@@@0@0ABV10@@Z 1001b9b0 f i CEntryExitTransitionSync.cpp.obj
+ 0001:0001a9b0       ??$fill@PAV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@std@@@std@@@std@@V12@@std@@YAXQAV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@std@@@std@@@0@0ABV10@@Z 1001b9b0 f i CEntryExitTransitionSync.cpp.obj
  0001:0001ab60       ??1Item@?1??BuildImage@CSkinImport@@CA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z@QAE@XZ 1001bb60 f i CSkinImport.cpp.obj
  0001:0001ddf0       ?_Copy@?$_Func_impl_no_alloc@V<lambda_4d84e58d080e844dd749234e5e5fb99b>@@X$$V@std@@EBEPAV?$_Func_base@X$$V@2@PAX@Z 1001edf0 f   CCore.cpp.obj
  0001:0001ddf0       ?_Move@?$_Func_impl_no_alloc@V<lambda_4d84e58d080e844dd749234e5e5fb99b>@@X$$V@std@@EAEPAV?$_Func_base@X$$V@2@PAX@Z 1001edf0 f   CCore.cpp.obj
@@ -18241,11 +18241,11 @@
  0001:0001e0a0       ?_Target_type@?$_Func_impl_no_alloc@V<lambda_4d84e58d080e844dd749234e5e5fb99b>@@X$$V@std@@EBEABVtype_info@@XZ 1001f0a0 f   CCore.cpp.obj
  0001:0001e130       ?_Target_type@?$_Func_impl_no_alloc@V<lambda_ba2ce88e750003ab9374f43594cb62af>@@X$$V@std@@EBEABVtype_info@@XZ 1001f130 f   CCore.cpp.obj
  0001:0001e140       ?_Target_type@?$_Func_impl_no_alloc@V<lambda_e717874dff2f4228f20ee119eb7a1d2a>@@X$$V@std@@EBEABVtype_info@@XZ 1001f140 f   CCore.cpp.obj
- 0001:0001f610       ??$_Find_last@Vplayerid_t@@@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IBE?AU?$_Hash_find_last_result@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@@1@ABVplayerid_t@@I@Z 10020610 f i CEntryExitTransitionSync.cpp.obj
+ 0001:0001f610       ??$_Find_last@Vplayerid_t@@@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IBE?AU?$_Hash_find_last_result@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@@1@ABVplayerid_t@@I@Z 10020610 f i CEntryExitTransitionSync.cpp.obj
  0001:0001f9a0       ?DialogProc@@YGHPAUHWND__@@IIJ@Z 100209a0 f   CCrashLog.cpp.obj
  0001:00020f50       ?WriteDumpf@@YAXPBDZZ      10021f50 f   CCrashLog.cpp.obj
- 0001:000215e0       ?_Xlength@?$vector@URemote@?A0xba72eb70@@V?$allocator@URemote@?A0xba72eb70@@@std@@@std@@CAXXZ 100225e0 f i CFlight.cpp.obj
- 0001:000215e0       ?_Xlength@?$vector@UCaster@?A0x85c49613@@V?$allocator@UCaster@?A0x85c49613@@@std@@@std@@CAXXZ 100225e0 f i CKamehameha.cpp.obj
+ 0001:000215e0       ?_Xlength@?$vector@URemote@?A0x3c40b89f@@V?$allocator@URemote@?A0x3c40b89f@@@std@@@std@@CAXXZ 100225e0 f i CFlight.cpp.obj
+ 0001:000215e0       ?_Xlength@?$vector@UCaster@?A0x8c8925f0@@V?$allocator@UCaster@?A0x8c8925f0@@@std@@@std@@CAXXZ 100225e0 f i CKamehameha.cpp.obj
  0001:000215e0       ?_Xlength@?$vector@UItem@?1??BuildImage@CSkinImport@@CA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z@V?$allocator@UItem@?1??BuildImage@CSkinImport@@CA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z@@5@@std@@CAXXZ 100225e0 f i CSkinImport.cpp.obj
  0001:00021806       __catch$??$?6U?$char_traits@D@std@@@std@@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@0@AAV10@PBD@Z$0 10022806 f i CCrashReporter.cpp.obj
  0001:00021aa0       ??$_Invoke@V?$tuple@V<lambda_d7037af34afcfd57f2b492a399ae001b>@@@std@@$0A@@thread@std@@CGIPAX@Z 10022aa0 f   CCrashReporter.cpp.obj
@@ -18256,8 +18256,8 @@
  0001:000237e5       __catch$?_Osfx@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEXXZ$0 100247e5 f i CCrashReporter.cpp.obj
  0001:00023b2b       __catch$?flush@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV12@XZ$0 10024b2b f i CCrashReporter.cpp.obj
  0001:00023e4e       __catch$?put@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV12@D@Z$0 10024e4e f i CCrashReporter.cpp.obj
- 0001:00025aa0       ??1?$_Alloc_construct_ptr@V?$allocator@U?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@@std@@@std@@QAE@XZ 10026aa0 f i CEntryExitTransitionSync.cpp.obj
- 0001:00025aa0       ??1?$_List_node_emplace_op2@V?$allocator@U?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@@std@@@std@@QAE@XZ 10026aa0 f i CEntryExitTransitionSync.cpp.obj
+ 0001:00025aa0       ??1?$_Alloc_construct_ptr@V?$allocator@U?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@@std@@@std@@QAE@XZ 10026aa0 f i CEntryExitTransitionSync.cpp.obj
+ 0001:00025aa0       ??1?$_List_node_emplace_op2@V?$allocator@U?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@@std@@@std@@QAE@XZ 10026aa0 f i CEntryExitTransitionSync.cpp.obj
  0001:00025b70       ?AddVote@@YAXVplayerid_t@@@Z 10026b70 f   CCutsceneSkipVote.cpp.obj
  0001:00025bc0       ?BroadcastState@@YAXXZ     10026bc0 f   CCutsceneSkipVote.cpp.obj
  0001:00025c10       ?CCutsceneMgr__IsCutsceneSkipButtonBeingPressed_Hook@@YA_NXZ 10026c10 f   CCutsceneSkipVote.cpp.obj
@@ -18283,42 +18283,42 @@
  0001:0002b3b0       ?StopDance@@YAXPAVCPed@@@Z 1002c3b0 f   CEmoteWheel.cpp.obj
  0001:0002b3f0       ?StopOn@@YAXPAVCPed@@@Z    1002c3f0 f   CEmoteWheel.cpp.obj
  0001:0002b460       ?UpdateProps@@YAXXZ        1002c460 f   CEmoteWheel.cpp.obj
- 0001:0002d190       ??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 1002e190 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002d3a0       ??$erase@V?$_List_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@std@@@std@@@std@@$0A@@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@std@@@std@@@1@V21@@Z 1002e3a0 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002d4c0       ??1?$list@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@2@@std@@QAE@XZ 1002e4c0 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002d520       ?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 1002e520 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002d6a0       ?ClearRemoteTransition@?A0xbb3911d4@@YAXPAVCNetworkPlayer@@@Z 1002e6a0 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002dd80       ?SetRemotePrimaryTask@?A0xbb3911d4@@YAXPAVCPlayerPed@@PAVCTask@@@Z 1002ed80 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002ddc0       ?StartRemoteTransition@?A0xbb3911d4@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 1002edc0 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002dfe0       ?_Assign_grow@?$_Hash_vec@V?$allocator@V?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@std@@@std@@@std@@@std@@@std@@QAEXIV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@std@@@std@@@2@@Z 1002efe0 f   CEntryExitTransitionSync.cpp.obj
- 0001:0002e0d0       ?_Forced_rehash@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IAEXI@Z 1002f0d0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002d190       ??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 1002e190 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002d3a0       ??$erase@V?$_List_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@std@@@std@@@std@@$0A@@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@std@@@std@@@1@V21@@Z 1002e3a0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002d4c0       ??1?$list@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@2@@std@@QAE@XZ 1002e4c0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002d520       ?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 1002e520 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002d6a0       ?ClearRemoteTransition@?A0x4ad37665@@YAXPAVCNetworkPlayer@@@Z 1002e6a0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002dd80       ?SetRemotePrimaryTask@?A0x4ad37665@@YAXPAVCPlayerPed@@PAVCTask@@@Z 1002ed80 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002ddc0       ?StartRemoteTransition@?A0x4ad37665@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 1002edc0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002dfe0       ?_Assign_grow@?$_Hash_vec@V?$allocator@V?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@std@@@std@@@std@@@std@@@std@@QAEXIV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@std@@@std@@@2@@Z 1002efe0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0002e0d0       ?_Forced_rehash@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IAEXI@Z 1002f0d0 f   CEntryExitTransitionSync.cpp.obj
  0001:0002e480       ?IsLocalPlayersVehicle@@YA_NPAVCVehicle@@@Z 1002f480 f   CFixes.cpp.obj
  0001:0002e570       ?RadioOnForVehicle_Hook@@YIXPAXH@Z 1002f570 f   CFixes.cpp.obj
  0001:0002e5c0       ?RadioOn_Hook@@YIXPAXH@Z   1002f5c0 f   CFixes.cpp.obj
- 0001:0002e6a0       ??$_Emplace_reallocate@URemote@?A0xba72eb70@@@?$vector@URemote@?A0xba72eb70@@V?$allocator@URemote@?A0xba72eb70@@@std@@@std@@AAEPAURemote@?A0xba72eb70@@QAU23@$$QAU23@@Z 1002f6a0 f   CFlight.cpp.obj
- 0001:0002e850       ?AnimFor@?A0xba72eb70@@YAPBDH@Z 1002f850 f   CFlight.cpp.obj
+ 0001:0002e6a0       ??$_Emplace_reallocate@URemote@?A0x3c40b89f@@@?$vector@URemote@?A0x3c40b89f@@V?$allocator@URemote@?A0x3c40b89f@@@std@@@std@@AAEPAURemote@?A0x3c40b89f@@QAU23@$$QAU23@@Z 1002f6a0 f   CFlight.cpp.obj
+ 0001:0002e850       ?AnimFor@?A0x3c40b89f@@YAPBDH@Z 1002f850 f   CFlight.cpp.obj
  0001:0002e880       $LN10                      1002f880     CFlight.cpp.obj
  0001:0002ed60       $LN43                      1002fd60     CFlight.cpp.obj
- 0001:0002ed70       ?OrientBody@?A0xba72eb70@@YAXPAVCPed@@MM@Z 1002fd70 f   CFlight.cpp.obj
- 0001:0002eee0       ?PlayAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBDPBD@Z 1002fee0 f   CFlight.cpp.obj
- 0001:0002f870       ?Send@?A0xba72eb70@@YAXXZ  10030870 f   CFlight.cpp.obj
- 0001:0002fa20       ?StopAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBD@Z 10030a20 f   CFlight.cpp.obj
- 0001:0002fb20       ?StopFlying@?A0xba72eb70@@YAXPAVCPlayerPed@@@Z 10030b20 f   CFlight.cpp.obj
+ 0001:0002ed70       ?OrientBody@?A0x3c40b89f@@YAXPAVCPed@@MM@Z 1002fd70 f   CFlight.cpp.obj
+ 0001:0002eee0       ?PlayAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBDPBD@Z 1002fee0 f   CFlight.cpp.obj
+ 0001:0002f870       ?Send@?A0x3c40b89f@@YAXXZ  10030870 f   CFlight.cpp.obj
+ 0001:0002fa20       ?StopAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBD@Z 10030a20 f   CFlight.cpp.obj
+ 0001:0002fb20       ?StopFlying@?A0x3c40b89f@@YAXPAVCPlayerPed@@@Z 10030b20 f   CFlight.cpp.obj
  0001:000302e0       ??R<lambda_b25edacd4ef3ed3e507b1acbfda625c8>@@QBE_NPAVCEntity@@AAH@Z 100312e0 f   CGravityGun.cpp.obj
  0001:00030cd0       ?EntityAlive@@YA_NPAVCEntity@@H@Z 10031cd0 f   CGravityGun.cpp.obj
  0001:00031950       ?GunPoint@@YA?AVCVector@@HMMM@Z 10032950 f   CGravityGun.cpp.obj
  0001:00033210       ?AttachRemote@@YA_NAAURemoteHold@@@Z 10034210 f   CHoldSync.cpp.obj
  0001:00033e10       ?ReleaseRemote@@YAXAAURemoteHold@@@Z 10034e10 f   CHoldSync.cpp.obj
  0001:000341c0       ?Request@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PB_W00ABV12@@Z 100351c0 f   CHttp.cpp.obj
- 0001:00034650       ??$_Emplace_reallocate@UCaster@?A0x85c49613@@@?$vector@UCaster@?A0x85c49613@@V?$allocator@UCaster@?A0x85c49613@@@std@@@std@@AAEPAUCaster@?A0x85c49613@@QAU23@$$QAU23@@Z 10035650 f   CKamehameha.cpp.obj
- 0001:00034800       ?Corona@?A0x85c49613@@YAXABUCaster@1@HABVCVector@@MVCRGBA@@@Z 10035800 f   CKamehameha.cpp.obj
- 0001:00034890       ?Draw@?A0x85c49613@@YAXAAUCaster@1@@Z 10035890 f   CKamehameha.cpp.obj
- 0001:00035400       ?HoldPose@?A0x85c49613@@YAXAAUCaster@1@@Z 10036400 f   CKamehameha.cpp.obj
- 0001:00035560       ?HoldingKameWeapon@?A0x85c49613@@YA_NPAVCPlayerPed@@@Z 10036560 f   CKamehameha.cpp.obj
- 0001:000355c0       ?LocalCamera@?A0x85c49613@@YAXAAUCaster@1@@Z 100365c0 f   CKamehameha.cpp.obj
- 0001:00035fd0       ?Send@?A0x85c49613@@YAXABUCaster@1@@Z 10036fd0 f   CKamehameha.cpp.obj
- 0001:00036190       ?SetPhase@?A0x85c49613@@YAXAAUCaster@1@H@Z 10037190 f   CKamehameha.cpp.obj
- 0001:00036530       ?UpdateSound@?A0x85c49613@@YAXAAUCaster@1@@Z 10037530 f   CKamehameha.cpp.obj
+ 0001:00034650       ??$_Emplace_reallocate@UCaster@?A0x8c8925f0@@@?$vector@UCaster@?A0x8c8925f0@@V?$allocator@UCaster@?A0x8c8925f0@@@std@@@std@@AAEPAUCaster@?A0x8c8925f0@@QAU23@$$QAU23@@Z 10035650 f   CKamehameha.cpp.obj
+ 0001:00034800       ?Corona@?A0x8c8925f0@@YAXABUCaster@1@HABVCVector@@MVCRGBA@@@Z 10035800 f   CKamehameha.cpp.obj
+ 0001:00034890       ?Draw@?A0x8c8925f0@@YAXAAUCaster@1@@Z 10035890 f   CKamehameha.cpp.obj
+ 0001:00035400       ?HoldPose@?A0x8c8925f0@@YAXAAUCaster@1@@Z 10036400 f   CKamehameha.cpp.obj
+ 0001:00035560       ?HoldingKameWeapon@?A0x8c8925f0@@YA_NPAVCPlayerPed@@@Z 10036560 f   CKamehameha.cpp.obj
+ 0001:000355c0       ?LocalCamera@?A0x8c8925f0@@YAXAAUCaster@1@@Z 100365c0 f   CKamehameha.cpp.obj
+ 0001:00035fd0       ?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z 10036fd0 f   CKamehameha.cpp.obj
+ 0001:00036190       ?SetPhase@?A0x8c8925f0@@YAXAAUCaster@1@H@Z 10037190 f   CKamehameha.cpp.obj
+ 0001:00036530       ?UpdateSound@?A0x8c8925f0@@YAXAAUCaster@1@@Z 10037530 f   CKamehameha.cpp.obj
  0001:00037750       _no_op_initialize          10038750 f i libucrt:wsetlocale.obj
  0001:000385f0       ?semver_parse@@YAIPBDPAUsemver_t@@@Z 100395f0 f   CNetwork.cpp.obj
  0001:00039084       $LN154                     1003a084     CNetworkObject.cpp.obj
@@ -18406,7 +18406,7 @@
  0001:0005e030       ?push_back@?$vector@UItem@?1??BuildImage@CSkinImport@@CA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z@V?$allocator@UItem@?1??BuildImage@CSkinImport@@CA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z@@5@@std@@QAEXABUItem@?1??BuildImage@CSkinImport@@CA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z@@Z 1005f030 f   CSkinImport.cpp.obj
  0001:0005e268       __catch$?seekp@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV12@V?$fpos@U_Mbstatet@@@2@@Z$0 1005f268 f i CSkinImport.cpp.obj
  0001:0005e9b7       __catch$?write@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV12@PBD_J@Z$0 1005f9b7 f i CSkinImport.cpp.obj
- 0001:0005f260       ?Ready@?A0x7e303fb4@@YA_NXZ 10060260 f   CSoundFile.cpp.obj
+ 0001:0005f260       ?Ready@?A0x85cff7b8@@YA_NXZ 10060260 f   CSoundFile.cpp.obj
  0001:000607c0       ??R<lambda_66111c1670ffeebe50f7bb06d50740ba>@@QBE@_N@Z 100617c0 f   CTeleportRequest.cpp.obj
  0001:000612f0       ?_Copy@?$_Func_impl_no_alloc@V<lambda_66111c1670ffeebe50f7bb06d50740ba>@@X_N@std@@EBEPAV?$_Func_base@X_N@2@PAX@Z 100622f0 f   CTeleportRequest.cpp.obj
  0001:000612f0       ?_Move@?$_Func_impl_no_alloc@V<lambda_66111c1670ffeebe50f7bb06d50740ba>@@X_N@std@@EAEPAV?$_Func_base@X_N@2@PAX@Z 100622f0 f   CTeleportRequest.cpp.obj
@@ -21550,12 +21550,12 @@
  0001:00143e70       __unwindfunclet$?AddProp@@YAXPAVCPed@@W4Prop@@@Z$2 10144e70 f   CEmoteWheel.cpp.obj
  0001:00143e7d       __ehhandler$?AddProp@@YAXPAVCPed@@W4Prop@@@Z 10144e7d f   CEmoteWheel.cpp.obj
  0001:00143ea0       __unwindfunclet$?PlayMove@@YAXAAUDanceSeq@@@Z$0 10144ea0 f   CEmoteWheel.cpp.obj
- 0001:00143ea0       __unwindfunclet$?PlayAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBDPBD@Z$0 10144ea0 f   CFlight.cpp.obj
- 0001:00143ea0       __unwindfunclet$?StopAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBD@Z$0 10144ea0 f   CFlight.cpp.obj
+ 0001:00143ea0       __unwindfunclet$?PlayAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBDPBD@Z$0 10144ea0 f   CFlight.cpp.obj
+ 0001:00143ea0       __unwindfunclet$?StopAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBD@Z$0 10144ea0 f   CFlight.cpp.obj
  0001:00143ea0       __unwindfunclet$?DestroyPed@CNetworkPlayer@@QAEXXZ$0 10144ea0 f   CNetworkPlayer.cpp.obj
  0001:00143ead       __ehhandler$?PlayMove@@YAXAAUDanceSeq@@@Z 10144ead f   CEmoteWheel.cpp.obj
- 0001:00143ead       __ehhandler$?PlayAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBDPBD@Z 10144ead f   CFlight.cpp.obj
- 0001:00143ead       __ehhandler$?StopAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBD@Z 10144ead f   CFlight.cpp.obj
+ 0001:00143ead       __ehhandler$?PlayAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBDPBD@Z 10144ead f   CFlight.cpp.obj
+ 0001:00143ead       __ehhandler$?StopAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBD@Z 10144ead f   CFlight.cpp.obj
  0001:00143ead       __ehhandler$?DestroyPed@CNetworkPlayer@@QAEXXZ 10144ead f   CNetworkPlayer.cpp.obj
  0001:00143ed0       __unwindfunclet$?PlayOn@@YAXPAVCPed@@H@Z$0 10144ed0 f   CEmoteWheel.cpp.obj
  0001:00143ed0       __unwindfunclet$?Throw@CGravityGun@@CAXABVCVector@@@Z$0 10144ed0 f   CGravityGun.cpp.obj
@@ -21576,34 +21576,34 @@
  0001:00143fd7       __unwindfunclet$?Send@CEntryExitMarkerSync@@SAXXZ$7 10144fd7 f   CEntryExitMarkerSync.cpp.obj
  0001:00143fe2       __unwindfunclet$?Send@CEntryExitMarkerSync@@SAXXZ$1 10144fe2 f   CEntryExitMarkerSync.cpp.obj
  0001:00143ff1       __ehhandler$?Send@CEntryExitMarkerSync@@SAXXZ 10144ff1 f   CEntryExitMarkerSync.cpp.obj
- 0001:00144020       __unwindfunclet$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z$1 10145020 f   CEntryExitTransitionSync.cpp.obj
- 0001:00144028       __unwindfunclet$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z$0 10145028 f   CEntryExitTransitionSync.cpp.obj
- 0001:00144035       __ehhandler$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 10145035 f   CEntryExitTransitionSync.cpp.obj
- 0001:00144060       __unwindfunclet$??__Eg_remoteTransitions@?A0xbb3911d4@@YAXXZ$1 10145060 f   CEntryExitTransitionSync.cpp.obj
- 0001:0014406a       __unwindfunclet$??__Eg_remoteTransitions@?A0xbb3911d4@@YAXXZ$2 1014506a f   CEntryExitTransitionSync.cpp.obj
- 0001:00144079       __ehhandler$??__Eg_remoteTransitions@?A0xbb3911d4@@YAXXZ 10145079 f   CEntryExitTransitionSync.cpp.obj
- 0001:001440a0       __unwindfunclet$?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$0 101450a0 f   CEntryExitTransitionSync.cpp.obj
- 0001:001440ac       __unwindfunclet$?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$6 101450ac f   CEntryExitTransitionSync.cpp.obj
- 0001:001440b7       __unwindfunclet$?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$7 101450b7 f   CEntryExitTransitionSync.cpp.obj
- 0001:001440c2       __unwindfunclet$?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$1 101450c2 f   CEntryExitTransitionSync.cpp.obj
- 0001:001440d1       __ehhandler$?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 101450d1 f   CEntryExitTransitionSync.cpp.obj
+ 0001:00144020       __unwindfunclet$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z$1 10145020 f   CEntryExitTransitionSync.cpp.obj
+ 0001:00144028       __unwindfunclet$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z$0 10145028 f   CEntryExitTransitionSync.cpp.obj
+ 0001:00144035       __ehhandler$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 10145035 f   CEntryExitTransitionSync.cpp.obj
+ 0001:00144060       __unwindfunclet$??__Eg_remoteTransitions@?A0x4ad37665@@YAXXZ$1 10145060 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0014406a       __unwindfunclet$??__Eg_remoteTransitions@?A0x4ad37665@@YAXXZ$2 1014506a f   CEntryExitTransitionSync.cpp.obj
+ 0001:00144079       __ehhandler$??__Eg_remoteTransitions@?A0x4ad37665@@YAXXZ 10145079 f   CEntryExitTransitionSync.cpp.obj
+ 0001:001440a0       __unwindfunclet$?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$0 101450a0 f   CEntryExitTransitionSync.cpp.obj
+ 0001:001440ac       __unwindfunclet$?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$6 101450ac f   CEntryExitTransitionSync.cpp.obj
+ 0001:001440b7       __unwindfunclet$?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$7 101450b7 f   CEntryExitTransitionSync.cpp.obj
+ 0001:001440c2       __unwindfunclet$?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z$1 101450c2 f   CEntryExitTransitionSync.cpp.obj
+ 0001:001440d1       __ehhandler$?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 101450d1 f   CEntryExitTransitionSync.cpp.obj
  0001:001440f0       __unwindfunclet$?Process@CEntryExitTransitionSync@@SAXXZ$0 101450f0 f   CEntryExitTransitionSync.cpp.obj
  0001:00144100       __ehhandler$?Process@CEntryExitTransitionSync@@SAXXZ 10145100 f   CEntryExitTransitionSync.cpp.obj
- 0001:00144120       __unwindfunclet$?StartRemoteTransition@?A0xbb3911d4@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z$0 10145120 f   CEntryExitTransitionSync.cpp.obj
- 0001:0014412b       __unwindfunclet$?StartRemoteTransition@?A0xbb3911d4@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z$1 1014512b f   CEntryExitTransitionSync.cpp.obj
- 0001:0014413b       __ehhandler$?StartRemoteTransition@?A0xbb3911d4@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 1014513b f   CEntryExitTransitionSync.cpp.obj
+ 0001:00144120       __unwindfunclet$?StartRemoteTransition@?A0x4ad37665@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z$0 10145120 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0014412b       __unwindfunclet$?StartRemoteTransition@?A0x4ad37665@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z$1 1014512b f   CEntryExitTransitionSync.cpp.obj
+ 0001:0014413b       __ehhandler$?StartRemoteTransition@?A0x4ad37665@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 1014513b f   CEntryExitTransitionSync.cpp.obj
  0001:00144160       __unwindfunclet$?Install@CFixes@@SAXXZ$0 10145160 f   CFixes.cpp.obj
  0001:00144168       __unwindfunclet$?Install@CFixes@@SAXXZ$1 10145168 f   CFixes.cpp.obj
  0001:00144175       __ehhandler$?Install@CFixes@@SAXXZ 10145175 f   CFixes.cpp.obj
- 0001:001441a0       __unwindfunclet$?Send@?A0xba72eb70@@YAXXZ$0 101451a0 f   CFlight.cpp.obj
+ 0001:001441a0       __unwindfunclet$?Send@?A0x3c40b89f@@YAXXZ$0 101451a0 f   CFlight.cpp.obj
  0001:001441a0       __unwindfunclet$?Process@CPropertySync@@SAXXZ$0 101451a0 f   CPropertySync.cpp.obj
- 0001:001441ac       __unwindfunclet$?Send@?A0xba72eb70@@YAXXZ$6 101451ac f   CFlight.cpp.obj
+ 0001:001441ac       __unwindfunclet$?Send@?A0x3c40b89f@@YAXXZ$6 101451ac f   CFlight.cpp.obj
  0001:001441ac       __unwindfunclet$?Process@CPropertySync@@SAXXZ$6 101451ac f   CPropertySync.cpp.obj
- 0001:001441b7       __unwindfunclet$?Send@?A0xba72eb70@@YAXXZ$7 101451b7 f   CFlight.cpp.obj
+ 0001:001441b7       __unwindfunclet$?Send@?A0x3c40b89f@@YAXXZ$7 101451b7 f   CFlight.cpp.obj
  0001:001441b7       __unwindfunclet$?Process@CPropertySync@@SAXXZ$7 101451b7 f   CPropertySync.cpp.obj
- 0001:001441c2       __unwindfunclet$?Send@?A0xba72eb70@@YAXXZ$1 101451c2 f   CFlight.cpp.obj
+ 0001:001441c2       __unwindfunclet$?Send@?A0x3c40b89f@@YAXXZ$1 101451c2 f   CFlight.cpp.obj
  0001:001441c2       __unwindfunclet$?Process@CPropertySync@@SAXXZ$1 101451c2 f   CPropertySync.cpp.obj
- 0001:001441d1       __ehhandler$?Send@?A0xba72eb70@@YAXXZ 101451d1 f   CFlight.cpp.obj
+ 0001:001441d1       __ehhandler$?Send@?A0x3c40b89f@@YAXXZ 101451d1 f   CFlight.cpp.obj
  0001:001441d1       __ehhandler$?Process@CPropertySync@@SAXXZ 101451d1 f   CPropertySync.cpp.obj
  0001:001441f0       __unwindfunclet$?DestroyGun@CGravityGun@@CAXXZ$0 101451f0 f   CGravityGun.cpp.obj
  0001:001441fd       __ehhandler$?DestroyGun@CGravityGun@@CAXXZ 101451fd f   CGravityGun.cpp.obj
@@ -21634,20 +21634,20 @@
  0001:00144430       __unwindfunclet$?Request@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PB_W00ABV12@@Z$0 10145430 f   CHttp.cpp.obj
  0001:00144449       __unwindfunclet$?Request@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PB_W00ABV12@@Z$1 10145449 f   CHttp.cpp.obj
  0001:00144456       __ehhandler$?Request@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PB_W00ABV12@@Z 10145456 f   CHttp.cpp.obj
- 0001:00144480       __unwindfunclet$?HoldPose@?A0x85c49613@@YAXAAUCaster@1@@Z$0 10145480 f   CKamehameha.cpp.obj
+ 0001:00144480       __unwindfunclet$?HoldPose@?A0x8c8925f0@@YAXAAUCaster@1@@Z$0 10145480 f   CKamehameha.cpp.obj
  0001:00144480       __unwindfunclet$?ApplyNow@@YAXPAVCPlayerPed@@H@Z$0 10145480 f   CSkin.cpp.obj
- 0001:0014448d       __ehhandler$?HoldPose@?A0x85c49613@@YAXAAUCaster@1@@Z 1014548d f   CKamehameha.cpp.obj
+ 0001:0014448d       __ehhandler$?HoldPose@?A0x8c8925f0@@YAXAAUCaster@1@@Z 1014548d f   CKamehameha.cpp.obj
  0001:0014448d       __ehhandler$?ApplyNow@@YAXPAVCPlayerPed@@H@Z 1014548d f   CSkin.cpp.obj
- 0001:001444b0       __unwindfunclet$?LocalCamera@?A0x85c49613@@YAXAAUCaster@1@@Z$0 101454b0 f   CKamehameha.cpp.obj
- 0001:001444bd       __ehhandler$?LocalCamera@?A0x85c49613@@YAXAAUCaster@1@@Z 101454bd f   CKamehameha.cpp.obj
- 0001:001444e0       __unwindfunclet$?Send@?A0x85c49613@@YAXABUCaster@1@@Z$0 101454e0 f   CKamehameha.cpp.obj
- 0001:001444ec       __unwindfunclet$?Send@?A0x85c49613@@YAXABUCaster@1@@Z$6 101454ec f   CKamehameha.cpp.obj
- 0001:001444f7       __unwindfunclet$?Send@?A0x85c49613@@YAXABUCaster@1@@Z$7 101454f7 f   CKamehameha.cpp.obj
- 0001:00144502       __unwindfunclet$?Send@?A0x85c49613@@YAXABUCaster@1@@Z$1 10145502 f   CKamehameha.cpp.obj
- 0001:00144511       __ehhandler$?Send@?A0x85c49613@@YAXABUCaster@1@@Z 10145511 f   CKamehameha.cpp.obj
- 0001:00144530       __unwindfunclet$?SetPhase@?A0x85c49613@@YAXAAUCaster@1@H@Z$1 10145530 f   CKamehameha.cpp.obj
- 0001:00144538       __unwindfunclet$?SetPhase@?A0x85c49613@@YAXAAUCaster@1@H@Z$0 10145538 f   CKamehameha.cpp.obj
- 0001:00144545       __ehhandler$?SetPhase@?A0x85c49613@@YAXAAUCaster@1@H@Z 10145545 f   CKamehameha.cpp.obj
+ 0001:001444b0       __unwindfunclet$?LocalCamera@?A0x8c8925f0@@YAXAAUCaster@1@@Z$0 101454b0 f   CKamehameha.cpp.obj
+ 0001:001444bd       __ehhandler$?LocalCamera@?A0x8c8925f0@@YAXAAUCaster@1@@Z 101454bd f   CKamehameha.cpp.obj
+ 0001:001444e0       __unwindfunclet$?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z$0 101454e0 f   CKamehameha.cpp.obj
+ 0001:001444ec       __unwindfunclet$?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z$6 101454ec f   CKamehameha.cpp.obj
+ 0001:001444f7       __unwindfunclet$?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z$7 101454f7 f   CKamehameha.cpp.obj
+ 0001:00144502       __unwindfunclet$?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z$1 10145502 f   CKamehameha.cpp.obj
+ 0001:00144511       __ehhandler$?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z 10145511 f   CKamehameha.cpp.obj
+ 0001:00144530       __unwindfunclet$?SetPhase@?A0x8c8925f0@@YAXAAUCaster@1@H@Z$1 10145530 f   CKamehameha.cpp.obj
+ 0001:00144538       __unwindfunclet$?SetPhase@?A0x8c8925f0@@YAXAAUCaster@1@H@Z$0 10145538 f   CKamehameha.cpp.obj
+ 0001:00144545       __ehhandler$?SetPhase@?A0x8c8925f0@@YAXAAUCaster@1@H@Z 10145545 f   CKamehameha.cpp.obj
  0001:00144570       __unwindfunclet$?BuildTaskPacket@CLocalPlayer@@SAXW4eTaskType@@_N@Z$0 10145570 f   CLocalPlayer.cpp.obj
  0001:0014457c       __unwindfunclet$?BuildTaskPacket@CLocalPlayer@@SAXW4eTaskType@@_N@Z$6 1014557c f   CLocalPlayer.cpp.obj
  0001:00144587       __unwindfunclet$?BuildTaskPacket@CLocalPlayer@@SAXW4eTaskType@@_N@Z$7 10145587 f   CLocalPlayer.cpp.obj
@@ -23358,10 +23358,10 @@
  0001:0014bdb0       ??__Fs_props@@YAXXZ        1014cdb0 f   CEmoteWheel.cpp.obj
  0001:0014be30       ??__F?ms_lastData@CEntryExitMarkerSync@@2VEnExSync@Scripts@Packets@@A@@YAXXZ 1014ce30 f   CEntryExitMarkerSync.cpp.obj
  0001:0014be40       ??__F?ms_mapLastEnExUpdate@CEntryExitMarkerSync@@2V?$unordered_map@PAVCEntryExit@@IU?$hash@PAVCEntryExit@@@std@@U?$equal_to@PAVCEntryExit@@@3@V?$allocator@U?$pair@QAVCEntryExit@@I@std@@@3@@std@@A@@YAXXZ 1014ce40 f   CEntryExitMarkerSync.cpp.obj
- 0001:0014be90       ??__Fg_remoteTransitions@?A0xbb3911d4@@YAXXZ 1014ce90 f   CEntryExitTransitionSync.cpp.obj
- 0001:0014bee0       ??__Fs_remote@?A0xba72eb70@@YAXXZ 1014cee0 f   CFlight.cpp.obj
+ 0001:0014be90       ??__Fg_remoteTransitions@?A0x4ad37665@@YAXXZ 1014ce90 f   CEntryExitTransitionSync.cpp.obj
+ 0001:0014bee0       ??__Fs_remote@?A0x3c40b89f@@YAXXZ 1014cee0 f   CFlight.cpp.obj
  0001:0014bf60       ??__Fs_remote@@YAXXZ       1014cf60 f   CHoldSync.cpp.obj
- 0001:0014c000       ??__Fs_remote@?A0x85c49613@@YAXXZ 1014d000 f   CKamehameha.cpp.obj
+ 0001:0014c000       ??__Fs_remote@?A0x8c8925f0@@YAXXZ 1014d000 f   CKamehameha.cpp.obj
  0001:0014c080       ??__F?m_networkThread@CNetwork@@2VCNetworkThread@@A@@YAXXZ 1014d080 f   CNetwork.cpp.obj
  0001:0014c0d0       ??__F?ms_vQueue@CNetworkAnimQueue@@0V?$vector@V?$vector@EV?$allocator@E@std@@@std@@V?$allocator@V?$vector@EV?$allocator@E@std@@@std@@@2@@std@@A@@YAXXZ 1014d0d0 f   CNetworkAnimQueue.cpp.obj
  0001:0014c0e0       ??__F?ms_vTaskSequences@CTaskSequenceSync@@2V?$vector@V?$vector@EV?$allocator@E@std@@@std@@V?$allocator@V?$vector@EV?$allocator@E@std@@@std@@@2@@std@@A@@YAXXZ 1014d0e0 f   CNetworkAnimQueue.cpp.obj
@@ -24911,10 +24911,10 @@
  0002:00001b60       ?s_pendingRemote$initializer$@@3P6AXXZA 10150b60     CEmoteWheel.cpp.obj
  0002:00001b64       ??ms_lastData$initializer$@CEntryExitMarkerSync@@2P6AXXZA@@3P6AXXZA 10150b64     CEntryExitMarkerSync.cpp.obj
  0002:00001b68       ??ms_mapLastEnExUpdate$initializer$@CEntryExitMarkerSync@@2P6AXXZA@@3P6AXXZA 10150b68     CEntryExitMarkerSync.cpp.obj
- 0002:00001b6c       ?g_remoteTransitions$initializer$@?A0xbb3911d4@@3P6AXXZA 10150b6c     CEntryExitTransitionSync.cpp.obj
- 0002:00001b70       ?s_remote$initializer$@?A0xba72eb70@@3P6AXXZA 10150b70     CFlight.cpp.obj
+ 0002:00001b6c       ?g_remoteTransitions$initializer$@?A0x4ad37665@@3P6AXXZA 10150b6c     CEntryExitTransitionSync.cpp.obj
+ 0002:00001b70       ?s_remote$initializer$@?A0x3c40b89f@@3P6AXXZA 10150b70     CFlight.cpp.obj
  0002:00001b74       ?s_remote$initializer$@@3P6AXXZA 10150b74     CHoldSync.cpp.obj
- 0002:00001b78       ?s_remote$initializer$@?A0x85c49613@@3P6AXXZA 10150b78     CKamehameha.cpp.obj
+ 0002:00001b78       ?s_remote$initializer$@?A0x8c8925f0@@3P6AXXZA 10150b78     CKamehameha.cpp.obj
  0002:00001b7c       ??m_networkThread$initializer$@CNetwork@@2P6AXXZA@@3P6AXXZA 10150b7c     CNetwork.cpp.obj
  0002:00001b80       ??ms_vQueue$initializer$@CNetworkAnimQueue@@0P6AXXZA@@3P6AXXZA 10150b80     CNetworkAnimQueue.cpp.obj
  0002:00001b84       ??ms_vTaskSequences$initializer$@CTaskSequenceSync@@2P6AXXZA@@3P6AXXZA 10150b84     CNetworkAnimQueue.cpp.obj
@@ -25118,7 +25118,7 @@
  0002:0007ac88       ??_7?$_Func_impl_no_alloc@V<lambda_982886e5c26cc245d8797465b9510822>@@X$$V@std@@6B@ 101c9c88     CImGui.cpp.obj
  0002:0007aca4       ??_7?$_Func_impl_no_alloc@V<lambda_adfdfdf0b65658b4562ba5855760e592>@@X$$V@std@@6B@ 101c9ca4     CImGui.cpp.obj
  0002:0007acc0       ??_7?$_Func_impl_no_alloc@V<lambda_0804789acfb8a7b406e915f512ecb68f>@@X$$V@std@@6B@ 101c9cc0     CImGui.cpp.obj
- 0002:0007b950       ?MISSIONS@?A0xa13b5ebe@@3QBUSMissionEntry@1@B 101ca950     MissionRunner.cpp.obj
+ 0002:0007b950       ?MISSIONS@?A0x032f52c2@@3QBUSMissionEntry@1@B 101ca950     MissionRunner.cpp.obj
  0002:0007d82c       ?ROWS@@3HB                 101cc82c     CModMenu.cpp.obj
  0002:0007d968       ?heavy@?1??VehicleCategory@@YAHH@Z@4QBHB 101cc968     CModMenu.cpp.obj
  0002:0007dc70       ?places@?1??BuildTeleport@CModMenu@@CAXPAV2@@Z@4QBUPlace@?1??12@CAX0@Z@B 101ccc70     CModMenu.cpp.obj
@@ -26755,12 +26755,12 @@
  0002:000ab0a8       __ehfuncinfo$??$CallCommandById@PAD@scripting@plugin@@SA_NIPAD@Z 101fa0a8     scripts.cpp.obj
  0002:000ab0a8       __ehfuncinfo$??$CallCommandById@PADIE@scripting@plugin@@SA_NIPADIE@Z 101fa0a8     scripts.cpp.obj
  0002:000ab0cc       __unwindtable$?PlayMove@@YAXAAUDanceSeq@@@Z 101fa0cc     CEmoteWheel.cpp.obj
- 0002:000ab0cc       __unwindtable$?PlayAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBDPBD@Z 101fa0cc     CFlight.cpp.obj
- 0002:000ab0cc       __unwindtable$?StopAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBD@Z 101fa0cc     CFlight.cpp.obj
+ 0002:000ab0cc       __unwindtable$?PlayAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBDPBD@Z 101fa0cc     CFlight.cpp.obj
+ 0002:000ab0cc       __unwindtable$?StopAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBD@Z 101fa0cc     CFlight.cpp.obj
  0002:000ab0cc       __unwindtable$?DestroyPed@CNetworkPlayer@@QAEXXZ 101fa0cc     CNetworkPlayer.cpp.obj
  0002:000ab0d4       __ehfuncinfo$?PlayMove@@YAXAAUDanceSeq@@@Z 101fa0d4     CEmoteWheel.cpp.obj
- 0002:000ab0d4       __ehfuncinfo$?PlayAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBDPBD@Z 101fa0d4     CFlight.cpp.obj
- 0002:000ab0d4       __ehfuncinfo$?StopAnim@?A0xba72eb70@@YAXPAVCPed@@AAPBD@Z 101fa0d4     CFlight.cpp.obj
+ 0002:000ab0d4       __ehfuncinfo$?PlayAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBDPBD@Z 101fa0d4     CFlight.cpp.obj
+ 0002:000ab0d4       __ehfuncinfo$?StopAnim@?A0x3c40b89f@@YAXPAVCPed@@AAPBD@Z 101fa0d4     CFlight.cpp.obj
  0002:000ab0d4       __ehfuncinfo$?DestroyPed@CNetworkPlayer@@QAEXXZ 101fa0d4     CNetworkPlayer.cpp.obj
  0002:000ab0f8       __unwindtable$?PlayOn@@YAXPAVCPed@@H@Z 101fa0f8     CEmoteWheel.cpp.obj
  0002:000ab0f8       __unwindtable$?Throw@CGravityGun@@CAXABVCVector@@@Z 101fa0f8     CGravityGun.cpp.obj
@@ -26774,19 +26774,19 @@
  0002:000ab1bc       __ehfuncinfo$?Send@CEntryExitMarkerSync@@SAXXZ 101fa1bc     CEntryExitMarkerSync.cpp.obj
  0002:000ab1e0       __unwindtable$?Process@CEntryExitTransitionSync@@SAXXZ 101fa1e0     CEntryExitTransitionSync.cpp.obj
  0002:000ab1e8       __ehfuncinfo$?Process@CEntryExitTransitionSync@@SAXXZ 101fa1e8     CEntryExitTransitionSync.cpp.obj
- 0002:000ab20c       __unwindtable$??__Eg_remoteTransitions@?A0xbb3911d4@@YAXXZ 101fa20c     CEntryExitTransitionSync.cpp.obj
- 0002:000ab21c       __ehfuncinfo$??__Eg_remoteTransitions@?A0xbb3911d4@@YAXXZ 101fa21c     CEntryExitTransitionSync.cpp.obj
- 0002:000ab240       __unwindtable$?StartRemoteTransition@?A0xbb3911d4@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 101fa240     CEntryExitTransitionSync.cpp.obj
- 0002:000ab250       __ehfuncinfo$?StartRemoteTransition@?A0xbb3911d4@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 101fa250     CEntryExitTransitionSync.cpp.obj
- 0002:000ab274       __unwindtable$?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 101fa274     CEntryExitTransitionSync.cpp.obj
- 0002:000ab294       __ehfuncinfo$?BuildAndSendTransition@?A0xbb3911d4@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 101fa294     CEntryExitTransitionSync.cpp.obj
- 0002:000ab2b8       __unwindtable$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 101fa2b8     CEntryExitTransitionSync.cpp.obj
- 0002:000ab2c8       __ehfuncinfo$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 101fa2c8     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab20c       __unwindtable$??__Eg_remoteTransitions@?A0x4ad37665@@YAXXZ 101fa20c     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab21c       __ehfuncinfo$??__Eg_remoteTransitions@?A0x4ad37665@@YAXXZ 101fa21c     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab240       __unwindtable$?StartRemoteTransition@?A0x4ad37665@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 101fa240     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab250       __ehfuncinfo$?StartRemoteTransition@?A0x4ad37665@@YAXPAVCNetworkPlayer@@PAVCEntryExit@@_N@Z 101fa250     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab274       __unwindtable$?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 101fa274     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab294       __ehfuncinfo$?BuildAndSendTransition@?A0x4ad37665@@YAXPAVCPed@@AAVEnExTransition@Players@Packets@@@Z 101fa294     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab2b8       __unwindtable$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 101fa2b8     CEntryExitTransitionSync.cpp.obj
+ 0002:000ab2c8       __ehfuncinfo$??$_Try_emplace@ABVplayerid_t@@$$V@?$_Hash@V?$_Umap_traits@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@V?$_Uhash_compare@Vplayerid_t@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@3@@std@@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@$0A@@std@@@std@@IAE?AU?$pair@PAU?$_List_node@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@PAX@std@@_N@1@ABVplayerid_t@@@Z 101fa2c8     CEntryExitTransitionSync.cpp.obj
  0002:000ab2ec       __unwindtable$?Install@CFixes@@SAXXZ 101fa2ec     CFixes.cpp.obj
  0002:000ab2fc       __ehfuncinfo$?Install@CFixes@@SAXXZ 101fa2fc     CFixes.cpp.obj
- 0002:000ab320       __unwindtable$?Send@?A0xba72eb70@@YAXXZ 101fa320     CFlight.cpp.obj
+ 0002:000ab320       __unwindtable$?Send@?A0x3c40b89f@@YAXXZ 101fa320     CFlight.cpp.obj
  0002:000ab320       __unwindtable$?Process@CPropertySync@@SAXXZ 101fa320     CPropertySync.cpp.obj
- 0002:000ab340       __ehfuncinfo$?Send@?A0xba72eb70@@YAXXZ 101fa340     CFlight.cpp.obj
+ 0002:000ab340       __ehfuncinfo$?Send@?A0x3c40b89f@@YAXXZ 101fa340     CFlight.cpp.obj
  0002:000ab340       __ehfuncinfo$?Process@CPropertySync@@SAXXZ 101fa340     CPropertySync.cpp.obj
  0002:000ab364       __unwindtable$?Process@CGravityGun@@SAXXZ 101fa364     CGravityGun.cpp.obj
  0002:000ab384       __ehfuncinfo$?Process@CGravityGun@@SAXXZ 101fa384     CGravityGun.cpp.obj
@@ -26808,16 +26808,16 @@
  0002:000ab50c       __ehfuncinfo$?Get@CHttp@@SA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PB_W0@Z 101fa50c     CHttp.cpp.obj
  0002:000ab530       __unwindtable$?Request@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PB_W00ABV12@@Z 101fa530     CHttp.cpp.obj
  0002:000ab540       __ehfuncinfo$?Request@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PB_W00ABV12@@Z 101fa540     CHttp.cpp.obj
- 0002:000ab564       __unwindtable$?Send@?A0x85c49613@@YAXABUCaster@1@@Z 101fa564     CKamehameha.cpp.obj
- 0002:000ab584       __ehfuncinfo$?Send@?A0x85c49613@@YAXABUCaster@1@@Z 101fa584     CKamehameha.cpp.obj
- 0002:000ab5a8       __unwindtable$?HoldPose@?A0x85c49613@@YAXAAUCaster@1@@Z 101fa5a8     CKamehameha.cpp.obj
+ 0002:000ab564       __unwindtable$?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z 101fa564     CKamehameha.cpp.obj
+ 0002:000ab584       __ehfuncinfo$?Send@?A0x8c8925f0@@YAXABUCaster@1@@Z 101fa584     CKamehameha.cpp.obj
+ 0002:000ab5a8       __unwindtable$?HoldPose@?A0x8c8925f0@@YAXAAUCaster@1@@Z 101fa5a8     CKamehameha.cpp.obj
  0002:000ab5a8       __unwindtable$?ApplyNow@@YAXPAVCPlayerPed@@H@Z 101fa5a8     CSkin.cpp.obj
- 0002:000ab5b0       __ehfuncinfo$?HoldPose@?A0x85c49613@@YAXAAUCaster@1@@Z 101fa5b0     CKamehameha.cpp.obj
+ 0002:000ab5b0       __ehfuncinfo$?HoldPose@?A0x8c8925f0@@YAXAAUCaster@1@@Z 101fa5b0     CKamehameha.cpp.obj
  0002:000ab5b0       __ehfuncinfo$?ApplyNow@@YAXPAVCPlayerPed@@H@Z 101fa5b0     CSkin.cpp.obj
- 0002:000ab5d4       __unwindtable$?SetPhase@?A0x85c49613@@YAXAAUCaster@1@H@Z 101fa5d4     CKamehameha.cpp.obj
- 0002:000ab5e4       __ehfuncinfo$?SetPhase@?A0x85c49613@@YAXAAUCaster@1@H@Z 101fa5e4     CKamehameha.cpp.obj
- 0002:000ab608       __unwindtable$?LocalCamera@?A0x85c49613@@YAXAAUCaster@1@@Z 101fa608     CKamehameha.cpp.obj
- 0002:000ab610       __ehfuncinfo$?LocalCamera@?A0x85c49613@@YAXAAUCaster@1@@Z 101fa610     CKamehameha.cpp.obj
+ 0002:000ab5d4       __unwindtable$?SetPhase@?A0x8c8925f0@@YAXAAUCaster@1@H@Z 101fa5d4     CKamehameha.cpp.obj
+ 0002:000ab5e4       __ehfuncinfo$?SetPhase@?A0x8c8925f0@@YAXAAUCaster@1@H@Z 101fa5e4     CKamehameha.cpp.obj
+ 0002:000ab608       __unwindtable$?LocalCamera@?A0x8c8925f0@@YAXAAUCaster@1@@Z 101fa608     CKamehameha.cpp.obj
+ 0002:000ab610       __ehfuncinfo$?LocalCamera@?A0x8c8925f0@@YAXAAUCaster@1@@Z 101fa610     CKamehameha.cpp.obj
  0002:000ab634       __unwindtable$?BuildTaskPacket@CLocalPlayer@@SAXW4eTaskType@@_N@Z 101fa634     CLocalPlayer.cpp.obj
  0002:000ab654       __ehfuncinfo$?BuildTaskPacket@CLocalPlayer@@SAXW4eTaskType@@_N@Z 101fa654     CLocalPlayer.cpp.obj
  0002:000ab678       __unwindtable$?SyncCurrentState@CMoonSync@@SAXXZ 101fa678     CMoonSync.cpp.obj
@@ -27785,7 +27785,7 @@
  0003:00000628       ?ammuPos@?1??IsPlacementInRangeOfAnyAmmunation@@YA_NVInteriorPlacement2D@@@Z@4PAV2@A 10202628     CDiscordRPCMgr.cpp.obj
  0003:0000067c       ?s_pendingLocal@@3HA       1020267c     CEmoteWheel.cpp.obj
  0003:000006a4       ?lastKind@?BO@??Process@CFlight@@SAXXZ@4HA 102026a4     CFlight.cpp.obj
- 0003:000006bc       ?s_local@?A0x85c49613@@3UCaster@1@A 102026bc     CKamehameha.cpp.obj
+ 0003:000006bc       ?s_local@?A0x8c8925f0@@3UCaster@1@A 102026bc     CKamehameha.cpp.obj
  0003:00000770       ?lastSentState@@3VOnscreenTimerSync@Scripts@Packets@@A 10202770     COnscreenTimerSync.cpp.obj
  0003:00000808       ?packet@?1??BuildAndSendOpcode@@YAXXZ@4VOpCodeSync@Scripts@Packets@@A 10202808     COpCodeSync.cpp.obj
  0003:00001780       ?s_fakeTaskVtable@@3PAPAXA 10203780     CPoolGuard.cpp.obj
@@ -28025,18 +28025,18 @@
  0003:00020ff0       ?s_pendingRemote@@3V?$vector@UPendingRemote@@V?$allocator@UPendingRemote@@@std@@@std@@A 10222ff0     CEmoteWheel.cpp.obj
  0003:00020ffc       ?s_moveName@@3PADA         10222ffc     CEmoteWheel.cpp.obj
  0003:0002100c       ?s_pendingLocalSince@@3IA  1022300c     CEmoteWheel.cpp.obj
- 0003:000223a8       ?g_remoteTransitions@?A0xbb3911d4@@3V?$unordered_map@Vplayerid_t@@URemoteTransition@?A0xbb3911d4@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@5@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0xbb3911d4@@@std@@@5@@std@@A 102243a8     CEntryExitTransitionSync.cpp.obj
+ 0003:000223a8       ?g_remoteTransitions@?A0x4ad37665@@3V?$unordered_map@Vplayerid_t@@URemoteTransition@?A0x4ad37665@@U?$hash@Vplayerid_t@@@std@@U?$equal_to@Vplayerid_t@@@5@V?$allocator@U?$pair@$$CBVplayerid_t@@URemoteTransition@?A0x4ad37665@@@std@@@5@@std@@A 102243a8     CEntryExitTransitionSync.cpp.obj
  0003:000223c8       ?lastRadioStop@?1??Process@CFixes@@SAXXZ@4IA 102243c8     CFixes.cpp.obj
- 0003:000223d4       ?s_remote@?A0xba72eb70@@3V?$vector@URemote@?A0xba72eb70@@V?$allocator@URemote@?A0xba72eb70@@@std@@@std@@A 102243d4     CFlight.cpp.obj
- 0003:000223e0       ?s_flying@?A0xba72eb70@@3_NA 102243e0     CFlight.cpp.obj
- 0003:000223e1       ?s_wasCollisionProof@?A0xba72eb70@@3_NA 102243e1     CFlight.cpp.obj
- 0003:000223e4       ?s_flyingSince@?A0xba72eb70@@3IA 102243e4     CFlight.cpp.obj
- 0003:000223e8       ?s_barUntil@?A0xba72eb70@@3IA 102243e8     CFlight.cpp.obj
- 0003:000223ec       ?s_lastJumpInAir@?A0xba72eb70@@3IA 102243ec     CFlight.cpp.obj
- 0003:000223f0       ?s_anim@?A0xba72eb70@@3PBDB 102243f0     CFlight.cpp.obj
- 0003:000223f4       ?s_lastSent@?A0xba72eb70@@3IA 102243f4     CFlight.cpp.obj
- 0003:000223f8       ?s_bodyPitch@?A0xba72eb70@@3MA 102243f8     CFlight.cpp.obj
- 0003:000223fc       ?s_animKind@?A0xba72eb70@@3HA 102243fc     CFlight.cpp.obj
+ 0003:000223d4       ?s_remote@?A0x3c40b89f@@3V?$vector@URemote@?A0x3c40b89f@@V?$allocator@URemote@?A0x3c40b89f@@@std@@@std@@A 102243d4     CFlight.cpp.obj
+ 0003:000223e0       ?s_flying@?A0x3c40b89f@@3_NA 102243e0     CFlight.cpp.obj
+ 0003:000223e1       ?s_wasCollisionProof@?A0x3c40b89f@@3_NA 102243e1     CFlight.cpp.obj
+ 0003:000223e4       ?s_flyingSince@?A0x3c40b89f@@3IA 102243e4     CFlight.cpp.obj
+ 0003:000223e8       ?s_barUntil@?A0x3c40b89f@@3IA 102243e8     CFlight.cpp.obj
+ 0003:000223ec       ?s_lastJumpInAir@?A0x3c40b89f@@3IA 102243ec     CFlight.cpp.obj
+ 0003:000223f0       ?s_anim@?A0x3c40b89f@@3PBDB 102243f0     CFlight.cpp.obj
+ 0003:000223f4       ?s_lastSent@?A0x3c40b89f@@3IA 102243f4     CFlight.cpp.obj
+ 0003:000223f8       ?s_bodyPitch@?A0x3c40b89f@@3MA 102243f8     CFlight.cpp.obj
+ 0003:000223fc       ?s_animKind@?A0x3c40b89f@@3HA 102243fc     CFlight.cpp.obj
  0003:00022400       ?jumpWas@?BA@??Process@CFlight@@SAXXZ@4_NA 10224400     CFlight.cpp.obj
  0003:000224f8       ?comboWas@?1??Process@CGravityGun@@SAXXZ@4_NA 102244f8     CGravityGun.cpp.obj
  0003:000224f9       ?lmbWas@?1??Process@CGravityGun@@SAXXZ@4_NA 102244f9     CGravityGun.cpp.obj
@@ -28044,10 +28044,10 @@
  0003:000224fb       ?lastHolding@?1??Process@CGravityGun@@SAXXZ@4_NA 102244fb     CGravityGun.cpp.obj
  0003:00022960       ?s_remote@@3V?$vector@URemoteHold@@V?$allocator@URemoteHold@@@std@@@std@@A 10224960     CHoldSync.cpp.obj
  0003:0002296c       ?s_lastLocalModel@@3GA     1022496c     CHoldSync.cpp.obj
- 0003:0002297a       ?s_weaponEnabled@?A0x85c49613@@3_NA 1022497a     CKamehameha.cpp.obj
- 0003:0002297c       ?s_remote@?A0x85c49613@@3V?$vector@UCaster@?A0x85c49613@@V?$allocator@UCaster@?A0x85c49613@@@std@@@std@@A 1022497c     CKamehameha.cpp.obj
- 0003:00022988       ?rainbow@?1??Draw@?A0x85c49613@@YAXAAUCaster@2@@Z@4QBVCRGBA@@B 10224988     CKamehameha.cpp.obj
- 0003:00022998       ?$TSS0@?1??Draw@?A0x85c49613@@YAXAAUCaster@2@@Z@4HA 10224998     CKamehameha.cpp.obj
+ 0003:0002297a       ?s_weaponEnabled@?A0x8c8925f0@@3_NA 1022497a     CKamehameha.cpp.obj
+ 0003:0002297c       ?s_remote@?A0x8c8925f0@@3V?$vector@UCaster@?A0x8c8925f0@@V?$allocator@UCaster@?A0x8c8925f0@@@std@@@std@@A 1022497c     CKamehameha.cpp.obj
+ 0003:00022988       ?rainbow@?1??Draw@?A0x8c8925f0@@YAXAAUCaster@2@@Z@4QBVCRGBA@@B 10224988     CKamehameha.cpp.obj
+ 0003:00022998       ?$TSS0@?1??Draw@?A0x8c8925f0@@YAXAAUCaster@2@@Z@4HA 10224998     CKamehameha.cpp.obj
  0003:0002299c       ?hWas@?4??Process@CKamehameha@@SAXXZ@4_NA 1022499c     CKamehameha.cpp.obj
  0003:0002299d       ?lmbWas@?4??Process@CKamehameha@@SAXXZ@4_NA 1022499d     CKamehameha.cpp.obj
  0003:0002299e       ?fireBlocked@?4??Process@CKamehameha@@SAXXZ@4_NA 1022499e     CKamehameha.cpp.obj
@@ -28080,7 +28080,7 @@
  0003:000513c4       ?lastValidate@?1??Process2@CSkin@@SAXXZ@4IA 102533c4     CSkin.cpp.obj
  0003:000513c8       ?playableSince@?1??Process2@CSkin@@SAXXZ@4IA 102533c8     CSkin.cpp.obj
  0003:000514bc       ?s_LoadCdDirectory_orig@@3IA 102534bc     CSkinImport.cpp.obj
- 0003:000514e0       ?g@?A0x7e303fb4@@3UBass@1@A 102534e0     CSoundFile.cpp.obj
+ 0003:000514e0       ?g@?A0x85cff7b8@@3UBass@1@A 102534e0     CSoundFile.cpp.obj
  0003:000531d8       ?$TSS0@?1??PerformSequence@@YAXXZ@4HA 102551d8     CTaskSequenceSync.cpp.obj
  0003:000532c0       ?s_file@@3PAU_iobuf@@A     102552c0     CTrace.cpp.obj
  0003:000532c4       ?s_until@@3IA              102552c4     CTrace.cpp.obj
