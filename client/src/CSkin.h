@@ -12,6 +12,7 @@ public:
     static const char* ModelName(int modelId);
     static void ApplyToPed(CPlayerPed* ped, uint16_t modelId);  // requests the model, applies when loaded
     static void Process();  // gameProcessEvent: applies pending skins
+    static void Process2();  // my saved skin from the server
 
     static void SetLocal(uint16_t modelId);        // apply here and tell everybody
     static void SendLocal();                        // re-send (a player joined)

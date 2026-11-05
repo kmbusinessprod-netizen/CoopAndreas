@@ -122,19 +122,29 @@ const char* CSkin::ModelName(int skin)
     return s_pedNames[skin];
 }
 
-// special slot per ped: 10 for me, 9..6 for the others (missions mostly use the low slots)
-static std::map<CPlayerPed*, int> s_slots;
-static int SlotFor(CPlayerPed* ped)
+// special slots: each ped owns two and alternates, so a story character can replace another one
+// (loading into the slot the ped is wearing right now does nothing). Me: 10/9, the others: 8/7, 6/5.
+struct SlotPair
 {
-    if (ped == FindPlayerPed(0))
-        return 10;
+    int a, b;
+    bool useA;
+};
+static std::map<CPlayerPed*, SlotPair> s_slots;
+static int NextSlotFor(CPlayerPed* ped)
+{
     auto it = s_slots.find(ped);
-    if (it != s_slots.end())
-        return it->second;
-    static int next = 9;
-    int slot = next;
-    next = next <= 6 ? 9 : next - 1;
-    s_slots[ped] = slot;
+    if (it == s_slots.end())
+    {
+        SlotPair pair{10, 9, true};
+        if (ped != FindPlayerPed(0))
+        {
+            static int nextRemote = 0;
+            pair = (nextRemote++ % 2 == 0) ? SlotPair{8, 7, true} : SlotPair{6, 5, true};
+        }
+        it = s_slots.emplace(ped, pair).first;
+    }
+    int slot = it->second.useA ? it->second.a : it->second.b;
+    it->second.useA = !it->second.useA;
     return slot;
 }
 
@@ -184,7 +194,7 @@ void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t skin)
     int model = skin;
     if (IsSpecial(skin))
     {
-        int slot = SlotFor(ped);
+        int slot = NextSlotFor(ped);
         model = 289 + slot;
         // the slot may still hold this character from before
         Command<Commands::LOAD_SPECIAL_CHARACTER>(slot, s_special[skin - SPECIAL_BASE].file);
@@ -205,6 +215,7 @@ void CSkin::ApplyToPed(CPlayerPed* ped, uint16_t skin)
 
 void CSkin::Process()
 {
+    Process2();
     for (auto it = s_pending.begin(); it != s_pending.end();)
     {
         bool alive = CPoolGuard::IsPedAlive(it->ped);
@@ -246,8 +257,28 @@ void CSkin::SendLocal()
     GetPacketFactory().Send(packet);
 }
 
+static int s_restoreLocal = -1;  // skin the server remembered for me, applied once I am on foot
+
+void CSkin::Process2()
+{
+    if (s_restoreLocal < 0)
+        return;
+    CPlayerPed* me = FindPlayerPed(0);
+    if (me == nullptr || me->m_nPedFlags.bInVehicle || !CNetwork::m_bAuthenticated)
+        return;
+    ms_nLocalSkin = (uint16_t)s_restoreLocal;
+    s_restoreLocal = -1;
+    ApplyToPed(me, ms_nLocalSkin);
+    CChat::AddMessage("{a0f0a0}[skin] {d6dce8}skin recuperada: %s", ModelName(ms_nLocalSkin));
+}
+
 void CSkin::OnPacket(Packets::Skin::PlayerSkin* packet)
 {
+    if (packet->senderPlayerid.value == CNetworkPlayerManager::m_localPlayerId)
+    {
+        s_restoreLocal = packet->modelId;
+        return;
+    }
     CNetworkPlayer* player = CNetworkPlayerManager::GetPlayer(packet->senderPlayerid);
     if (player == nullptr)
         return;

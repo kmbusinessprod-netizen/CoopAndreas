@@ -201,6 +201,20 @@ void CNetwork::HandlePlayerConnected(ENetPeer* pENetPeer, Packets::System::Playe
 
     CCheatVote::SendStateTo(pNewNetworkPlayer);  // [private build] world cheats currently active
 
+    // [private build] the skin this player had last time: to himself and to everybody else
+    {
+        extern uint16_t GetSavedSkin(const char* name);
+        uint16_t skin = GetSavedSkin(pNewNetworkPlayer->m_Name);
+        if (skin != 0)
+        {
+            pNewNetworkPlayer->m_nSkin = skin;
+            Packets::Skin::PlayerSkin ownSkin{};
+            ownSkin.senderPlayerid = pNewNetworkPlayer->m_playerId;
+            ownSkin.modelId = skin;
+            GetPacketFactory().SendToAll(ownSkin);
+        }
+    }
+
     // Send OLD players TO the NEW one
     Packets::System::PlayerConnected oldPlayerConnected{};
     oldPlayerConnected.payload.isAlreadyConnected = true;
