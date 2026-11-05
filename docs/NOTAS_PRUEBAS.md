@@ -262,3 +262,14 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
   objetos), LMB lanza. Mantener = m_vecMoveSpeed hacia el punto a 4 m, sin gravedad. Sync de lo agarrado: por
   propiedad por proximidad (el que lo sostiene es el más cercano).
 - Menú > Armas: todas las armas con munición (RequestModel + LoadAllRequestedModels + GiveWeapon).
+
+## 2026-11-05 18:45
+- Kamehameha: GunMove_BWD es "caminar hacia atrás": ahora se congela al 27 % cada frame (SET_CHAR_ANIM_SPEED 0 +
+  CURRENT_TIME 0.27) y se anula la velocidad; sonido 6402 se recarga y repite mientras dura; cámara más baja,
+  sobre el hombro; el mouse gira/levanta el rayo (se captura en el hook de UpdatePads antes de que lo use la cámara).
+- Gravity gun: igual que el original, ocupa la escopeta de combate (arma 27): Alt+G / menú la da y activa el modo;
+  funciona mientras esa arma está en la mano (SET_PLAYER_FIRE_BUTTON off). Arma en la mano con 070A
+  TASK_PICK_UP_OBJECT bone 6 flags 16 "NULL" (con el ctor 0x6913A0 y anim 0 se caía al suelo). Apuntar + clic izq
+  agarra, clic izq lanza, E suelta.
+- Rueda de emotes (CEmoteWheel): mantener B, mover el mouse, soltar. 12 emotes (DANCING, SMOKING, BAR, PAULNMAC,
+  ON_LOOKERS, RAPPING, COP_AMBIENT, BEACH, PED). Se cancela al moverse. Sync con PLAYER_POWER power=1.
