@@ -91,11 +91,20 @@ CVector HandsPos(const Caster& c)
     if (c.ped->m_pRwObject)
     {
         RwV3d r{}, l{};
-        c.ped->GetBonePosition(r, 24, false);
-        c.ped->GetBonePosition(l, 34, false);
+        // true: compute the bones of the current animation frame (without it: the rest pose, hands at the
+        // sides -> the middle point ended up at the hips)
+        c.ped->GetBonePosition(r, 24, true);
+        c.ped->GetBonePosition(l, 34, true);
         CVector mid((r.x + l.x) * 0.5f, (r.y + l.y) * 0.5f, (r.z + l.z) * 0.5f);
         if ((mid - c.ped->GetPosition()).Magnitude() < 2.5f)  // sane bones
-            return c.phase == FIRE ? mid + CVector(dir.x, dir.y, 0.0f) * 0.3f + CVector(0.0f, 0.0f, 0.12f) : mid;
+        {
+            if (c.phase != FIRE)
+                return mid;
+            // the beam leaves the stretched arms at chest height, never from the belt
+            CVector p = mid + CVector(dir.x, dir.y, 0.0f) * 0.35f;
+            p.z = std::max(p.z, c.ped->GetPosition().z + 0.35f);
+            return p;
+        }
     }
     CVector pos = c.ped->GetPosition();
     return pos + CVector(dir.x * 0.6f, dir.y * 0.6f, 0.3f);
