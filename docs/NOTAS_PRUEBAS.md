@@ -357,3 +357,8 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Iconos HUD propios (CWeaponIcons): hook en CHud::DrawWeaponIcon -> RwTexDictionaryFindNamedTexture (0x58D84B). Texturas 64x64 RLE en WeaponIconData.h.
 - Genkidama (CGenkidama cliente, CGenkidama servidor, paquete GENKIDAMA): Alt+K flotando quieto. Encuesta (CPrompt Y/N, 10 s). Todos dan -> 10 s, mitad -> 20 s, menos -> denegada. Cooldown 5 min en el servidor. Bola de coronas sobre la cabeza, barra para todos. Al 100%: sonido lanzar + anim WEAPON_throw (bloque GRENADE), 2 s despues vuela a 50 m/s hasta chocar (max 12 s). Explosion: flash, SHAKE_CAM, anillo de explosiones (3 s, hasta 100 m), coronas, sonido global. <22 m muerte, <120 m lanzados al aire (FALL_skyDive, sin volar, mueren al aterrizar). El lanzador sale volando pero no muere (explosion proof 4 s). Autos <45 m explotan, el resto vuelan. Peatones <60 m mueren.
 - Los wav al copiarse al PC ganan un chunk C2PA (5766 bytes): inofensivo.
+
+## Build 56f89bb
+- Vuelo: pitch de camara x2.4, subida recta = 3.5x la velocidad de la barra; flotar arriba/abajo 0.95x; nivel < 3 hacia adelante usa FALL_SkyDive (pose tranquila, como los costados).
+- Kamehameha: poses invertidas (carga 70%, disparo 25%).
+- Genkidama: anims de yuanqidan.ifp (dbz_1 carga, dbz_2 lanzar). Explosion nivel bomba: onda que se expande hasta 260 m en 4 s y golpea al pasar; <60 m muerte; peatones <200 m mueren; autos <170 m destruidos (<100 m explotan), todos salen volando; hongo de explosiones FX (explosion_large, prt_smoke_huge) hasta 150 m de alto, 45 fuegos que se apagan a los 30 s. Lanzador inmune a explosion/fuego 10 s. Cooldown 3 min.
