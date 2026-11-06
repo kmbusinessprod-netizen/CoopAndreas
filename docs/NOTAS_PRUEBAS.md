@@ -350,3 +350,10 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Vuelo: el ángulo de la cámara se amplifica ×1.7, así que mirar hacia arriba sube casi en vertical.
 - Flotar arriba/abajo: 0.8 × velocidad de vuelo (antes 0.5).
 - Gravity gun: los autos de tráfico pierden su misión de IA, velocidad crucero 0 y motor apagado mientras se sostienen.
+
+## Build 99696c3
+- Vuelo: subiendo, la velocidad vertical crece con lo que apunta el mouse hacia arriba (hasta 2.3x recto arriba).
+- Kamehameha: animacion real del mod DBZ. CoopAndreas\anims\*.ifp se meten en coop_skins.img (bloques de animacion propios, max 19 letras de nombre). Poses: carga al 25%, disparo al 70%. Si el ifp falta, vuelve a GunMove_BWD.
+- Iconos HUD propios (CWeaponIcons): hook en CHud::DrawWeaponIcon -> RwTexDictionaryFindNamedTexture (0x58D84B). Texturas 64x64 RLE en WeaponIconData.h.
+- Genkidama (CGenkidama cliente, CGenkidama servidor, paquete GENKIDAMA): Alt+K flotando quieto. Encuesta (CPrompt Y/N, 10 s). Todos dan -> 10 s, mitad -> 20 s, menos -> denegada. Cooldown 5 min en el servidor. Bola de coronas sobre la cabeza, barra para todos. Al 100%: sonido lanzar + anim WEAPON_throw (bloque GRENADE), 2 s despues vuela a 50 m/s hasta chocar (max 12 s). Explosion: flash, SHAKE_CAM, anillo de explosiones (3 s, hasta 100 m), coronas, sonido global. <22 m muerte, <120 m lanzados al aire (FALL_skyDive, sin volar, mueren al aterrizar). El lanzador sale volando pero no muere (explosion proof 4 s). Autos <45 m explotan, el resto vuelan. Peatones <60 m mueren.
+- Los wav al copiarse al PC ganan un chunk C2PA (5766 bytes): inofensivo.
