@@ -46,10 +46,10 @@ struct Caster
 };
 
 // the animation block from the kamehameha mod: requested once the game runs, tiny, kept loaded.
-// Inside it: "KAMEHAMEHA" (0.6 s): 0..25% raise the hands to the side, held during the charge; 25..70%
-// thrust forward, held while firing; the rest brings the arms back.
+// Inside it: "KAMEHAMEHA" (0.6 s): charge pose held at 70%, fire pose at 25% (in game the frames
+// look the other way round from what the keyframes suggest).
 const char* KAME_BLOCK = "DBZKAMEHAMEHA";
-const float POSE_CHARGE = 0.25f, POSE_FIRE = 0.70f;
+const float POSE_CHARGE = 0.70f, POSE_FIRE = 0.25f;  // (the other way round looked reversed in game)
 bool CustomAnimReady()
 {
     static unsigned int lastRequest = 0;

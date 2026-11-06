@@ -144,6 +144,7 @@ const char* AnimFor(int kind)
     switch (kind)
     {
     case 1: return "FALL_SkyDive_Accel";
+    case 6: return "FALL_SkyDive";  // forward, slow (bar under 3): the calm pose of the side ones
     case 2: return "PARA_decel";
     case 3: return "FALL_SkyDive_L";
     case 4: return "FALL_SkyDive_R";
@@ -352,11 +353,11 @@ void CFlight::Process()
             if (sy > 0.2f)
             {
                 // forward: where the camera looks, up and down included - head first
-                s_animKind = 1;
+                s_animKind = ms_nFlyLevel < 3 ? 6 : 1;
                 // the camera can't look straight up/down, so its angle is stretched: looking ~55° up = flying
                 // practically straight up
                 float camPitch = asinf(std::max(-1.0f, std::min(1.0f, fwd.z)));
-                float pitch = std::max(-1.55f, std::min(1.55f, camPitch * 1.7f));
+                float pitch = std::max(-1.55f, std::min(1.55f, camPitch * 2.4f));
                 CVector flatFwd(fwd.x, fwd.y, 0.0f);
                 flatFwd.Normalise();
                 CVector dir3 = flatFwd * cosf(pitch) + CVector(0.0f, 0.0f, sinf(pitch));
@@ -364,7 +365,7 @@ void CFlight::Process()
                 // climbing is faster than cruising: the more the mouse points at the sky, the more the
                 // vertical speed grows over the forward one (up to 2.3x straight up)
                 if (pitch > 0.0f)
-                    v.z *= 1.0f + 1.3f * sinf(pitch);
+                    v.z *= 1.0f + 2.5f * sinf(pitch);  // straight up = 3.5x the bar speed
                 targetPitch = pitch;
             }
             else if (sy < -0.2f)
@@ -386,9 +387,9 @@ void CFlight::Process()
 
             // jump / crouch: float up and down without turning the body
             if (ms_bJump)
-                v.z += speed * 0.8f;
+                v.z += speed * 0.95f;
             if (ms_bCrouch)
-                v.z -= speed * 0.8f;
+                v.z -= speed * 0.95f;
 
             me->m_vecMoveSpeed = v;
             me->m_nPhysicalFlags.bApplyGravity = false;
@@ -397,7 +398,7 @@ void CFlight::Process()
 
             s_bodyPitch += (targetPitch - s_bodyPitch) * 0.2f;  // smooth
             PlayAnim(me, s_anim, AnimFor(s_animKind));
-            OrientBody(me, heading, s_animKind == 1 ? s_bodyPitch : 0.0f);
+            OrientBody(me, heading, (s_animKind == 1 || s_animKind == 6) ? s_bodyPitch : 0.0f);
 
             // land: going down onto the ground
             float groundZ = CWorld::FindGroundZForCoord(me->GetPosition().x, me->GetPosition().y);
@@ -429,7 +430,7 @@ void CFlight::Process()
         }
         else if (it->flying)
         {
-            OrientBody(it->ped, it->ped->m_fCurrentRotation, it->kind == 1 ? it->pitch : 0.0f);
+            OrientBody(it->ped, it->ped->m_fCurrentRotation, (it->kind == 1 || it->kind == 6) ? it->pitch : 0.0f);
             it->ped->m_vecMoveSpeed.z = std::max(it->ped->m_vecMoveSpeed.z, 0.0f) * 0.5f;  // no falling between updates
             it->ped->m_nPhysicalFlags.bApplyGravity = false;
         }

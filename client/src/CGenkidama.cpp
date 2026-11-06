@@ -5,6 +5,7 @@
 #include "CSoundFile.h"
 #include "CCoronas.h"
 #include "UI/CPrompt.h"
+#include <set>
 
 namespace
 {
@@ -21,9 +22,13 @@ enum
 
 const float BALL_SPEED = 50.0f;     // m/s
 const float FLY_MAX_S = 12.0f;      // explodes anyway after this
-const float R_KILL = 22.0f;         // touched by the blast: dead
-const float R_LAUNCH = 120.0f;      // thrown into the sky, dead on landing
-const float R_EFFECT = 100.0f;      // ring of explosions grows up to here
+// nuke-sized: the shock wave runs out to R_WAVE in WAVE_S seconds and hits everything as it passes
+const float R_KILL = 60.0f;      // inside the fireball: dead on the spot
+const float R_WAVE = 260.0f;     // thrown into the sky (dead on landing), cars blown away
+const float R_CARS_BOOM = 170.0f;  // cars explode
+const float R_PEDS_DIE = 200.0f;   // people of the city die
+const float WAVE_S = 4.0f;
+const float BLAST_S = 14.0f;     // fire and smoke last this long
 const unsigned int THROW_DELAY = 2000;
 
 struct Ball
@@ -42,6 +47,7 @@ struct Ball
     unsigned int sound = 0;
     bool poseApplied = false;
     int poseKind = 0;  // 1 hands up, 2 throw
+    bool poseCustom = false;
     std::string name;
     unsigned int lastSent = 0;
     unsigned int flyStart = 0;
@@ -56,6 +62,10 @@ struct Blast
     int rings;
     bool applied;
     bool mine;  // my own genkidama: it throws me, it does not kill me
+    bool hitMe = false;
+    std::set<void*> hit;  // reached by the shock wave already
+    int fires = 0;
+    int fireIds[48] = {};
 };
 
 Ball s_local;
@@ -69,6 +79,7 @@ unsigned int s_launchedAt = 0;
 bool s_launchNoDeath = false;
 CVector s_launchVel{};
 bool s_wasExplosionProof = false;
+bool s_wasFireProof = false;
 unsigned int s_proofUntil = 0;
 
 float Radius(const Ball& b)
@@ -119,40 +130,56 @@ void Sound(Ball& b, const char* file)
         CSoundFile::Place(b.sound, b.pos, 300.0f);
 }
 
+// animations of the "Genkidama" mod (CoopAndreas\anims\yuanqidan.ifp): dbz_1 hands to the sky (charge,
+// held on its last frame), dbz_2 the throw. Without the file: the game's hands-up and grenade throw.
+const char* GENKI_BLOCK = "yuanqidan";
+bool GenkiAnimsReady()
+{
+    if (Command<Commands::HAS_ANIMATION_LOADED>(GENKI_BLOCK))
+        return true;
+    static unsigned int lastRequest = 0;
+    if (GetTickCount() - lastRequest > 2000)
+    {
+        lastRequest = GetTickCount();
+        Command<Commands::REQUEST_ANIMATION>(GENKI_BLOCK);
+        Command<Commands::REQUEST_ANIMATION>("GRENADE");
+    }
+    return false;
+}
+
+const char* PoseAnim(int kind, bool custom)
+{
+    if (custom)
+        return kind == 1 ? "dbz_1" : "dbz_2";
+    return kind == 1 ? "handsup" : "WEAPON_throw";
+}
+
 void ApplyPose(Ball& b, int kind)
 {
     if (!CPoolGuard::IsPedAlive(b.ped))
         return;
     int ref = CPools::GetPedRef(b.ped);
     Command<Commands::CLEAR_CHAR_TASKS_IMMEDIATELY>(ref);
-    if (kind == 1)
-        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "handsup", "PED", 1.0f, 0, 1, 1, 1, -1);
+    bool custom = GenkiAnimsReady();
+    if (custom)
+        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, PoseAnim(kind, true), GENKI_BLOCK, 4.0f, 0, 1, 1, 1, -1);
+    else if (kind == 1)
+        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "handsup", "PED", 4.0f, 0, 1, 1, 1, -1);
     else if (Command<Commands::HAS_ANIMATION_LOADED>("GRENADE"))
-        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "WEAPON_throw", "GRENADE", 0.45f, 0, 1, 1, 1, -1);
+        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "WEAPON_throw", "GRENADE", 4.0f, 0, 1, 1, 1, -1);
     b.poseApplied = true;
     b.poseKind = kind;
+    b.poseCustom = custom;
 }
 
+// the animations stop on their last frame (lockF); if something replaced the task, back into the pose
 void HoldPose(Ball& b)
 {
     if (!b.poseApplied || !CPoolGuard::IsPedAlive(b.ped))
         return;
     int ref = CPools::GetPedRef(b.ped);
-    if (b.poseKind == 1)
-    {
-        if (Command<Commands::IS_CHAR_PLAYING_ANIM>(ref, "handsup"))
-        {
-            float t = 0.0f;
-            Command<Commands::GET_CHAR_ANIM_CURRENT_TIME>(ref, "handsup", &t);
-            if (t >= 0.9f)
-            {
-                Command<Commands::SET_CHAR_ANIM_SPEED>(ref, "handsup", 0.0f);
-                Command<Commands::SET_CHAR_ANIM_CURRENT_TIME>(ref, "handsup", 0.92f);
-            }
-        }
-        else
-            ApplyPose(b, 1);
-    }
+    if (b.poseKind == 1 && !Command<Commands::IS_CHAR_PLAYING_ANIM>(ref, PoseAnim(1, b.poseCustom)))
+        ApplyPose(b, 1);
     b.ped->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
 }
 
@@ -209,8 +236,8 @@ void LaunchPed(CPed* ped, const CVector& center, float dist, float scale)
     if (away.Magnitude() < 0.1f)
         away = CVector(1.0f, 0.0f, 0.0f);
     away.Normalise();
-    float k = (0.45f + 0.55f * (1.0f - dist / R_LAUNCH)) * scale;
-    CVector v = away * (0.55f * k) + CVector(0.0f, 0.0f, 1.25f * k);
+    float k = (0.55f + 0.75f * (1.0f - dist / R_WAVE)) * scale;
+    CVector v = away * (0.9f * k) + CVector(0.0f, 0.0f, 1.8f * k);
     ped->m_nPedFlags.bIsStanding = false;
     ped->m_nPhysicalFlags.bApplyGravity = true;
     ped->m_vecMoveSpeed = v;
@@ -218,91 +245,118 @@ void LaunchPed(CPed* ped, const CVector& center, float dist, float scale)
         s_launchVel = v;
 }
 
-void ApplyBlast(Blast& blast)
+void Fx(const char* name, const CVector& p)
+{
+    int fx = 0;
+    Command<Commands::CREATE_FX_SYSTEM>(name, p.x, p.y, p.z, 4, &fx);
+    if (fx)
+        Command<Commands::PLAY_AND_KILL_FX_SYSTEM>(fx);
+}
+
+CVector Ground(float x, float y, float fromZ)
+{
+    bool ok = false;
+    float z = CWorld::FindGroundZFor3DCoord(x, y, fromZ + 80.0f, &ok, nullptr);
+    return CVector(x, y, ok ? z + 0.5f : fromZ);
+}
+
+// the moment it explodes (once): sound, shake, the player himself
+void BlastStart(Blast& blast)
 {
     blast.applied = true;
     CPlayerPed* me = FindPlayerPed();
-    Command<Commands::SHAKE_CAM>(900);
+    Command<Commands::SHAKE_CAM>(2500);
     if (s_explosionSound)
         CSoundFile::Stop(s_explosionSound);
     s_explosionSound = CSoundFile::Play("genki_explosion.wav", false);
     if (s_explosionSound)
         CSoundFile::SetVolume(s_explosionSound, 1.0f);
+    if (me && blast.mine)
+    {
+        // the caster never dies from his own genkidama, he is only blown away
+        if (!s_proofUntil)
+        {
+            s_wasExplosionProof = me->m_nPhysicalFlags.bExplosionProof;
+            s_wasFireProof = me->m_nPhysicalFlags.bFireProof;
+        }
+        me->m_nPhysicalFlags.bExplosionProof = true;
+        me->m_nPhysicalFlags.bFireProof = true;
+        s_proofUntil = GetTickCount() + 10000;
+    }
+}
 
-    bool iAmCaster = blast.mine && me != nullptr;
+// the shock wave reached `ped` / `v`
+void HitMe(Blast& blast, CPlayerPed* me, float d)
+{
+    if (me->m_fHealth <= 0.0f)
+        return;
+    if (!blast.mine && d < R_KILL)
+    {
+        Command<Commands::SET_CHAR_HEALTH>(CPools::GetPedRef(me), 0);
+        return;
+    }
+    if (me->m_nPedFlags.bInVehicle)
+        Command<Commands::WARP_CHAR_FROM_CAR_TO_COORD>(CPools::GetPedRef(me), me->GetPosition().x, me->GetPosition().y,
+            me->GetPosition().z + 2.0f);
+    LaunchPed(me, blast.pos, d, 1.0f);
+    s_launched = true;
+    s_launchedAt = GetTickCount();
+    s_launchNoDeath = blast.mine;
+}
 
-    // me
-    if (me && me->m_fHealth > 0.0f)
+void ProcessWave(Blast& blast, float radius)
+{
+    CPlayerPed* me = FindPlayerPed();
+    if (me && !blast.hitMe)
     {
         float d = (me->GetPosition() - blast.pos).Magnitude();
-        if (iAmCaster)
+        if (d <= radius && d < R_WAVE)
         {
-            // the caster is pushed away but never dies from his own genkidama
-            s_wasExplosionProof = me->m_nPhysicalFlags.bExplosionProof;
-            me->m_nPhysicalFlags.bExplosionProof = true;
-            s_proofUntil = GetTickCount() + 4000;
-            if (d < R_LAUNCH)
-            {
-                if (me->m_nPedFlags.bInVehicle)
-                    Command<Commands::WARP_CHAR_FROM_CAR_TO_COORD>(CPools::GetPedRef(me), me->GetPosition().x,
-                        me->GetPosition().y, me->GetPosition().z);
-                LaunchPed(me, blast.pos, d, 1.0f);
-                s_launched = true;
-                s_launchedAt = GetTickCount();
-                s_launchNoDeath = true;
-            }
-        }
-        else if (d < R_KILL)
-        {
-            Command<Commands::SET_CHAR_HEALTH>(CPools::GetPedRef(me), 0);
-        }
-        else if (d < R_LAUNCH)
-        {
-            if (me->m_nPedFlags.bInVehicle)
-                Command<Commands::WARP_CHAR_FROM_CAR_TO_COORD>(CPools::GetPedRef(me), me->GetPosition().x,
-                    me->GetPosition().y, me->GetPosition().z);
-            LaunchPed(me, blast.pos, d, 1.0f);
-            s_launched = true;
-            s_launchedAt = GetTickCount();
-            s_launchNoDeath = false;
+            blast.hitMe = true;
+            HitMe(blast, me, d);
         }
     }
-
     // the people of the city (the other players take care of themselves)
     for (int i = 0; i < CPools::ms_pPedPool->m_nSize; i++)
     {
         CPed* ped = CPools::ms_pPedPool->GetAt(i);
-        if (!ped || ped == me || ped->m_fHealth <= 0.0f || CNetworkPlayerManager::GetPlayer(ped))
+        if (!ped || ped == me || CNetworkPlayerManager::GetPlayer(ped))
             continue;
         float d = (ped->GetPosition() - blast.pos).Magnitude();
-        if (d > R_LAUNCH)
+        if (d > radius || d > R_WAVE || blast.hit.count(ped))
             continue;
+        blast.hit.insert(ped);
         if (ped->m_nPedFlags.bInVehicle)
             continue;  // the car takes the hit
-        LaunchPed(ped, blast.pos, d, 0.8f);
-        if (d < R_LAUNCH * 0.5f)
+        LaunchPed(ped, blast.pos, d, 0.9f);
+        if (d < R_PEDS_DIE)
             ped->m_fHealth = 0.0f;
     }
-
-    // cars: the near ones explode, the rest fly
+    // cars: blown away, the nearer ones explode
     for (int i = 0; i < CPools::ms_pVehiclePool->m_nSize; i++)
     {
         CVehicle* v = CPools::ms_pVehiclePool->GetAt(i);
         if (!v || !v->m_pRwObject)
             continue;
         float d = (v->GetPosition() - blast.pos).Magnitude();
-        if (d > R_LAUNCH)
+        if (d > radius || d > R_WAVE || blast.hit.count(v))
             continue;
-        if (me && v == me->m_pVehicle && iAmCaster)
-            continue;
+        blast.hit.insert(v);
         CVector away = v->GetPosition() - blast.pos;
         away.z = 0.0f;
+        if (away.Magnitude() < 0.1f)
+            away = CVector(0.0f, 1.0f, 0.0f);
         away.Normalise();
-        float k = 0.3f + 0.7f * (1.0f - d / R_LAUNCH);
-        v->m_vecMoveSpeed += away * (0.35f * k) + CVector(0.0f, 0.0f, 0.7f * k);
-        v->m_vecTurnSpeed += CVector(0.08f * k, 0.05f * k, 0.0f);
-        if (d < 45.0f && v->m_fHealth > 0.0f)
-            Command<Commands::EXPLODE_CAR>(CPools::GetVehicleRef(v));
+        float k = 0.4f + 0.9f * (1.0f - d / R_WAVE);
+        float massK = std::min(1.5f, 1500.0f / std::max(300.0f, v->m_fMass));  // buses fly less than bikes
+        v->m_vecMoveSpeed += (away * (0.6f * k) + CVector(0.0f, 0.0f, 0.9f * k)) * massK;
+        v->m_vecTurnSpeed += CVector(0.12f * k * (rand() % 2 ? 1.0f : -1.0f), 0.1f * k, 0.05f * k);
+        if (d < R_CARS_BOOM && v->m_fHealth > 0.0f)
+        {
+            v->m_fHealth = 0.0f;  // burning wreck in a moment
+            if (d < R_CARS_BOOM * 0.6f)
+                Command<Commands::EXPLODE_CAR>(CPools::GetVehicleRef(v));
+        }
     }
 }
 
@@ -313,30 +367,68 @@ void ProcessBlasts()
     {
         Blast& b = *it;
         if (!b.applied)
-            ApplyBlast(b);
+            BlastStart(b);
         float t = (now - b.at) / 1000.0f;
-        if (t > 8.0f)
+        if (t > 30.0f)
         {
+            for (int i = 0; i < b.fires; i++)  // the fires go out after 30 s
+                Command<Commands::REMOVE_SCRIPT_FIRE>(b.fireIds[i]);
             it = s_blasts.erase(it);
             continue;
         }
-        // a ring of explosions that runs outwards for 3 s
-        if (t < 3.0f && now - b.lastRing > 110)
+        float k = std::min(1.0f, t / WAVE_S);
+        float radius = 8.0f + (R_WAVE - 8.0f) * (1.0f - (1.0f - k) * (1.0f - k));  // fast at first, then slows
+        if (t < WAVE_S + 0.2f)
+            ProcessWave(b, radius);
+
+        if (now - b.lastRing >= 70)
         {
             b.lastRing = now;
-            float r = 4.0f + R_EFFECT * (t / 3.0f);
-            int count = b.rings == 0 ? 6 : 5;
-            for (int i = 0; i < count; i++)
+            // the fireball and the mushroom: big explosions stacked up the column for the first seconds
+            if (t < 5.0f)
+            {
+                float h = 15.0f + 140.0f * std::min(1.0f, t / 5.0f);
+                for (int i = 0; i < 3; i++)
+                {
+                    float a = (float)rand() / RAND_MAX * 6.2832f, rr = 6.0f + 18.0f * ((float)rand() / RAND_MAX);
+                    float hh = h * ((float)rand() / RAND_MAX);
+                    Fx("explosion_large", b.pos + CVector(cosf(a) * rr, sinf(a) * rr, hh));
+                }
+                // the cap of the mushroom
+                float a = (float)rand() / RAND_MAX * 6.2832f, rr = 20.0f + 35.0f * std::min(1.0f, t / 4.0f);
+                Fx("explosion_large", b.pos + CVector(cosf(a) * rr, sinf(a) * rr, h));
+                Fx("prt_smoke_huge", b.pos + CVector(cosf(a) * rr * 0.5f, sinf(a) * rr * 0.5f, h * 0.8f));
+            }
+            // the wave front: explosions on the ground along the ring
+            if (t < WAVE_S)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    float a = (float)rand() / RAND_MAX * 6.2832f;
+                    float rr = radius * (0.85f + 0.15f * ((float)rand() / RAND_MAX));
+                    CVector p = Ground(b.pos.x + cosf(a) * rr, b.pos.y + sinf(a) * rr, b.pos.z);
+                    Fx(i % 2 ? "explosion_large" : "explosion_medium", p);
+                    if (i == 0)
+                        Fx("prt_smoke_huge", p);
+                }
+                // real explosions (the game has 16 at a time: a few, they set things on fire and break things)
+                CVector p = Ground(b.pos.x + cosf(t * 7.0f) * radius * 0.9f, b.pos.y + sinf(t * 7.0f) * radius * 0.9f, b.pos.z);
+                Command<Commands::ADD_EXPLOSION_NO_SOUND>(p.x, p.y, p.z, 7);
+            }
+            // afterwards: fires and smoke all over the area
+            if (t > 1.0f && b.fires < 45)
             {
                 float a = (float)rand() / RAND_MAX * 6.2832f;
-                float rr = b.rings == 0 ? r * ((float)rand() / RAND_MAX) : r;
-                CVector p(b.pos.x + cosf(a) * rr, b.pos.y + sinf(a) * rr, b.pos.z + 30.0f);
-                bool ok = false;
-                float z = CWorld::FindGroundZFor3DCoord(p.x, p.y, p.z + 50.0f, &ok, nullptr);
-                p.z = ok ? z + 1.0f : b.pos.z;
-                Command<Commands::ADD_EXPLOSION_NO_SOUND>(p.x, p.y, p.z, (i % 3 == 0) ? 8 : 7);
+                float rr = R_WAVE * 0.7f * sqrtf((float)rand() / RAND_MAX);
+                CVector p = Ground(b.pos.x + cosf(a) * rr, b.pos.y + sinf(a) * rr, b.pos.z);
+                Command<Commands::START_SCRIPT_FIRE>(p.x, p.y, p.z, 1, 3, &b.fireIds[b.fires]);
+                b.fires++;
             }
-            b.rings++;
+            if (t > 2.0f && t < BLAST_S - 2.0f && rand() % 3 == 0)
+            {
+                float a = (float)rand() / RAND_MAX * 6.2832f, rr = R_WAVE * 0.5f * ((float)rand() / RAND_MAX);
+                Fx("prt_smoke_huge", Ground(b.pos.x + cosf(a) * rr, b.pos.y + sinf(a) * rr, b.pos.z));
+            }
         }
         ++it;
     }
@@ -349,30 +441,34 @@ void DrawBlasts()
     for (Blast& b : s_blasts)
     {
         float t = (now - b.at) / 1000.0f;
+        if (t > BLAST_S)
+            continue;
         unsigned int base = 0x424C5300u + n * 24;
         n++;
         // fireball, then a column of light that rises
-        if (t < 2.5f)
+        if (t < 3.5f)
         {
-            float k = t / 2.5f;
-            float r = 12.0f + 70.0f * k;
+            float k = t / 3.5f;
+            float r = 25.0f + 140.0f * k;
             int a = (int)(255 * (1.0f - k));
-            Corona(base + 0, b.pos + CVector(0.0f, 0.0f, 6.0f), r, CRGBA(255, 255, 240, a));
-            Corona(base + 1, b.pos + CVector(0.0f, 0.0f, 8.0f), r * 1.6f, CRGBA(255, 170, 60, a / 2));
-            Corona(base + 2, b.pos + CVector(0.0f, 0.0f, 10.0f), r * 2.3f, CRGBA(120, 170, 255, a / 4));
+            Corona(base + 0, b.pos + CVector(0.0f, 0.0f, 10.0f), r, CRGBA(255, 255, 240, a));
+            Corona(base + 1, b.pos + CVector(0.0f, 0.0f, 14.0f), r * 1.6f, CRGBA(255, 170, 60, a / 2));
+            Corona(base + 2, b.pos + CVector(0.0f, 0.0f, 18.0f), r * 2.3f, CRGBA(120, 170, 255, a / 4));
         }
-        if (t < 7.0f)
+        if (t < 10.0f)
         {
-            float k = t / 7.0f;
-            for (int i = 0; i < 6; i++)
+            float k = t / 10.0f;
+            for (int i = 0; i < 8; i++)
             {
-                float h = 10.0f + (i * 14.0f + 90.0f * k);
-                int a = (int)(160 * (1.0f - k));
-                Corona(base + 3 + i, b.pos + CVector(0.0f, 0.0f, h), 14.0f + 10.0f * k + i * 2.0f, CRGBA(255, 190, 90, a));
+                float h = 15.0f + (i * 18.0f + 140.0f * k);
+                int a = (int)(170 * (1.0f - k));
+                Corona(base + 3 + i, b.pos + CVector(0.0f, 0.0f, h), 22.0f + 16.0f * k + i * 3.0f, CRGBA(255, 180, 80, a));
             }
-            Corona(base + 9, b.pos + CVector(0.0f, 0.0f, 100.0f + 60.0f * k), 45.0f + 30.0f * k, CRGBA(255, 220, 160, (int)(120 * (1.0f - k))));
+            Corona(base + 11, b.pos + CVector(0.0f, 0.0f, 150.0f + 60.0f * k), 80.0f + 50.0f * k,
+                CRGBA(255, 210, 150, (int)(140 * (1.0f - k))));
         }
-        Command<Commands::DRAW_LIGHT_WITH_RANGE>(b.pos.x, b.pos.y, b.pos.z + 5.0f, 255, 200, 120, 150.0f * (1.0f - std::min(1.0f, t / 4.0f)));
+        Command<Commands::DRAW_LIGHT_WITH_RANGE>(b.pos.x, b.pos.y, b.pos.z + 5.0f, 255, 200, 120,
+            250.0f * (1.0f - std::min(1.0f, t / 6.0f)));
     }
 }
 
@@ -383,7 +479,7 @@ void DrawFlash()
     for (Blast& b : s_blasts)
     {
         float t = (now - b.at) / 1000.0f;
-        float a = t < 0.25f ? t / 0.25f : std::max(0.0f, 1.0f - (t - 0.25f) / 2.2f);
+        float a = t < 0.25f ? t / 0.25f : std::max(0.0f, 1.0f - (t - 0.25f) / 3.0f);
         best = std::max(best, a);
     }
     if (best <= 0.0f)
@@ -394,7 +490,8 @@ void DrawFlash()
 
 void Explode(const CVector& pos, bool mine)
 {
-    s_blasts.push_back({pos, GetTickCount(), 0, 0, false, mine});
+    Blast b{pos, GetTickCount(), 0, 0, false, mine};
+    s_blasts.push_back(b);
 }
 
 // ---------------------------------------------------------------- the ball
@@ -582,7 +679,10 @@ void CGenkidama::Process()
     {
         s_proofUntil = 0;
         if (me)
+        {
             me->m_nPhysicalFlags.bExplosionProof = s_wasExplosionProof;
+            me->m_nPhysicalFlags.bFireProof = s_wasFireProof;
+        }
     }
 
     if (me)
@@ -592,12 +692,7 @@ void CGenkidama::Process()
         s_local.name = CLocalPlayer::m_Name;
         ProcessLaunched(me);
 
-        static unsigned int lastAnimRequest = 0;
-        if (now - lastAnimRequest > 3000 && !Command<Commands::HAS_ANIMATION_LOADED>("GRENADE"))
-        {
-            lastAnimRequest = now;
-            Command<Commands::REQUEST_ANIMATION>("GRENADE");
-        }
+        GenkiAnimsReady();
 
         bool alt = CPad::NewKeyState.lmenu != 0 || CPad::NewKeyState.rmenu != 0;
         bool k = CPad::NewKeyState.standardKeys['K'] != 0 || CPad::NewKeyState.standardKeys['k'] != 0;

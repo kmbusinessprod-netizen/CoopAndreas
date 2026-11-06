@@ -11,7 +11,7 @@ uint32_t CGenkidama::ms_nCooldownUntil = 0;
 uint32_t CGenkidama::ms_nBusyUntil = 0;
 
 static const uint32_t VOTE_TIMEOUT_MS = 10000;
-static const uint32_t COOLDOWN_MS = 5 * 60 * 1000;
+static const uint32_t COOLDOWN_MS = 3 * 60 * 1000;
 static const uint32_t BUSY_MS = 60000;  // longest a genkidama can take, if the caster never says it exploded
 
 static uint32_t NowMs()

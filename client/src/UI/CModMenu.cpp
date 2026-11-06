@@ -814,7 +814,7 @@ void CModMenu::BuildWeapons(CModMenu* m)
     items.push_back({"~y~Kamehameha", []() -> std::string { return CKamehameha::IsWeaponEnabled() ? "~g~ON" : "~r~OFF"; },
         [] { CKamehameha::ToggleWeapon(); }, nullptr});
     items.push_back({"~y~Genkidama", []() -> std::string { return "Alt+K flotando"; },
-        [] { CChat::AddMessage("{c7a6ff}[Genkidama] {d6dce8}Flota quieto en el aire (Volar) y pulsa Alt+K: pide energia a todos, carga 10-20 s, apunta con la camara. 5 min entre una y otra"); }, nullptr});
+        [] { CChat::AddMessage("{c7a6ff}[Genkidama] {d6dce8}Flota quieto en el aire (Volar) y pulsa Alt+K: pide energia a todos, carga 10-20 s, apunta con la camara. 3 min entre una y otra"); }, nullptr});
     for (const W& w : weapons)
     {
         int id = w.id, ammo = w.ammo;

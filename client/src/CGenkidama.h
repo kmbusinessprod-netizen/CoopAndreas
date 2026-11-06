@@ -4,7 +4,7 @@
 // grows over the caster's head (everyone sees it and the bar), aimed with the camera until the throw
 // sound starts; 2 s later it flies off and explodes on the first thing it touches: nuke-sized blast for
 // everyone (players, peds, cars). Close = dead; a bit further = thrown into the sky, no flying, dead on
-// landing; the caster is thrown but survives. 5 minutes between two genkidamas (server wide).
+// landing; the caster is thrown but survives. 3 minutes between two genkidamas (server wide).
 class CGenkidama
 {
 public:

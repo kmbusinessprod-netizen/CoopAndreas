@@ -2,7 +2,7 @@
 #include "network/packets/genkidama.h"
 
 // [private build] the Genkidama vote: the caster asks everyone for energy. Everybody gives -> 10 s charge,
-// at least half -> 20 s, less -> denied. One at a time, and 5 minutes between two (server wide).
+// at least half -> 20 s, less -> denied. One at a time, and 3 minutes between two (server wide).
 class CGenkidama
 {
 public:
