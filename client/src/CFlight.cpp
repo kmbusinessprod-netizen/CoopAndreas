@@ -126,6 +126,16 @@ bool PlacePlatform(CPed* me)
     return true;
 }
 
+bool s_jetpack = false;
+void EndJetpack(CPed* me)
+{
+    if (!s_jetpack)
+        return;
+    s_jetpack = false;
+    if (CPoolGuard::IsPedAlive(me))
+        Command<Commands::CLEAR_CHAR_TASKS_IMMEDIATELY>(CPools::GetPedRef(me));  // takes the jetpack off
+}
+
 bool s_dropping = false;
 int s_animKind = 0;  // 0 float, 1 forward, 2 backwards, 3 left, 4 right
 const char* AnimFor(int kind)
@@ -157,6 +167,7 @@ void StopFlying(CPlayerPed* me)
         return;
     s_flying = false;
     RemovePlatform();
+    EndJetpack(me);
     StopAnim(me, s_anim);
     me->m_nPhysicalFlags.bApplyGravity = true;
     // keep the landing harmless for a moment
@@ -270,29 +281,25 @@ void CFlight::Process()
 
         bool anyInput = pad && (abs(pad->NewState.LeftStickX) > 25 || abs(pad->NewState.LeftStickY) > 25 || ms_bJump ||
                                    ms_bCrouch);
-        bool aiming = pad && pad->NewState.RightShoulder1 != 0 && me->m_aWeapons[me->m_nActiveWeaponSlot].m_eWeaponType > 15;
+        // aiming while floating, with a weapon the jetpack can use (pistols and SMGs): the game's own jetpack
+        // task does the aiming/shooting with its animations; we keep CJ in place
+        CWeaponInfo* wi = CWeaponInfo::GetWeaponInfo(me->m_aWeapons[me->m_nActiveWeaponSlot].m_eWeaponType, 1);
+        bool jetpackWeapon = wi && wi->m_nFlags.bAimWithArm;
+        bool aiming = pad && pad->NewState.RightShoulder1 != 0 && jetpackWeapon;
         if (s_flying && !kame && aiming && !anyInput)
         {
-            // aiming a gun while floating: stand on an invisible slab just under the feet so the game lets
-            // CJ aim and shoot like on the ground (only while the aim button is held)
-            if (s_platform < 0)
+            if (!s_jetpack)
             {
-                OrientBody(me, me->m_fCurrentRotation, 0.0f);  // upright first
-                me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
+                OrientBody(me, me->m_fCurrentRotation, 0.0f);
                 if (s_anim)
                     StopAnim(me, s_anim);
+                Command<Commands::TASK_JETPACK>(CPools::GetPedRef(me));
+                s_jetpack = true;
             }
-            if (PlacePlatform(me))
-            {
-                me->m_nPhysicalFlags.bApplyGravity = true;
-                s_animKind = 5;
-                s_bodyPitch = 0.0f;
-            }
-            else
-            {
-                me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
-                me->m_nPhysicalFlags.bApplyGravity = false;
-            }
+            me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
+            me->m_nPhysicalFlags.bApplyGravity = false;
+            s_animKind = 5;
+            s_bodyPitch = 0.0f;
             static unsigned int lastAimSent = 0;
             if (now - lastAimSent > 500)
             {
@@ -302,6 +309,7 @@ void CFlight::Process()
         }
         else if (s_flying && (kame || !anyInput))
         {
+            EndJetpack(me);
             // floating still: no gravity, no movement, the floating pose (the kamehameha uses its own pose)
             RemovePlatform();
             me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
@@ -328,7 +336,7 @@ void CFlight::Process()
         }
         else if (s_flying)
         {
-            RemovePlatform();
+            EndJetpack(me);
             const CVector& front = TheCamera.m_aCams[TheCamera.m_nActiveCam].m_vecFront;
             CVector fwd(front.x, front.y, front.z);
             fwd.Normalise();
@@ -343,8 +351,15 @@ void CFlight::Process()
             {
                 // forward: where the camera looks, up and down included - head first
                 s_animKind = 1;
-                v = fwd * (sy * speed) + right * (sx * speed * 0.5f);
-                targetPitch = asinf(std::max(-1.0f, std::min(1.0f, fwd.z)));
+                // the camera can't look straight up/down, so its angle is stretched: looking ~55° up = flying
+                // practically straight up
+                float camPitch = asinf(std::max(-1.0f, std::min(1.0f, fwd.z)));
+                float pitch = std::max(-1.55f, std::min(1.55f, camPitch * 1.7f));
+                CVector flatFwd(fwd.x, fwd.y, 0.0f);
+                flatFwd.Normalise();
+                CVector dir3 = flatFwd * cosf(pitch) + CVector(0.0f, 0.0f, sinf(pitch));
+                v = dir3 * (sy * speed) + right * (sx * speed * 0.5f);
+                targetPitch = pitch;
             }
             else if (sy < -0.2f)
             {
@@ -365,9 +380,9 @@ void CFlight::Process()
 
             // jump / crouch: float up and down without turning the body
             if (ms_bJump)
-                v.z += speed * 0.5f;  // half the speed of the bar
+                v.z += speed * 0.8f;
             if (ms_bCrouch)
-                v.z -= speed * 0.5f;
+                v.z -= speed * 0.8f;
 
             me->m_vecMoveSpeed = v;
             me->m_nPhysicalFlags.bApplyGravity = false;

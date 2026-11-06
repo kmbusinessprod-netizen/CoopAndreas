@@ -4,6 +4,17 @@
 #include "CBulletTraces.h"
 #include "CCoronas.h"
 
+static void Calm(CVehicle* v)
+{
+    v->m_autoPilot.m_nCarMission = MISSION_NONE;
+    v->m_autoPilot.m_nCruiseSpeed = 0;
+    v->m_autoPilot.m_nTempAction = 0;
+    v->m_nStatus = STATUS_PHYSICS;
+    v->m_nVehicleFlags.bEngineOn = false;
+    v->m_nVehicleFlags.bHasBeenOwnedByPlayer = true;  // not removed as "distant traffic" while you play with it
+}
+
+
 bool CGravityGun::ms_bActive = false;
 int CGravityGun::ms_nGunObject = -1, CGravityGun::ms_nPart1 = -1, CGravityGun::ms_nPart2 = -1, CGravityGun::ms_nPart3 = -1,
     CGravityGun::ms_nPart4 = -1;
@@ -249,6 +260,8 @@ void CGravityGun::Grab(CEntity* e, int type)
         s_holdDistance = std::max(HOLD_DISTANCE, radius + 3.5f);
     }
     CPhysical* ph = (CPhysical*)e;
+    if (type == 1)
+        Calm((CVehicle*)e);
     if (type == 3)
     {
         CObject* o = (CObject*)e;
@@ -275,6 +288,8 @@ void CGravityGun::Hold(const CVector& from, const CVector& dir)
         return;
     }
     CPhysical* ph = (CPhysical*)ms_pHeld;
+    if (ms_nHeldType == 1)
+        Calm((CVehicle*)ms_pHeld);
     CVector target = from + dir * s_holdDistance;
     CVector delta = target - ph->GetPosition();
     // pull towards the point in front of the gun, in the units the game uses (m per frame at 50 fps)
@@ -352,6 +367,7 @@ void CGravityGun::Glow(int gun, const int parts[3], bool holding, unsigned int i
         Command<Commands::DRAW_LIGHT_WITH_RANGE>(tip.x, tip.y, tip.z, 64, 255, 128, 4.0f);
 }
 
+// a traffic car keeps driving under the gun (its AI sets the speed every frame): stop its driver
 struct Thrown
 {
     CPed* ped;
