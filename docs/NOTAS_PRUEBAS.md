@@ -344,3 +344,9 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Kamehameha volando: pitch mínimo -1.35 rad (antes -0.26).
 - Gravity gun: el rayo ya no considera objetos; en el cono primero gente/autos con línea de visión libre; objetos
   solo si no hay nada más y están en pantalla. Los peds lanzados ya no mueren: 3 s a prueba de golpes/caídas.
+
+## Build 6816347
+- Vuelo: se quitó el suelo invisible. Al flotar quieto y apuntar con pistola/subfusil (armas que el jetpack permite) se usa la tarea de jetpack del juego (animaciones y disparo del jetpack). Al soltar, vuelve a flotar. Kamehameha sigue permitido.
+- Vuelo: el ángulo de la cámara se amplifica ×1.7, así que mirar hacia arriba sube casi en vertical.
+- Flotar arriba/abajo: 0.8 × velocidad de vuelo (antes 0.5).
+- Gravity gun: los autos de tráfico pierden su misión de IA, velocidad crucero 0 y motor apagado mientras se sostienen.
