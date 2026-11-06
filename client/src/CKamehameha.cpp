@@ -42,7 +42,8 @@ struct Caster
     bool wasExplosionProof = false;
     unsigned int sound = 0;
     bool weaponMode = false;
-    bool customAnim = false;  // the real kamehameha animation (CoopAndreas\anims\DBZKAMEHAMEHA.ifp)
+    bool customAnim = false;
+    CVector anchor{};  // where he stood when it started: he stays there  // the real kamehameha animation (CoopAndreas\anims\DBZKAMEHAMEHA.ifp)
 };
 
 // the animation block from the kamehameha mod: requested once the game runs, tiny, kept loaded.
@@ -83,10 +84,20 @@ CVector Direction(const Caster& c)
     return CVector(-sinf(c.heading) * cosf(c.pitch), cosf(c.heading) * cosf(c.pitch), sinf(c.pitch));
 }
 
+// between the two hands (bones 25 right hand, 35 left hand), a bit in front of the palms
 CVector HandsPos(const Caster& c)
 {
-    CVector pos = c.ped->GetPosition();
     CVector dir = Direction(c);
+    if (c.ped->m_pRwObject)
+    {
+        RwV3d r{}, l{};
+        c.ped->GetBonePosition(r, 25, false);
+        c.ped->GetBonePosition(l, 35, false);
+        CVector mid((r.x + l.x) * 0.5f, (r.y + l.y) * 0.5f, (r.z + l.z) * 0.5f);
+        if ((mid - c.ped->GetPosition()).Magnitude() < 2.5f)  // sane bones
+            return mid + CVector(dir.x, dir.y, 0.0f) * (c.phase == FIRE ? 0.25f : 0.1f);
+    }
+    CVector pos = c.ped->GetPosition();
     return pos + CVector(dir.x * 0.6f, dir.y * 0.6f, 0.3f);
 }
 
@@ -129,11 +140,16 @@ void ApplyPose(Caster& c)
     if (c.animApplied || !CPoolGuard::IsPedAlive(c.ped))
         return;
     int ref = CPools::GetPedRef(c.ped);
+    // stop dead: whatever he was doing (running...) ends now, no sliding with the run momentum
+    Command<Commands::CLEAR_CHAR_TASKS_IMMEDIATELY>(ref);
+    c.ped->m_vecMoveSpeed.x = c.ped->m_vecMoveSpeed.y = 0.0f;
+    c.ped->m_vecTurnSpeed = CVector(0.0f, 0.0f, 0.0f);
     c.customAnim = CustomAnimReady();
     if (c.customAnim)
-        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "KAMEHAMEHA", KAME_BLOCK, 1.0f, 0, 1, 1, 1, -1);
+        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "KAMEHAMEHA", KAME_BLOCK, 8.0f, 0, 0, 0, 1, -1);
     else
-        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "GunMove_BWD", "PED", 4.0f, 1, 1, 1, 1, -1);
+        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "GunMove_BWD", "PED", 8.0f, 1, 0, 0, 1, -1);
+    c.anchor = c.ped->GetPosition();
     c.animApplied = true;
 }
 
@@ -170,6 +186,13 @@ void HoldPose(Caster& c)
         Command<Commands::SET_CHAR_ANIM_CURRENT_TIME>(ref, "GunMove_BWD", 0.27f);
     }
     c.ped->m_vecMoveSpeed.x = c.ped->m_vecMoveSpeed.y = 0.0f;
+    // on the ground: pinned to the spot (the animation's own movement or a push must not walk him away)
+    if (c.local && c.ped->m_nPedFlags.bIsStanding && (c.ped->GetPosition() - c.anchor).Magnitude() > 0.05f &&
+        (c.ped->GetPosition() - c.anchor).Magnitude() < 1.5f)
+    {
+        CVector p = c.ped->GetPosition();
+        c.ped->SetPosn(c.anchor.x, c.anchor.y, p.z);
+    }
 }
 
 void ReleasePose(Caster& c)
