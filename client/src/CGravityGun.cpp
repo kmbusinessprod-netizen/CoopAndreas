@@ -173,11 +173,26 @@ CEntity* CGravityGun::FindTarget(const CVector&, const CVector& dir, int& type)
     CEntity* entity = nullptr;
     bool old = me->m_bUsesCollision;
     me->m_bUsesCollision = false;
-    bool found = CWorld::ProcessLineOfSight(camPos, camPos + dir * (RANGE + 8.0f), colPoint, entity, false, true, true, true,
+    // people and cars along the aim line win over objects (the map is full of small or invisible objects in
+    // front of them); objects only when nothing else is there
+    bool found = CWorld::ProcessLineOfSight(camPos, camPos + dir * (RANGE + 8.0f), colPoint, entity, false, true, true, false,
         false, false, false, false);
     me->m_bUsesCollision = old;
     if (found && accept(entity, type) && (entity->GetPosition() - myPos).Magnitude() < RANGE)
         return entity;
+
+    // nothing solid of the map between the camera and the candidate
+    auto clearView = [&](CEntity* e) -> bool
+    {
+        CColPoint cp{};
+        CEntity* hitEntity = nullptr;
+        bool o2 = me->m_bUsesCollision;
+        me->m_bUsesCollision = false;
+        bool blocked = CWorld::ProcessLineOfSight(camPos, e->GetPosition(), cp, hitEntity, true, false, false, false, false,
+            false, false, false);
+        me->m_bUsesCollision = o2;
+        return !blocked;
+    };
 
     // 2) cone
     CEntity* best = nullptr;
@@ -197,6 +212,8 @@ CEntity* CGravityGun::FindTarget(const CVector&, const CVector& dir, int& type)
         float tolerance = std::min(0.25f, extraRadius / dist);
         if (cosA < minCos - tolerance)
             return;
+        if (!clearView(e))
+            return;
         float score = cosA - dist * 0.0005f;
         if (!best || score > bestScore)
         {
@@ -211,10 +228,12 @@ CEntity* CGravityGun::FindTarget(const CVector&, const CVector& dir, int& type)
     for (int i = 0; i < CPools::ms_pPedPool->m_nSize; i++)
         if (CPed* p = CPools::ms_pPedPool->GetAt(i))
             consider(p, 0.6f);
+    if (best)
+        return best;  // a person or a car near the aim line
     for (int i = 0; i < CPools::ms_pObjectPool->m_nSize; i++)
         if (CObject* o = CPools::ms_pObjectPool->GetAt(i))
-            if ((o->GetPosition() - myPos).Magnitude() < 20.0f)
-                consider(o, 0.5f);
+            if ((o->GetPosition() - myPos).Magnitude() < 20.0f && o->GetIsOnScreen())
+                consider(o, 0.4f);
     return best;
 }
 
@@ -333,6 +352,34 @@ void CGravityGun::Glow(int gun, const int parts[3], bool holding, unsigned int i
         Command<Commands::DRAW_LIGHT_WITH_RANGE>(tip.x, tip.y, tip.z, 64, 255, 128, 4.0f);
 }
 
+struct Thrown
+{
+    CPed* ped;
+    unsigned int at;
+    bool wasCollisionProof, wasMeleeProof;
+};
+static std::vector<Thrown> s_thrown;
+
+static void UpdateThrown()
+{
+    for (auto it = s_thrown.begin(); it != s_thrown.end();)
+    {
+        if (!CPoolGuard::IsPedAlive(it->ped))
+        {
+            it = s_thrown.erase(it);
+            continue;
+        }
+        if (GetTickCount() - it->at > 3000)
+        {
+            it->ped->m_nPhysicalFlags.bCollisionProof = it->wasCollisionProof;
+            it->ped->m_nPhysicalFlags.bMeleeProof = it->wasMeleeProof;
+            it = s_thrown.erase(it);
+            continue;
+        }
+        ++it;
+    }
+}
+
 void CGravityGun::Throw(const CVector& dir)
 {
     if (!EntityAlive(ms_pHeld, ms_nHeldType))
@@ -348,9 +395,12 @@ void CGravityGun::Throw(const CVector& dir)
     ph->m_vecMoveSpeed = dir * speed;
     if (ms_nHeldType == 2)
     {
+        // people fly away and get up again (they stay proof against the impact for a couple of seconds)
         CPed* ped = (CPed*)ms_pHeld;
-        ped->m_fHealth = 0.0f;  // the original kills what it throws
-        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(CPools::GetPedRef(ped), "KO_skid_front", "PED", 4.0f, 0, 0, 0, 1, -1);
+        ph->m_nPhysicalFlags.bCollisionProof = true;
+        ph->m_nPhysicalFlags.bMeleeProof = true;
+        s_thrown.push_back({ped, GetTickCount(), ms_bWasCollisionProof, ms_bWasMeleeProof});
+        ped->m_nPedFlags.bIsStanding = false;
     }
     CVector p = ph->GetPosition();
     Effects(false, p);
@@ -376,6 +426,7 @@ void CGravityGun::Drop()
 
 void CGravityGun::Process()
 {
+    UpdateThrown();
     CPlayerPed* me = FindPlayerPed(0);
     bool alt = CPad::NewKeyState.lmenu != 0 || CPad::NewKeyState.rmenu != 0;
     bool g = CPad::NewKeyState.standardKeys['G'] != 0 || CPad::NewKeyState.standardKeys['g'] != 0;

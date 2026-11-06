@@ -113,7 +113,7 @@ bool PlacePlatform(CPed* me)
     if (CBaseModelInfo* mi = CModelInfo::ms_modelInfoPtrs[PLATFORM_MODEL])
         if (mi->m_pColModel)
             top = mi->m_pColModel->m_boundBox.m_vecMax.z;
-    float z = p.z - 1.0f - top - 0.02f;  // the ped's origin is ~1 m above its feet
+    float z = p.z - 1.0f - top - 0.06f;  // the ped's origin is ~1 m above its feet
     if (s_platform < 0 || !CPools::GetObject(s_platform))
     {
         Command<Commands::CREATE_OBJECT>(PLATFORM_MODEL, p.x, p.y, z, &s_platform);
@@ -133,7 +133,7 @@ const char* AnimFor(int kind)
     switch (kind)
     {
     case 1: return "FALL_SkyDive_Accel";
-    case 2: return "FALL_skyDive";
+    case 2: return "PARA_decel";
     case 3: return "FALL_SkyDive_L";
     case 4: return "FALL_SkyDive_R";
     default: return "PARA_float";
@@ -270,13 +270,20 @@ void CFlight::Process()
 
         bool anyInput = pad && (abs(pad->NewState.LeftStickX) > 25 || abs(pad->NewState.LeftStickY) > 25 || ms_bJump ||
                                    ms_bCrouch);
-        if (s_flying && (kame || !anyInput))
+        bool aiming = pad && pad->NewState.RightShoulder1 != 0 && me->m_aWeapons[me->m_nActiveWeaponSlot].m_eWeaponType > 15;
+        if (s_flying && !kame && aiming && !anyInput)
         {
-            // still in the air: stand on the invisible slab (weapons, aiming and the kamehameha all work)
-            if (PlacePlatform(me))
+            // aiming a gun while floating: stand on an invisible slab just under the feet so the game lets
+            // CJ aim and shoot like on the ground (only while the aim button is held)
+            if (s_platform < 0)
             {
+                OrientBody(me, me->m_fCurrentRotation, 0.0f);  // upright first
+                me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
                 if (s_anim)
                     StopAnim(me, s_anim);
+            }
+            if (PlacePlatform(me))
+            {
                 me->m_nPhysicalFlags.bApplyGravity = true;
                 s_animKind = 5;
                 s_bodyPitch = 0.0f;
@@ -285,6 +292,32 @@ void CFlight::Process()
             {
                 me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
                 me->m_nPhysicalFlags.bApplyGravity = false;
+            }
+            static unsigned int lastAimSent = 0;
+            if (now - lastAimSent > 500)
+            {
+                lastAimSent = now;
+                Send();
+            }
+        }
+        else if (s_flying && (kame || !anyInput))
+        {
+            // floating still: no gravity, no movement, the floating pose (the kamehameha uses its own pose)
+            RemovePlatform();
+            me->m_vecMoveSpeed = CVector(0.0f, 0.0f, 0.0f);
+            me->m_nPhysicalFlags.bApplyGravity = false;
+            me->m_nPedFlags.bIsStanding = false;
+            if (!kame)
+            {
+                s_animKind = 0;
+                s_bodyPitch += (0.0f - s_bodyPitch) * 0.2f;
+                PlayAnim(me, s_anim, AnimFor(0));
+                OrientBody(me, me->m_fCurrentRotation, s_bodyPitch);
+            }
+            else
+            {
+                s_anim = nullptr;  // the floating pose comes back after the kamehameha
+                s_animKind = 0;
             }
             static unsigned int lastHoverSent = 0;
             if (now - lastHoverSent > 500)

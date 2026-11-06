@@ -376,7 +376,8 @@ void CKamehameha::Process()
         {
             // turn with the camera while charging
             s_local.heading = camHeading;
-            s_local.pitch = std::max(-0.26f, std::min(0.78f, asinf(std::max(-1.0f, std::min(1.0f, front.z))) + 0.1f));
+            s_local.pitch = std::max(CFlight::IsFlying() ? -1.35f : -0.26f,
+                std::min(0.78f, asinf(std::max(-1.0f, std::min(1.0f, front.z))) + 0.1f));
             bool fire = s_local.weaponMode ? lmbPressed : (hPressed && !alt);
             bool cancel = !canUse || (s_local.weaponMode && (!ms_bRmb || !HoldingKameWeapon(me)));
             if (cancel)
@@ -395,7 +396,7 @@ void CKamehameha::Process()
         case FIRE:
         {
             s_local.heading -= ms_fMouseX * 0.004f;
-            s_local.pitch = std::max(-0.26f, std::min(0.78f, s_local.pitch + ms_fMouseY * 0.003f));
+            s_local.pitch = std::max(CFlight::IsFlying() ? -1.35f : -0.26f, std::min(0.78f, s_local.pitch + ms_fMouseY * 0.003f));
             bool stop = !canUse || now - s_local.phaseSince > FIRE_MS || hPressed || lmbPressed;
             if (stop)
             {
