@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "network/packets/skin.h"
+#include "network/packets/genkidama.h"
+#include "CGenkidama.h"
 #include <map>
 #include <fstream>
 
@@ -78,4 +80,9 @@ PACKET_HANDLER(ePacketType::PLAYER_POWER, Packets::Skin::PlayerPower* pPower, CN
 {
 	pPower->senderPlayerid = pNetworkPlayer->m_playerId;
 	GetPacketFactory().SendToAll(*pPower, pNetworkPlayer);
+}
+
+PACKET_HANDLER(ePacketType::GENKIDAMA, Packets::Genkidama::Genkidama* pPacket, CNetworkPlayer* pNetworkPlayer)
+{
+	CGenkidama::OnPacket(pPacket, pNetworkPlayer);
 }

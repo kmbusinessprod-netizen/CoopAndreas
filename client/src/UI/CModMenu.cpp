@@ -4,6 +4,7 @@
 #include "CSkin.h"
 #include "CSkinImport.h"
 #include "CKamehameha.h"
+#include "CGenkidama.h"
 #include "CGravityGun.h"
 #include "CEmoteWheel.h"
 #include "CFlight.h"
@@ -408,7 +409,7 @@ static void __cdecl CPad__UpdatePads_Hook()
         if (CPad* pad = CPad::GetPad(0))
             pad->NewState.DPadLeft = pad->NewState.DPadRight = 0;
     }
-    bool kame = CKamehameha::IsLocalActive();
+    bool kame = CKamehameha::IsLocalActive() || CGenkidama::IsLocalActive();
     bool wheel = CEmoteWheel::IsOpen();
     if (CKamehameha::IsLocalFiring() || wheel)  // the mouse steers the beam / picks the emote, not the camera
     {
@@ -812,6 +813,8 @@ void CModMenu::BuildWeapons(CModMenu* m)
         [] { CGravityGun::Toggle(); }, nullptr});
     items.push_back({"~y~Kamehameha", []() -> std::string { return CKamehameha::IsWeaponEnabled() ? "~g~ON" : "~r~OFF"; },
         [] { CKamehameha::ToggleWeapon(); }, nullptr});
+    items.push_back({"~y~Genkidama", []() -> std::string { return "Alt+K flotando"; },
+        [] { CChat::AddMessage("{c7a6ff}[Genkidama] {d6dce8}Flota quieto en el aire (Volar) y pulsa Alt+K: pide energia a todos, carga 10-20 s, apunta con la camara. 5 min entre una y otra"); }, nullptr});
     for (const W& w : weapons)
     {
         int id = w.id, ammo = w.ammo;

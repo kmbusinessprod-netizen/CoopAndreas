@@ -5,6 +5,8 @@
 #include <map>
 
 std::vector<CSkinImport::Entry> CSkinImport::ms_entries;
+bool CSkinImport::ms_bHasImage = false;
+bool CSkinImport::ms_bBuilt = false;
 
 static std::string Lower(std::string s)
 {
@@ -82,6 +84,31 @@ bool CSkinImport::BuildImage(const std::string& gameDir)
         FindClose(h);
     }
 
+    // animations: CoopAndreas\anims\NAME.ifp go in with their own name (the block name the scripts use)
+    std::string animFolder = gameDir + "CoopAndreas\\anims\\";
+    CreateDirectoryA(animFolder.c_str(), nullptr);
+    std::vector<std::pair<std::string, std::string>> anims;  // (entry name, path)
+    h = FindFirstFileA((animFolder + "*.ifp").c_str(), &fd);
+    if (h != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                continue;
+            std::string file = fd.cFileName;
+            if (file.size() > 23)
+            {
+                printf("[anims] '%s' ignorada: el nombre pasa de 19 letras\n", file.c_str());
+                continue;
+            }
+            char sig[96];
+            sprintf_s(sig, "%s:%lu:%lu;", Lower(file).c_str(), fd.nFileSizeLow, fd.ftLastWriteTime.dwLowDateTime);
+            signature += sig;
+            anims.push_back({file, animFolder + file});
+        } while (FindNextFileA(h, &fd));
+        FindClose(h);
+    }
+
     // nothing changed since the last start: reuse the IMG we already built (it can be hundreds of MB)
     std::string idxPath = gameDir + "CoopAndreas\\coop_skins.idx";
     std::string imgPath = gameDir + "CoopAndreas\\coop_skins.img";
@@ -99,9 +126,9 @@ bool CSkinImport::BuildImage(const std::string& gameDir)
                     continue;
                 ms_entries.push_back({line.substr(0, a), line.substr(a + 1, b - a - 1), (uint16_t)atoi(line.c_str() + b + 1)});
             }
-            if (!ms_entries.empty())
+            if (!ms_entries.empty() || !anims.empty())
             {
-                printf("[skins] %d skins (IMG sin cambios)\n", (int)ms_entries.size());
+                printf("[skins] %d skins, %d anims (IMG sin cambios)\n", (int)ms_entries.size(), (int)anims.size());
                 return true;
             }
         }
@@ -139,6 +166,13 @@ bool CSkinImport::BuildImage(const std::string& gameDir)
         items.push_back(dff);
         items.push_back(txd);
         ms_entries.push_back({displayName[key], internal, SkinIdFor(key)});
+    }
+
+    for (auto& [name, path] : anims)
+    {
+        Item ifp{name, path, fileSize(path)};
+        if (ifp.size)
+            items.push_back(ifp);
     }
 
     if (items.empty())
@@ -189,7 +223,7 @@ bool CSkinImport::BuildImage(const std::string& gameDir)
     idx << std::hash<std::string>{}(signature) << "\n";
     for (const Entry& e : ms_entries)
         idx << e.display << "|" << e.internal << "|" << e.id << "\n";
-    printf("[skins] IMG creado con %d skins\n", (int)ms_entries.size());
+    printf("[skins] IMG creado con %d skins y %d anims\n", (int)ms_entries.size(), (int)anims.size());
     return true;
 }
 
@@ -208,10 +242,15 @@ static void __cdecl LoadCdDirectory_Hook()
     std::string dir = exe;
     dir = dir.substr(0, dir.rfind('\\') + 1);
 
-    if (CSkinImport::GetAll().empty() && CSkinImport_BuildImage(dir))
+    if (!CSkinImport::ms_bBuilt)
     {
-        int index = CStreaming::AddImageToList("CoopAndreas\\coop_skins.img", true);
-        printf("[skins] %d skin(s) importada(s), IMG #%d\n", (int)CSkinImport::GetAll().size(), index);
+        CSkinImport::ms_bBuilt = true;
+        CSkinImport::ms_bHasImage = CSkinImport_BuildImage(dir);
+        if (CSkinImport::ms_bHasImage)
+        {
+            int index = CStreaming::AddImageToList("CoopAndreas\\coop_skins.img", true);
+            printf("[skins] %d skin(s) importada(s), IMG #%d\n", (int)CSkinImport::GetAll().size(), index);
+        }
     }
     plugin::CallDyn(s_LoadCdDirectory_orig);
 }

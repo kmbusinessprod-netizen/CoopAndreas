@@ -38,6 +38,7 @@
 #include <CGravityGun.h>
 #include <CEmoteWheel.h>
 #include <CFlight.h>
+#include <CGenkidama.h>
 #include <CTrace.h>
 #include <network/packets/scripts.h>
 
@@ -100,6 +101,7 @@ public:
             CGravityGun::Process();
             CEmoteWheel::Process();
             CFlight::Process();
+            CGenkidama::Process();
             CUnlockAll::Process();
             CPropertySync::Process();
             CFixes::Process();
@@ -287,6 +289,7 @@ public:
             CModMenu::Draw();
             CEmoteWheel::Draw();
             CFlight::Draw();
+            CGenkidama::Draw();
 
             if (FrontEndMenuManager.m_bPrefsShowHud)
             {

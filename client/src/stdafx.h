@@ -108,6 +108,7 @@ using namespace plugin;
 #include <network/packets/admin.h>
 #include <network/packets/teleport.h>
 #include <network/packets/skin.h>
+#include <network/packets/genkidama.h>
 #include <cheat_info.h>
 #include "network/packet_types.h"
 #include "CCore.h"

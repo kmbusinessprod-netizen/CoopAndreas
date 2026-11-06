@@ -10,6 +10,7 @@
 #include "CKamehameha.h"
 #include "CEmoteWheel.h"
 #include "CFlight.h"
+#include "CGenkidama.h"
 #include <CWeatherSync.h>
 #include <CMoonSync.h>
 #include <game_sa/CTagManager.h>
@@ -224,6 +225,11 @@ PACKET_HANDLER(ePacketType::PROPERTY_BOUGHT, Packets::Skin::PropertyBought* pPro
 PACKET_HANDLER(ePacketType::PLAYER_HOLD, Packets::Skin::PlayerHold* pHold)
 {
     CHoldSync::OnPacket(pHold);
+}
+
+PACKET_HANDLER(ePacketType::GENKIDAMA, Packets::Genkidama::Genkidama* pPacket)
+{
+    CGenkidama::OnPacket(pPacket);
 }
 
 PACKET_HANDLER(ePacketType::PLAYER_POWER, Packets::Skin::PlayerPower* pPower)

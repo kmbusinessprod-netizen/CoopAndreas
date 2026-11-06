@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CKamehameha.h"
+#include "CGenkidama.h"
 #include "CSoundFile.h"
 #include "CFlight.h"
 #include "FxManager_c.h"
@@ -41,7 +42,27 @@ struct Caster
     bool wasExplosionProof = false;
     unsigned int sound = 0;
     bool weaponMode = false;
+    bool customAnim = false;  // the real kamehameha animation (CoopAndreas\anims\DBZKAMEHAMEHA.ifp)
 };
+
+// the animation block from the kamehameha mod: requested once the game runs, tiny, kept loaded.
+// Inside it: "KAMEHAMEHA" (0.6 s): 0..25% raise the hands to the side, held during the charge; 25..70%
+// thrust forward, held while firing; the rest brings the arms back.
+const char* KAME_BLOCK = "DBZKAMEHAMEHA";
+const float POSE_CHARGE = 0.25f, POSE_FIRE = 0.70f;
+bool CustomAnimReady()
+{
+    static unsigned int lastRequest = 0;
+    if (Command<Commands::HAS_ANIMATION_LOADED>(KAME_BLOCK))
+        return true;
+    unsigned int now = GetTickCount();
+    if (now - lastRequest > 2000)
+    {
+        lastRequest = now;
+        Command<Commands::REQUEST_ANIMATION>(KAME_BLOCK);
+    }
+    return false;
+}
 
 Caster s_local;
 std::vector<Caster> s_remote;
@@ -108,7 +129,11 @@ void ApplyPose(Caster& c)
     if (c.animApplied || !CPoolGuard::IsPedAlive(c.ped))
         return;
     int ref = CPools::GetPedRef(c.ped);
-    Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "GunMove_BWD", "PED", 4.0f, 1, 1, 1, 1, -1);
+    c.customAnim = CustomAnimReady();
+    if (c.customAnim)
+        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "KAMEHAMEHA", KAME_BLOCK, 1.0f, 0, 1, 1, 1, -1);
+    else
+        Command<Commands::TASK_PLAY_ANIM_NON_INTERRUPTABLE>(ref, "GunMove_BWD", "PED", 4.0f, 1, 1, 1, 1, -1);
     c.animApplied = true;
 }
 
@@ -118,7 +143,28 @@ void HoldPose(Caster& c)
     if (!c.animApplied || !CPoolGuard::IsPedAlive(c.ped))
         return;
     int ref = CPools::GetPedRef(c.ped);
-    if (Command<Commands::IS_CHAR_PLAYING_ANIM>(ref, "GunMove_BWD"))
+    if (c.customAnim)
+    {
+        if (Command<Commands::IS_CHAR_PLAYING_ANIM>(ref, "KAMEHAMEHA"))
+        {
+            float hold = c.phase == FIRE ? POSE_FIRE : POSE_CHARGE;
+            float t = 0.0f;
+            Command<Commands::GET_CHAR_ANIM_CURRENT_TIME>(ref, "KAMEHAMEHA", &t);
+            if (t >= hold - 0.01f)
+            {
+                Command<Commands::SET_CHAR_ANIM_SPEED>(ref, "KAMEHAMEHA", 0.0f);
+                Command<Commands::SET_CHAR_ANIM_CURRENT_TIME>(ref, "KAMEHAMEHA", hold);
+            }
+            else
+                Command<Commands::SET_CHAR_ANIM_SPEED>(ref, "KAMEHAMEHA", 1.0f);  // moving on to the next pose
+        }
+        else
+        {
+            c.animApplied = false;  // the task got replaced (a hit, a sync): back into the pose
+            ApplyPose(c);
+        }
+    }
+    else if (Command<Commands::IS_CHAR_PLAYING_ANIM>(ref, "GunMove_BWD"))
     {
         Command<Commands::SET_CHAR_ANIM_SPEED>(ref, "GunMove_BWD", 0.0f);
         Command<Commands::SET_CHAR_ANIM_CURRENT_TIME>(ref, "GunMove_BWD", 0.27f);
@@ -327,6 +373,7 @@ void CKamehameha::Process()
     {
         s_local.ped = me;
         s_local.local = true;
+        CustomAnimReady();
         bool alt = CPad::NewKeyState.lmenu != 0 || CPad::NewKeyState.rmenu != 0;
         bool h = CPad::NewKeyState.standardKeys['H'] != 0 || CPad::NewKeyState.standardKeys['h'] != 0;
         static bool hWas = false, lmbWas = false;
@@ -335,7 +382,7 @@ void CKamehameha::Process()
         lmbWas = ms_bLmb;
 
         // on foot, or floating in the air (not while flying around)
-        bool canUse = !me->m_nPedFlags.bInVehicle && me->m_fHealth > 0.0f && !CChat::m_bInputActive &&
+        bool canUse = !me->m_nPedFlags.bInVehicle && me->m_fHealth > 0.0f && !CChat::m_bInputActive && !CGenkidama::IsLocalActive() &&
                       !FrontEndMenuManager.m_bMenuActive && (!CFlight::IsFlying() || CFlight::IsHovering() ||
                                                                 s_local.phase != OFF);
         bool weapon = canUse && HoldingKameWeapon(me);

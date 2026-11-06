@@ -23,6 +23,8 @@ public:
     static const Entry* Find(uint16_t id);
     static bool IsImportedId(int id) { return id >= 2000; }
     static bool BuildImageFor(const std::string& gameDir) { return BuildImage(gameDir); }
+    static bool ms_bHasImage;  // our IMG is registered (skins and/or animations)
+    static bool ms_bBuilt;
 
 private:
     static std::vector<Entry> ms_entries;

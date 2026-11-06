@@ -2,6 +2,7 @@
 #include "CFixes.h"
 #include "UI/CModMenu.h"
 #include "CSkinImport.h"
+#include "CWeaponIcons.h"
 #include "CCrashLog.h"
 #include "Commands/CCustomCommandRegistrar.h"
 #include "CDiscordRPC.h"
@@ -86,6 +87,7 @@ void CCore::Init()
     CFixes::Install();
     CModMenu::Install();
     CSkinImport::Install();             // [private build] see CCheatSync.h
+    CWeaponIcons::Install();
     // window mode: handled by ThirteenAG's III.VC.SA.WindowedMode.asi (scripts folder); CWindowMode kept but disabled
     Events::initGameEvent.after += []
     {

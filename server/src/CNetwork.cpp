@@ -9,6 +9,7 @@
 #include "CBanList.h"
 #include "CProximityOwnership.h"
 #include "CCheatVote.h"
+#include "CGenkidama.h"
 #include <network/packets/vehicles.h>
 #include <network/packets/peds.h>
 #include <network/packets/scripts.h>
@@ -45,6 +46,7 @@ bool CNetwork::Init(unsigned short port)
         CRTTBroadcastManager::Update();
         CProximityOwnership::Update();  // [private build]
         CCheatVote::Update();
+        CGenkidama::Update();
 
         while (enet_host_service(pENetHost, &eNetEvent, 1) > 0)
         {
@@ -124,6 +126,7 @@ void CNetwork::HandlePlayerDisconnected(ENetEvent& event)
     CNetworkObjectManager::RemoveAllHostedAndNotify(pNetworkPlayer);
 
     CCheatVote::PlayerLeft(pNetworkPlayer);  // [private build]
+    CGenkidama::PlayerLeft(pNetworkPlayer);
     CNetworkPlayerManager::Remove(pNetworkPlayer);
 
     Packets::System::PlayerDisconnected playerDisconnected{};

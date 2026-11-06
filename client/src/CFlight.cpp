@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CFlight.h"
 #include "CKamehameha.h"
+#include "CGenkidama.h"
 #include "UI/CModMenu.h"
 
 bool CFlight::ms_bFlyEnabled = false;
@@ -214,8 +215,9 @@ void CFlight::Process()
     if (!me)
         return;
 
-    bool kame = CKamehameha::IsLocalActive();  // allowed while floating: we just hold still in the air
-    bool busy = me->m_nPedFlags.bInVehicle || me->m_fHealth <= 0.0f || (kame && !s_flying);
+    // allowed while floating: we just hold still in the air
+    bool kame = CKamehameha::IsLocalActive() || CGenkidama::IsLocalActive();
+    bool busy = me->m_nPedFlags.bInVehicle || me->m_fHealth <= 0.0f || (kame && !s_flying) || CGenkidama::IsLaunched();
     CPad* pad = CPad::GetPad(0);
 
     // ---- running speed
