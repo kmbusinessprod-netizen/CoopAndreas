@@ -359,6 +359,10 @@ void CFlight::Process()
                 flatFwd.Normalise();
                 CVector dir3 = flatFwd * cosf(pitch) + CVector(0.0f, 0.0f, sinf(pitch));
                 v = dir3 * (sy * speed) + right * (sx * speed * 0.5f);
+                // climbing is faster than cruising: the more the mouse points at the sky, the more the
+                // vertical speed grows over the forward one (up to 2.3x straight up)
+                if (pitch > 0.0f)
+                    v.z *= 1.0f + 1.3f * sinf(pitch);
                 targetPitch = pitch;
             }
             else if (sy < -0.2f)
