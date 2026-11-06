@@ -367,7 +367,6 @@ void CGravityGun::Glow(int gun, const int parts[3], bool holding, unsigned int i
         Command<Commands::DRAW_LIGHT_WITH_RANGE>(tip.x, tip.y, tip.z, 64, 255, 128, 4.0f);
 }
 
-// a traffic car keeps driving under the gun (its AI sets the speed every frame): stop its driver
 struct Thrown
 {
     CPed* ped;
