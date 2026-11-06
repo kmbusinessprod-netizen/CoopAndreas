@@ -84,18 +84,18 @@ CVector Direction(const Caster& c)
     return CVector(-sinf(c.heading) * cosf(c.pitch), cosf(c.heading) * cosf(c.pitch), sinf(c.pitch));
 }
 
-// between the two hands (bones 25 right hand, 35 left hand), a bit in front of the palms
+// between the two palms (bones 24 right hand, 34 left hand); while firing a bit in front and higher
 CVector HandsPos(const Caster& c)
 {
     CVector dir = Direction(c);
     if (c.ped->m_pRwObject)
     {
         RwV3d r{}, l{};
-        c.ped->GetBonePosition(r, 25, false);
-        c.ped->GetBonePosition(l, 35, false);
+        c.ped->GetBonePosition(r, 24, false);
+        c.ped->GetBonePosition(l, 34, false);
         CVector mid((r.x + l.x) * 0.5f, (r.y + l.y) * 0.5f, (r.z + l.z) * 0.5f);
         if ((mid - c.ped->GetPosition()).Magnitude() < 2.5f)  // sane bones
-            return mid + CVector(dir.x, dir.y, 0.0f) * (c.phase == FIRE ? 0.25f : 0.1f);
+            return c.phase == FIRE ? mid + CVector(dir.x, dir.y, 0.0f) * 0.3f + CVector(0.0f, 0.0f, 0.12f) : mid;
     }
     CVector pos = c.ped->GetPosition();
     return pos + CVector(dir.x * 0.6f, dir.y * 0.6f, 0.3f);
@@ -243,8 +243,8 @@ void Draw(Caster& c)
         // the ball in the hands grows with the charge
         float k = ChargeLevel(c);
         float pulse = 0.85f + 0.15f * sinf(t * (18.0f + 20.0f * k));
-        Corona(c, 0, hands, (0.15f + 0.9f * k) * pulse, CRGBA(255, 255, 255, 230));
-        Corona(c, 1, hands, (0.3f + 1.8f * k) * pulse, CRGBA(90, 170, 255, 150));
+        Corona(c, 0, hands, (0.08f + 0.4f * k) * pulse, CRGBA(255, 255, 255, 230));
+        Corona(c, 1, hands, (0.18f + 0.8f * k) * pulse, CRGBA(90, 170, 255, 150));
         Command<Commands::DRAW_LIGHT_WITH_RANGE>(hands.x, hands.y, hands.z, 120, 190, 255, 5.0f + 15.0f * k);
         return;
     }
@@ -446,8 +446,10 @@ void CKamehameha::Process()
         {
             // turn with the camera while charging
             s_local.heading = camHeading;
-            s_local.pitch = std::max(CFlight::IsFlying() ? -1.35f : -0.26f,
-                std::min(0.78f, asinf(std::max(-1.0f, std::min(1.0f, front.z))) + 0.1f));
+            // the game camera looks down at CJ: on the ground the beam goes level/up from where it looks
+            s_local.pitch = CFlight::IsFlying()
+                                ? std::max(-1.35f, std::min(0.78f, asinf(std::max(-1.0f, std::min(1.0f, front.z))) + 0.1f))
+                                : std::max(-0.06f, std::min(0.78f, asinf(std::max(-1.0f, std::min(1.0f, front.z))) + 0.3f));
             bool fire = s_local.weaponMode ? lmbPressed : (hPressed && !alt);
             bool cancel = !canUse || (s_local.weaponMode && (!ms_bRmb || !HoldingKameWeapon(me)));
             if (cancel)
@@ -466,7 +468,7 @@ void CKamehameha::Process()
         case FIRE:
         {
             s_local.heading -= ms_fMouseX * 0.004f;
-            s_local.pitch = std::max(CFlight::IsFlying() ? -1.35f : -0.26f, std::min(0.78f, s_local.pitch + ms_fMouseY * 0.003f));
+            s_local.pitch = std::max(CFlight::IsFlying() ? -1.35f : -0.12f, std::min(0.78f, s_local.pitch + ms_fMouseY * 0.003f));
             bool stop = !canUse || now - s_local.phaseSince > FIRE_MS || hPressed || lmbPressed;
             if (stop)
             {
