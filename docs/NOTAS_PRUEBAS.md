@@ -336,3 +336,11 @@ Direcciones = gta_sa.exe 1.0 US (HOODLUM, MD5 170b3a9108687b26da2d8901c6948a18).
 - Menú > Vehículos > Tunear: reparar, indestructible, nitro x2/x5/x10, hidráulica, escapes/ruedas, colores,
   pinturas especiales (se sincronizan por los paquetes de componentes/colores existentes).
 - Gravity gun: distancia de sostén = radio del modelo + 3.5 m (mín. 4) para que lo grande no te golpee.
+
+## 2026-11-05 21:30
+- Flotar quieto: pose PARA_float sin gravedad ni velocidad (antes losa + gravedad → "parado en el aire" y caídas al
+  soltar). La losa invisible solo mientras se apunta un arma de fuego/arrojadiza (clic der.), con CJ enderezado y 6 cm
+  de margen bajo los pies (el solapamiento lo lanzaba). Hacia atrás = PARA_decel (distinta de los costados).
+- Kamehameha volando: pitch mínimo -1.35 rad (antes -0.26).
+- Gravity gun: el rayo ya no considera objetos; en el cono primero gente/autos con línea de visión libre; objetos
+  solo si no hay nada más y están en pantalla. Los peds lanzados ya no mueren: 3 s a prueba de golpes/caídas.
